@@ -43,11 +43,11 @@ plot(cloud)
 #  plot + ggplot2::theme_classic()
 
 ## ----iplotnotrun, eval = FALSE------------------------------------------------
-#  # For interactive charting:
-#  iplot(cloud)
+#  # For a plotly interactive plot:
+#  plotly::ggplotly(plot)
 
 ## ----plot2--------------------------------------------------------------------
-plot(cloud, window = "2020-05-01/2020-11-01", ticker = "TKR Co.", theme = "dark", gaps = TRUE)
+plot(cloud, window = "2020-05-01/2020-11-01", ticker = "TKR Co.", theme = "dark")
 
 ## ----pipe, eval = FALSE-------------------------------------------------------
 #  # Using R 4.1's new pipe operator:

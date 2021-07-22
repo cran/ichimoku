@@ -10,24 +10,40 @@ strat(
     "senkouB", "cloudTop", "cloudBase"),
   c2 = c("tenkan", "kijun", "senkouA", "senkouB", "cloudTop", "cloudBase", "chikou",
     "close", "open", "high", "low"),
-  dir = c("long", "short")
+  c3 = c("close", "chikou", "open", "high", "low", "tenkan", "kijun", "senkouA",
+    "senkouB", "cloudTop", "cloudBase"),
+  c4 = c("tenkan", "kijun", "senkouA", "senkouB", "cloudTop", "cloudBase", "chikou",
+    "close", "open", "high", "low"),
+  dir = c("long", "short"),
+  type = 2
 )
 }
 \arguments{
 \item{x}{an ichimoku object.}
 
-\item{c1}{column name specified as a string, with a default of 'close'.}
+\item{c1}{[default 'close'] column name specified as a string.}
 
-\item{c2}{column name specified as a string, with a default of 'tenkan'.}
+\item{c2}{[default 'tenkan'] column name specified as a string.}
 
-\item{dir}{trade direction either 'long' or 'short' with a default of 'long'.}
+\item{c3}{(optional) column name specified as a string.}
+
+\item{c4}{(optional) column name specified as a string.}
+
+\item{dir}{[default 'long'] trade direction, either 'long' or 'short'.}
+
+\item{type}{[default 2] if 'c3' and 'c4' are specified, type 2 will create the
+combined strategy 'c1 > c2 & c3 > c4' whilst type 3 will create the
+asymmetric strategy 'c1 > c2 x c3 > c4'.}
 }
 \value{
 An ichimoku object augmented with the strategy.
 }
 \description{
-Create custom ichimoku cloud strategies using the rule condition 'long (or
-    short) while c1 > c2'.
+Create ichimoku cloud strategies using the indicator condition 'long / short
+    while c1 > c2'. Complex strategies can be formulated as combined
+    'c1 > c2 & c3 > c4' (both conditions must be satisfied) or asymmetric
+    'c1 > c2 x c3 > c4' (where 'c1 > c2' denotes the entry and 'c3 > c4' the
+    exit indicator).
 }
 \details{
 The following assumption applies to all strategies: confirmation of
@@ -38,9 +54,9 @@ The following assumption applies to all strategies: confirmation of
     The original ichimoku object 'x' is augmented with the following
     additional columns used to calculate the strategy:
 
-    'cond', a boolean vector if the rule condition is met, 'posn', a boolean
-    vector indicating if a position is held, and 'txn', a vector representing
-    the transactions to implement the position.
+    'cond', a boolean vector if the indicator condition is met, 'posn', a
+    boolean vector indicating if a position is held, and 'txn', a vector
+    representing the transactions to implement the position.
 
     logret' is a column of log returns, 'slogret' is a column of log returns
     for the strategy.
@@ -48,13 +64,32 @@ The following assumption applies to all strategies: confirmation of
     ret' is a column of discrete returns, and 'sret' is a column of discrete
     returns for the strategy.
 
-    The stategy summary is saved as an object attribute and may be accessed
-    via the summary() function.
+    The strategy summary is saved as an object attribute and may be accessed
+    by the summary() function or via look().
 
-    The periods in which the strategy results in a position is shaded by
-    default on the ichimoku cloud chart. To turn off this behaviour, pass the
-    'strat = FALSE' argument to plot().
+    By default, the periods in which the strategy results in a position is
+    shaded on the ichimoku cloud chart and the strategy is printed as the
+    chart message (if not otherwise specified). To turn off this behaviour,
+    pass the 'strat = FALSE' argument to plot() or iplot().
 }
+\section{Complex Strategies}{
+
+    For complex strategies, let 's1' denote the strategy 'c1 > c2' and 's2'
+    denote the strategy 'c3 > c4'.
+
+    The combined strategy 's1 & s2' means indicator conditions in 's1'
+    and 's2' have to be met simulateneously for a trade position to be taken.
+
+    The asymmetric strategy 's1 x s2' means the indicator condition in 's1'
+    has to be met to enter a trade position, and the indicator condition in
+    's2' has to be met to exit a trade position. These rules are applied
+    recursively over the length of the data.
+
+    The boolean values showing whether these conditions are met are stored in
+    the 'cond' column. For a strategy of type 's1 x s2', the 'cond' column
+    will show when the indicator condition is met in s1.
+}
+
 \section{Further Details}{
 
     Please refer to the strategies vignette by running:

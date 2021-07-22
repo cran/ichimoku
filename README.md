@@ -6,6 +6,8 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/shikokuchuo/ichimoku/branch/main/graph/badge.svg)](https://codecov.io/gh/shikokuchuo/ichimoku?branch=main)
 [![CRAN
 Status](https://www.r-pkg.org/badges/version/ichimoku)](https://CRAN.R-project.org/package=ichimoku)
 <!-- badges: end -->
@@ -20,6 +22,10 @@ refinement on candlestick charting originating from Japan, now in
 widespread use in technical analysis worldwide. Translating as
 ‘one-glance equilibrium chart’, it allows the price action and market
 structure of financial securities to be determined ‘at-a-glance’.
+Incorporates an interface with the OANDA fxTrade API
+<https://developer.oanda.com/> for retrieving historical and live
+streaming price data for major currencies, metals, commodities,
+government bonds and stock indices.
 
 ## Installation
 
@@ -44,20 +50,20 @@ library(ichimoku)
 TKR <- sample_ohlc_data
 ```
 
-#### Visualization
-
 Simply `ichimoku()` and `plot()`:
 
 ``` r
 cloud <- ichimoku(TKR)
+```
+
+``` r
 plot(cloud, window = "2020-04/")
 ```
 
-<img src="man/figures/README-plot-1.png" width="672" width="480" />
+![](man/figures/README-plot-1.png)
 
-#### Strategies
-
-`autostrat()` to automatically generate top-performing strategies:
+`autostrat()` to automatically evaluate and rank top-performing
+strategies:
 
 ``` r
 autostrat(cloud, n = 3)
@@ -82,7 +88,54 @@ autostrat(cloud, n = 3)
 #> Ticker                 "TKR"              "TKR"               "TKR"
 ```
 
-## Reference
+## Principal ichimoku functions
+
+#### Data
+
+-   [`ichimoku()`](https://shikokuchuo.net/ichimoku/reference/ichimoku.html) -
+    to create an ichimoku object from price data.
+
+-   [`oanda()`](https://shikokuchuo.net/ichimoku/reference/oanda.html) -
+    to retrieve price data from the OANDA fxTrade API.
+
+-   [`oanda_stream()`](https://shikokuchuo.net/ichimoku/reference/oanda_stream.html) -
+    to stream a live data feed from the OANDA fxTrade API.
+
+#### Visualization
+
+-   [`plot()`](https://shikokuchuo.net/ichimoku/reference/plot.ichimoku.html) -
+    to plot a cloud chart from an ichimoku object.
+
+-   [`iplot()`](https://shikokuchuo.net/ichimoku/reference/iplot.html) -
+    to plot an interactive cloud chart from an ichimoku object.
+
+-   [`oanda_chart()`](https://shikokuchuo.net/ichimoku/reference/oanda_chart.html) -
+    to create live updating ichimoku cloud charts using OANDA data.
+
+-   [`oanda_studio()`](https://shikokuchuo.net/ichimoku/reference/oanda_studio.html) -
+    a complete live analysis environment using OANDA data implemented in
+    R Shiny.
+
+#### Strategies & ML
+
+-   [`strat()`](https://shikokuchuo.net/ichimoku/reference/strat.html) -
+    to augment an ichimoku object with a strategy, including complex
+    combined and asymmetric strategies.
+
+-   [`stratcombine()`](https://shikokuchuo.net/ichimoku/reference/stratcombine.html) -
+    to create custom combined strategies.
+
+-   [`autostrat()`](https://shikokuchuo.net/ichimoku/reference/autostrat.html) -
+    to automatically evaluate and rank top-performing strategies.
+
+-   [`mlgrid()`](https://shikokuchuo.net/ichimoku/reference/mlgrid.html) -
+    to generate a numeric representation of the relationship between
+    ichimoku cloud chart elements.
+
+## References
+
+‘OANDA’ and ‘fxTrade’ are trademarks owned by OANDA Corporation, an
+entity unaffiliated with the ichimoku package.
 
 R package site: <https://shikokuchuo.net/ichimoku/>
 

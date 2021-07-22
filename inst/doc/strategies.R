@@ -14,7 +14,7 @@ TKR <- sample_ohlc_data
 cloud <- ichimoku(TKR)
 
 ## ----strat--------------------------------------------------------------------
-strat <- strat(cloud)
+strat <- strat(cloud, c1 = "close", c2 = "tenkan")
 print(strat[100:105], plot = FALSE)
 
 ## ----summary------------------------------------------------------------------
@@ -40,11 +40,19 @@ summary(newstrat)
 autostrat(cloud, n = 3)
 
 ## ----autostrat2---------------------------------------------------------------
-autostrat(cloud, n = 3, dir = "short", level = 2)
+autostrat(cloud, n = 2, dir = "short", level = "2")
+
+## ----autostrat3---------------------------------------------------------------
+autostrat(cloud, n = 2, dir = "long", level = "3")
 
 ## ----mlgrid-------------------------------------------------------------------
 mlgrid(cloud, y = "logret", dir = "long", type = "boolean", unique = TRUE)[100:105, 1:4]
 
 ## ----mlgrid2------------------------------------------------------------------
 mlgrid(cloud, y = "ret", dir = "short", type = "numeric", unique = FALSE)[100:105, 1:4]
+
+## ----look---------------------------------------------------------------------
+look(cloud)
+
+look(strat)
 

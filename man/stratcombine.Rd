@@ -15,18 +15,18 @@ stratcombine(s1, s2)
 An ichimoku object augmented with the combined strategy.
 }
 \description{
-Create more complex strategies with a rule condition of the form
-    'c1 > c2 & c3 > c4' by combining existing strategies with rule conditions
-    'c1 > c2' and 'c3 > c4' respectively.
+Create custom combined strategies from existing strategies contained in 's1'
+    and 's2' to form 's1 & s2'.
 }
 \details{
-The combined strategy 's1 & s2' means conditions in 's1' and 's2'
-    have to be simulateneously met for a trade position to be taken.
+The combined strategy 's1 & s2' means indicator conditions in 's1'
+    and 's2' have to be met simulateneously for a trade position to be taken.
 
     The boolean values showing whether these conditions are met are stored in
     the 'cond' column.
 
-    The stategy summary may be accessed via the summary() function.
+    The stategy summary may be accessed by the summary() function or via
+    look().
 }
 \section{Further Details}{
 

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>ichimoku: The OANDA fxTrade API</title>
+
+<script src="data:application/javascript;base64,Ly8gUGFuZG9jIDIuOSBhZGRzIGF0dHJpYnV0ZXMgb24gYm90aCBoZWFkZXIgYW5kIGRpdi4gV2UgcmVtb3ZlIHRoZSBmb3JtZXIgKHRvCi8vIGJlIGNvbXBhdGlibGUgd2l0aCB0aGUgYmVoYXZpb3Igb2YgUGFuZG9jIDwgMi44KS4KZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsIGZ1bmN0aW9uKGUpIHsKICB2YXIgaHMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCJkaXYuc2VjdGlvbltjbGFzcyo9J2xldmVsJ10gPiA6Zmlyc3QtY2hpbGQiKTsKICB2YXIgaSwgaCwgYTsKICBmb3IgKGkgPSAwOyBpIDwgaHMubGVuZ3RoOyBpKyspIHsKICAgIGggPSBoc1tpXTsKICAgIGlmICghL15oWzEtNl0kL2kudGVzdChoLnRhZ05hbWUpKSBjb250aW51ZTsgIC8vIGl0IHNob3VsZCBiZSBhIGhlYWRlciBoMS1oNgogICAgYSA9IGguYXR0cmlidXRlczsKICAgIHdoaWxlIChhLmxlbmd0aCA+IDApIGgucmVtb3ZlQXR0cmlidXRlKGFbMF0ubmFtZSk7CiAgfQp9KTsK"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<link rel="stylesheet" href="data:text/css,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" type="text/css" />
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">ichimoku: The OANDA fxTrade API</h1>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#about-oanda-fxtrade">About OANDA fxTrade</a></li>
+<li><a href="#registering-with-oanda">Registering with OANDA</a></li>
+<li><a href="#setting-your-oanda-api-key">Setting your OANDA API Key</a></li>
+<li><a href="#the-oanda-functions">The OANDA Functions</a>
+<ul>
+<li><a href="#oanda"><code>oanda()</code></a></li>
+<li><a href="#oanda_stream"><code>oanda_stream()</code></a></li>
+<li><a href="#oanda_chart"><code>oanda_chart()</code></a></li>
+<li><a href="#oanda_studio"><code>oanda_studio()</code></a></li>
+</ul></li>
+<li><a href="#available-instruments">Available Instruments</a></li>
+<li><a href="#further-resources">Further Resources</a></li>
+</ul>
+</div>
+
+<div id="about-oanda-fxtrade" class="section level2">
+<h2>About OANDA fxTrade</h2>
+<p>ichimoku contains an interface to the OANDA fxTrade API, creating a binding for the R language.</p>
+<p>OANDA is an authoritative source of foreign exchange data used globally by governments and corporations alike. The API can be used for retrieving historical and live streaming price data for major currencies, metals, commodities, government bonds and stock indices.</p>
+<p>This is considered a rich source of financial data with excellent availability, for instance daily OHLC pricing data for major forex pairs going back to the start of 2005, and data granularity ranging from 5 seconds to monthly.</p>
+<p>Please note that ‘OANDA’ and ‘fxTrade’ are trademarks owned by OANDA Corporation, an entity which is entirely unaffiliated with the ichimoku package.</p>
+</div>
+<div id="registering-with-oanda" class="section level2">
+<h2>Registering with OANDA</h2>
+<p>The OANDA fxTrade API, as distinct to other OANDA data sources such as its rates for business, is based upon their retail and professional trading offering. As such, access to the API requires an fxTrade account with OANDA and agreement to their API terms of use. Any account type is sufficient, including a ‘demo’ or ‘practice’ account, which at the time of writing is entirely free to sign up and use without limit.</p>
+<p>For registering an account, the following URL may be used: <a href="https://www.oanda.com/forex-trading/" class="uri">https://www.oanda.com/forex-trading/</a>.</p>
+<p>After successful registration, a link can be found on your OANDA fxTrade account profile page ‘Manage API Access’ (My Account -&gt; My Services -&gt; Manage API Access). From there, a personal access token to use with the OANDA API can be generated, as well as revoked. This access token will enable all the OANDA functions in this package.</p>
+<p>Note: this package only contains functions for retrieving available instruments and price data. It does not contain any code which implements any trading capability whatsoever. Hence using your access token with this package should be safe even for live accounts. However, the access token can be used (outside of this package) for all operations on your account including placing orders and trades. It is recommended therefore, for maximum security, that you sign up for a demo/practice account and use the access token for that account even if you hold an existing live account with OANDA.</p>
+</div>
+<div id="setting-your-oanda-api-key" class="section level2">
+<h2>Setting your OANDA API Key</h2>
+<p>If the ‘keyring’ package is available on your machine, the OANDA API key (personal access token) can be set once and stored in your system keyring by using <code>oanda_set_key()</code>. This will enable it to be retrieved automatically for all subsequent sessions.</p>
+<p>If an access token is revoked and re-generated, please remember to set the API key again through the <code>oanda_set_key()</code> function.</p>
+</div>
+<div id="the-oanda-functions" class="section level2">
+<h2>The OANDA Functions</h2>
+<p>All of the OANDA functions in the package are prefixed by ‘oanda’ for clarity and ease of use.</p>
+<div id="oanda" class="section level3">
+<h3><code>oanda()</code></h3>
+<p>Retrieve historical pricing data from the OANDA fxTrade API.</p>
+<p>The arguments to the function are phrased identically to that of the API itself where relevant:</p>
+<ul>
+<li><code>instrument</code> a string containing the base currency and quote currency delimited by a ’_’ (for example “USD_JPY”). Use the <code>oanda_instruments()</code> function to return a list of all valid instruments.</li>
+<li><code>granularity</code> [default “D”] the granularity of the price data to fetch, one of “M”, “W”, “D”, “H12”, “H8”, “H6”, “H4”, “H3”, “H2”, “H1”, “M30”, “M15”, “M10”, “M5”, “M4”, “M2”, “M1”, “S30”, “S15”, “S10”, “S5”.</li>
+<li><code>count</code> (optional) the number of periods to return. The API supports a maximum of 5000 for each individual request, and defaults to 500 if not specified. ‘count’ should not be specified if both ‘from’ and ‘to’ arguments are provided, as the time range combined with ‘granularity’ will determine the number of periods to return.</li>
+<li><code>from</code> (optional) the start of the time range for which to fetch price data, for example “2020-02-01”.</li>
+<li><code>to</code> (optional) the end of the time range for which to fetch price data, for example “2020-06-30”.</li>
+<li><code>price</code> [default “M”] the pricing component, one of “M” (midpoint), “B” (bid) or “A” (ask).</li>
+<li><code>server</code> [default “practice”] select either the “practice” or “live” server depending on the account type held with OANDA.</li>
+<li><code>apikey</code> (optional) string containing the OANDA fxTrade API key (personal access token). This argument is designed for specifying a function that returns such a string rather than the string itself, which could be potentially unsecure. This allows other packages that provide secure storage of secrets to be used if preferred over ‘keyring’.</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ichimoku)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">oanda</span>(<span class="st">&quot;USD_JPY&quot;</span>, <span class="at">count =</span> <span class="dv">3</span>, <span class="at">from =</span> <span class="st">&quot;2010-11-01&quot;</span>, <span class="at">price =</span> <span class="st">&quot;B&quot;</span>, <span class="at">apikey =</span> <span class="cn">NULL</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                  time   open   high    low  close volume complete</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 2010-11-01 21:00:00 80.275 81.504 80.225 80.501  22291     TRUE</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 2010-11-02 21:00:00 80.504 80.956 80.460 80.617  13795     TRUE</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 2010-11-03 21:00:00 80.632 81.585 80.594 81.069  22204     TRUE</span></span></code></pre></div>
+<p>The returned object is a dataframe with the following columns: ‘time’, ‘open’, ‘high’, ‘low’, ‘close’, ‘volume’ and ‘complete’.</p>
+<ul>
+<li><p><strong>volume</strong> should normally be disregarded as this reflects the trading volume registered by OANDA and may not be reflective of the broader market.</p></li>
+<li><p><strong>complete</strong> indicates whether the data period is complete or not. If TRUE, the values are historical and not subject to change. If FALSE, the period is ongoing and the values reflect the current snapshot and the final values may or may not differ.</p></li>
+</ul>
+<p>Important implementation notes:</p>
+<ul>
+<li><p>Incorporates automatic adjustment of the timestamps to end of period, as is customary for financial data. This means that, for example, today’s pricing data (incomplete trading period) will have today’s date as would be expected. In contrast, the raw data from the API has a timestamp of the start of the period.</p></li>
+<li><p>The API data sometimes includes data for non-trading days with very low volumes. This is more common for older data and less so with more recent data. These may represent OTC trades that occurred over the OANDA platform, but nevertheless do not reflect market rates. These are automatically excluded from the data returned as they would otherwise produce spurious results if used with <code>ichimoku()</code>.</p></li>
+</ul>
+<p>For diagnostic purposes only, the parameter <code>.validate = FALSE</code> may be set to view the original data retrieved from the API without the automatic validation adjustments above. This parameter should not otherwise be set.</p>
+</div>
+<div id="oanda_stream" class="section level3">
+<h3><code>oanda_stream()</code></h3>
+<p>Connect to the OANDA fxTrade streaming API and stream a list of prices generated by OANDA.</p>
+<p>Requires a single argument, the ‘instrument’ to stream data for (please refer to <code>oanda()</code> above).</p>
+<p>The ‘server’ and ‘apikey’ arguments are also available if required.</p>
+<p>The streamed data is formatted for legibility, including the use of colour blocks in the console, but otherwise represents the raw data feed without omission.</p>
+<p>The following should be noted from the streaming API documentation:</p>
+<ul>
+<li>Get a stream of Account Prices starting from when the request is made.</li>
+<li>This pricing stream does not include every single price created for the Account, but instead will provide at most 4 prices per second (every 250 milliseconds) for each instrument being requested.</li>
+<li>If more than one price is created for an instrument during the 250 millisecond window, only the price in effect at the end of the window is sent.</li>
+<li>This means that during periods of rapid price movement, subscribers to this stream will not be sent every price.</li>
+<li>Pricing windows for different connections to the price stream are not all aligned in the same way (i.e. they are not all aligned to the top of the second). This means that during periods of rapid price movement, different subscribers may observe different prices depending on their alignment.</li>
+</ul>
+</div>
+<div id="oanda_chart" class="section level3">
+<h3><code>oanda_chart()</code></h3>
+<p>Create a live updating Ichimoku Kinko Hyo (cloud chart). The refresh rate can be set for the chart to be updated down to every second. A plot of the ichimoku chart for the price data requested is output to the graphical device at each refresh interval.</p>
+<p>The arguments are identical to <code>oanda()</code> above with the addition of ‘refresh’ as the third argument to set the refresh rate of the chart in seconds, with a minimum of 1. ‘from’ and ‘to’ are also excluded as they are not relevant in this context.</p>
+<p>If focus is not initially on the plot pane (in RStudio), please switch to it to view the chart.</p>
+<p>Note that returned times are represented in UTC.</p>
+</div>
+<div id="oanda_studio" class="section level3">
+<h3><code>oanda_studio()</code></h3>
+<p>Create an interactive session in an R Shiny app for working with dynamically-generated Ichimoku Kinko Hyo (cloud charts).</p>
+<p>As all parameters may be set interactively in-app, the function can be launched as <code>oanda_studio()</code> without specifying any arguments. Otherwise, parameters may be set beforehand in the same way as <code>oanda_chart()</code>.</p>
+<p>The use of this function provides a live analysis environment where parameters may be set interactively as required. The infotip provides ready access to the underlying data in a convenient manner.</p>
+<p>The following additional parameters can be used to customise the behaviour of the Shiny app:</p>
+<ul>
+<li><code>...</code> additional parameters passed along to the ‘options’ argument of <code>shiny::shinyApp()</code>.</li>
+<li><code>launch.browser</code> [default TRUE] If TRUE, the system’s default web browser will be launched automatically after the app is started. The value of this argument can also be a function to call with the application’s URL. To use the default Shiny viewer in RStudio, please specify <code>getOption(&quot;shiny.launch.browser&quot;)</code>.</li>
+</ul>
+</div>
+</div>
+<div id="available-instruments" class="section level2">
+<h2>Available Instruments</h2>
+<p>The list of financial instruments below serves as a reference only and may not be exhaustive and/or differ from those available for your account type or country/region.</p>
+<p>The list of financial instruments available for your account may be retrieved by <code>oanda_instruments()</code>. The available instruments are also automatically populated as an input in <code>oanda_studio()</code>.</p>
+<pre><code>#&gt;           name.....type.....displayName
+#&gt; 1    AU200_AUD      CFD   Australia 200
+#&gt; 2      AUD_CAD CURRENCY         AUD/CAD
+#&gt; 3      AUD_CHF CURRENCY         AUD/CHF
+#&gt; 4      AUD_HKD CURRENCY         AUD/HKD
+#&gt; 5      AUD_JPY CURRENCY         AUD/JPY
+#&gt; 6      AUD_NZD CURRENCY         AUD/NZD
+#&gt; 7      AUD_SGD CURRENCY         AUD/SGD
+#&gt; 8      AUD_USD CURRENCY         AUD/USD
+#&gt; 9      BCO_USD      CFD Brent Crude Oil
+#&gt; 10     CAD_CHF CURRENCY         CAD/CHF
+#&gt; 11     CAD_HKD CURRENCY         CAD/HKD
+#&gt; 12     CAD_JPY CURRENCY         CAD/JPY
+#&gt; 13     CAD_SGD CURRENCY         CAD/SGD
+#&gt; 14     CHF_HKD CURRENCY         CHF/HKD
+#&gt; 15     CHF_JPY CURRENCY         CHF/JPY
+#&gt; 16     CHF_ZAR CURRENCY         CHF/ZAR
+#&gt; 17    CN50_USD      CFD       China A50
+#&gt; 18    CORN_USD      CFD            Corn
+#&gt; 19  DE10YB_EUR      CFD            Bund
+#&gt; 20    DE30_EUR      CFD      Germany 30
+#&gt; 21    EU50_EUR      CFD       Europe 50
+#&gt; 22     EUR_AUD CURRENCY         EUR/AUD
+#&gt; 23     EUR_CAD CURRENCY         EUR/CAD
+#&gt; 24     EUR_CHF CURRENCY         EUR/CHF
+#&gt; 25     EUR_CZK CURRENCY         EUR/CZK
+#&gt; 26     EUR_DKK CURRENCY         EUR/DKK
+#&gt; 27     EUR_GBP CURRENCY         EUR/GBP
+#&gt; 28     EUR_HKD CURRENCY         EUR/HKD
+#&gt; 29     EUR_HUF CURRENCY         EUR/HUF
+#&gt; 30     EUR_JPY CURRENCY         EUR/JPY
+#&gt; 31     EUR_NOK CURRENCY         EUR/NOK
+#&gt; 32     EUR_NZD CURRENCY         EUR/NZD
+#&gt; 33     EUR_PLN CURRENCY         EUR/PLN
+#&gt; 34     EUR_SEK CURRENCY         EUR/SEK
+#&gt; 35     EUR_SGD CURRENCY         EUR/SGD
+#&gt; 36     EUR_TRY CURRENCY         EUR/TRY
+#&gt; 37     EUR_USD CURRENCY         EUR/USD
+#&gt; 38     EUR_ZAR CURRENCY         EUR/ZAR
+#&gt; 39    FR40_EUR      CFD       France 40
+#&gt; 40     GBP_AUD CURRENCY         GBP/AUD
+#&gt; 41     GBP_CAD CURRENCY         GBP/CAD
+#&gt; 42     GBP_CHF CURRENCY         GBP/CHF
+#&gt; 43     GBP_HKD CURRENCY         GBP/HKD
+#&gt; 44     GBP_JPY CURRENCY         GBP/JPY
+#&gt; 45     GBP_NZD CURRENCY         GBP/NZD
+#&gt; 46     GBP_PLN CURRENCY         GBP/PLN
+#&gt; 47     GBP_SGD CURRENCY         GBP/SGD
+#&gt; 48     GBP_USD CURRENCY         GBP/USD
+#&gt; 49     GBP_ZAR CURRENCY         GBP/ZAR
+#&gt; 50    HK33_HKD      CFD    Hong Kong 33
+#&gt; 51     HKD_JPY CURRENCY         HKD/JPY
+#&gt; 52    IN50_USD      CFD        India 50
+#&gt; 53   JP225_USD      CFD       Japan 225
+#&gt; 54  NAS100_USD      CFD      US Nas 100
+#&gt; 55  NATGAS_USD      CFD     Natural Gas
+#&gt; 56    NL25_EUR      CFD  Netherlands 25
+#&gt; 57     NZD_CAD CURRENCY         NZD/CAD
+#&gt; 58     NZD_CHF CURRENCY         NZD/CHF
+#&gt; 59     NZD_HKD CURRENCY         NZD/HKD
+#&gt; 60     NZD_JPY CURRENCY         NZD/JPY
+#&gt; 61     NZD_SGD CURRENCY         NZD/SGD
+#&gt; 62     NZD_USD CURRENCY         NZD/USD
+#&gt; 63    SG30_SGD      CFD    Singapore 30
+#&gt; 64     SGD_CHF CURRENCY         SGD/CHF
+#&gt; 65     SGD_JPY CURRENCY         SGD/JPY
+#&gt; 66   SOYBN_USD      CFD        Soybeans
+#&gt; 67  SPX500_USD      CFD      US SPX 500
+#&gt; 68   SUGAR_USD      CFD           Sugar
+#&gt; 69     TRY_JPY CURRENCY         TRY/JPY
+#&gt; 70    TWIX_USD      CFD    Taiwan Index
+#&gt; 71   UK100_GBP      CFD          UK 100
+#&gt; 72  UK10YB_GBP      CFD     UK 10Y Gilt
+#&gt; 73  US2000_USD      CFD    US Russ 2000
+#&gt; 74    US30_USD      CFD   US Wall St 30
+#&gt; 75  USB02Y_USD      CFD    US 2Y T-Note
+#&gt; 76  USB05Y_USD      CFD    US 5Y T-Note
+#&gt; 77  USB10Y_USD      CFD   US 10Y T-Note
+#&gt; 78  USB30Y_USD      CFD       US T-Bond
+#&gt; 79     USD_CAD CURRENCY         USD/CAD
+#&gt; 80     USD_CHF CURRENCY         USD/CHF
+#&gt; 81     USD_CNH CURRENCY         USD/CNH
+#&gt; 82     USD_CZK CURRENCY         USD/CZK
+#&gt; 83     USD_DKK CURRENCY         USD/DKK
+#&gt; 84     USD_HKD CURRENCY         USD/HKD
+#&gt; 85     USD_HUF CURRENCY         USD/HUF
+#&gt; 86     USD_INR CURRENCY         USD/INR
+#&gt; 87     USD_JPY CURRENCY         USD/JPY
+#&gt; 88     USD_MXN CURRENCY         USD/MXN
+#&gt; 89     USD_NOK CURRENCY         USD/NOK
+#&gt; 90     USD_PLN CURRENCY         USD/PLN
+#&gt; 91     USD_SEK CURRENCY         USD/SEK
+#&gt; 92     USD_SGD CURRENCY         USD/SGD
+#&gt; 93     USD_THB CURRENCY         USD/THB
+#&gt; 94     USD_TRY CURRENCY         USD/TRY
+#&gt; 95     USD_ZAR CURRENCY         USD/ZAR
+#&gt; 96   WHEAT_USD      CFD           Wheat
+#&gt; 97   WTICO_USD      CFD  West Texas Oil
+#&gt; 98     XAG_AUD    METAL      Silver/AUD
+#&gt; 99     XAG_CAD    METAL      Silver/CAD
+#&gt; 100    XAG_CHF    METAL      Silver/CHF
+#&gt; 101    XAG_EUR    METAL      Silver/EUR
+#&gt; 102    XAG_GBP    METAL      Silver/GBP
+#&gt; 103    XAG_HKD    METAL      Silver/HKD
+#&gt; 104    XAG_JPY    METAL      Silver/JPY
+#&gt; 105    XAG_NZD    METAL      Silver/NZD
+#&gt; 106    XAG_SGD    METAL      Silver/SGD
+#&gt; 107    XAG_USD    METAL          Silver
+#&gt; 108    XAU_AUD    METAL        Gold/AUD
+#&gt; 109    XAU_CAD    METAL        Gold/CAD
+#&gt; 110    XAU_CHF    METAL        Gold/CHF
+#&gt; 111    XAU_EUR    METAL        Gold/EUR
+#&gt; 112    XAU_GBP    METAL        Gold/GBP
+#&gt; 113    XAU_HKD    METAL        Gold/HKD
+#&gt; 114    XAU_JPY    METAL        Gold/JPY
+#&gt; 115    XAU_NZD    METAL        Gold/NZD
+#&gt; 116    XAU_SGD    METAL        Gold/SGD
+#&gt; 117    XAU_USD    METAL            Gold
+#&gt; 118    XAU_XAG    METAL     Gold/Silver
+#&gt; 119    XCU_USD      CFD          Copper
+#&gt; 120    XPD_USD    METAL       Palladium
+#&gt; 121    XPT_USD    METAL        Platinum
+#&gt; 122    ZAR_JPY CURRENCY         ZAR/JPY</code></pre>
+</div>
+<div id="further-resources" class="section level2">
+<h2>Further Resources</h2>
+<p>Package website: <a href="https://shikokuchuo.net/ichimoku/" class="uri">https://shikokuchuo.net/ichimoku/</a></p>
+<p>The most recent version of the package may be found at <a href="https://github.com/shikokuchuo/ichimoku/" class="uri">https://github.com/shikokuchuo/ichimoku/</a></p>
+<hr />
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
