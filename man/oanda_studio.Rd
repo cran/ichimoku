@@ -2,20 +2,21 @@
 % Please edit documentation in R/oanda.R
 \name{oanda_studio}
 \alias{oanda_studio}
-\title{Interactive Live Analysis Environment for OANDA Data}
+\title{OANDA Studio Interactive Live Analysis}
 \usage{
 oanda_studio(
   instrument = "USD_JPY",
   granularity = c("D", "W", "M", "H12", "H8", "H6", "H4", "H3", "H2", "H1", "M30",
     "M15", "M10", "M5", "M4", "M2", "M1", "S30", "S15", "S10", "S5"),
   refresh = 5,
-  count = 250,
+  count = 300,
   price = c("M", "B", "A"),
   theme = c("original", "dark", "solarized", "mono"),
   server = c("practice", "live"),
   apikey,
   ...,
-  launch.browser = TRUE
+  launch.browser = TRUE,
+  periods = c(9L, 26L, 52L)
 )
 }
 \arguments{
@@ -27,10 +28,12 @@ function to return a list of all valid instruments.}
 one of "M", "W", "D", "H12", "H8", "H6", "H4", "H3", "H2", "H1", "M30",
 "M15", "M10", "M5", "M4", "M2", "M1", "S30", "S15", "S10", "S5".}
 
-\item{refresh}{[default 5] data refresh interval in seconds, with a minimum of 1.}
+\item{refresh}{[default 5] data refresh interval in seconds, with a minimum
+of 1.}
 
-\item{count}{[default 250] the number of periods to return. The API supports
-a maximum of 5000 for each individual request.}
+\item{count}{[default 300] the number of periods to return, from 100 to 800.
+Note that fewer periods are actually shown on the chart to ensure a full
+cloud is always displayed.}
 
 \item{price}{[default "M"] pricing component, one of "M" (midpoint), "B" (bid)
 or "A" (ask).}
@@ -55,14 +58,20 @@ browser will be launched automatically after the app is started. The value
 of this argument can also be a function to call with the application's URL.
 To use the default Shiny viewer in RStudio, please specify
 \code{getOption("shiny.launch.browser")}.}
+
+\item{periods}{[default c(9L, 26L, 52L)] a vector defining the length of
+periods used for the cloud. This parameter shoud not normally be modified
+as using other values would be invalid in the context of traditional
+Ichimoku analysis.}
 }
 \value{
-Returns a Shiny app object with class 'shiny.appobj'. Note that
-    returned times within the app are represented in UTC.
+Returns a Shiny app object with class 'shiny.appobj'.
 }
 \description{
-Dynamically-generated Ichimoku Kinko Hyo cloud charts using OANDA fxTrade API
-    data in a completely customisable Shiny environment.
+Interactive and fully-customisable R Shiny environment providing real-time
+    Ichimoku Kinko Hyo cloud charts for major currencies, metals, commodities,
+    government bonds and stock indices using OANDA fxTrade API data. Intuitive
+    cursor infotip provides ready access to the data directly from the chart.
 }
 \details{
 This function polls the OANDA fxTrade API for the latest prices and

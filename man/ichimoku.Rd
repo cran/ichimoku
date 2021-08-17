@@ -4,8 +4,9 @@
 \alias{ichimoku}
 \alias{ichimoku.ichimoku}
 \alias{ichimoku.xts}
-\alias{ichimoku.matrix}
+\alias{ichimoku.ArrowTabular}
 \alias{ichimoku.data.frame}
+\alias{ichimoku.matrix}
 \alias{ichimoku.default}
 \title{ichimoku}
 \usage{
@@ -15,15 +16,17 @@ ichimoku(x, ...)
 
 \method{ichimoku}{xts}(x, ticker, periods = c(9L, 26L, 52L), ...)
 
-\method{ichimoku}{matrix}(x, ticker, periods = c(9L, 26L, 52L), ...)
+\method{ichimoku}{ArrowTabular}(x, ticker, periods = c(9L, 26L, 52L), ...)
 
 \method{ichimoku}{data.frame}(x, ticker, periods = c(9L, 26L, 52L), ...)
+
+\method{ichimoku}{matrix}(x, ticker, periods = c(9L, 26L, 52L), ...)
 
 \method{ichimoku}{default}(x, ticker, periods = c(9L, 26L, 52L), ...)
 }
 \arguments{
 \item{x}{a data.frame or other compatible object, which includes xts,
-data.table, tibble, and matrix.}
+data.table, tibble, matrix, and Arrow tabular formats.}
 
 \item{...}{additional arguments, for instance 'holidays', passed along to
 \code{\link{tradingDays}} for calculating the future cloud on daily data.}
@@ -39,19 +42,13 @@ Ichimoku analysis.}
 \value{
 An ichimoku object is returned with S3 classes of 'ichimoku', 'xts'
     and 'zoo'.
-
-    This object contains a date-time index, OHLC pricing data, candle
-    direction, the computed ichimoku cloud values, and cloud top and base
-    values, with ticker, periods, and periodicity parameters set as
-    attributes.
 }
 \description{
-Create an ichimoku object containing the values for all components of the
-    Ichimoku Kinko Hyo cloud chart, ready for visualization and quantitative
-    analysis. The object includes a date-time index, OHLC pricing data,
-    candle direction, the cloud lines Tenkan-sen, Kijun-sen, Senkou span A,
-    Senkou span B and Chikou span, as well as values for the cloud top and
-    base.
+Create an ichimoku object containing values for all components of the
+    Ichimoku Kinko Hyo cloud chart. The object encapsulates a date-time
+    index, OHLC pricing data, candle direction, the cloud lines Tenkan-sen,
+    Kijun-sen, Senkou span A, Senkou span B and Chikou span, as well as
+    values for the cloud top and cloud base.
 }
 \details{
 Calling an ichimoku object automatically invokes its print method,
@@ -65,6 +62,59 @@ Calling an ichimoku object automatically invokes its print method,
     Where an ichimoku object is passed to ichimoku(), the ichimoku object is
     re-calculated using the OHLC pricing data contained within.
 }
+\section{Object Specification}{
+
+
+    Index:
+    \itemize{
+        \item{\code{index(object)}:} {date-time index [POSIXct]}
+     }
+    Columns [numeric]:
+    \itemize{
+        \item{\code{object$open}:} {opening price}
+        \item{\code{$high}:} {high price}
+        \item{\code{$low}:} {low price}
+        \item{\code{$close}:} {closing price}
+        \item{\code{$cd}:} {candle direction (-1 = down, 0 = flat, 1 = up)}
+        \item{\code{$tenkan}:} {Tenkan-sen}
+        \item{\code{$kijun}:} {Kijun-sen}
+        \item{\code{$senkouA}:} {Senkou span A}
+        \item{\code{$senkouB}:} {Senkou span B}
+        \item{\code{$chikou}:} {Chikou span}
+        \item{\code{$cloudT}:} {cloud Top (max of senkouA, senkouB)}
+        \item{\code{$cloudB}:} {cloud Base (min of senkouA, senkouB)}
+     }
+    Attributes:
+    \itemize{
+        \item{\code{attributes(object)$periods}:} { parameters used to
+        calculate the cloud [integer vector of length 3]}
+        \item{\code{$periodicity}:} { periodicity of the
+        data in seconds [numeric]}
+        \item{\code{$ticker}:} { instrument identifier [character]}
+     }
+}
+
+\section{Working with ichimoku objects}{
+
+    An ichimoku object inherits the 'xts' and 'zoo' classes. For convenience,
+    the following functions are re-exported by ichimoku:
+
+    \emph{from 'zoo':}
+     \itemize{
+        \item{\code{index()}:} { to extract the index of an ichimoku object}
+        \item{\code{coredata()}:} { to extract the columns of an ichimoku
+        object as a numeric matrix}
+     }
+
+     \emph{from 'xts':}
+     \itemize{
+        \item{\code{xts()}:} { to create an 'xts' object from data and a
+        date-time index use \code{xts(data, index)}}
+     }
+
+     Additional methods are available by loading the 'xts' package.
+}
+
 \section{Further Details}{
 
     Please refer to the reference vignette by running:

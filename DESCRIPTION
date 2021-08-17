@@ -1,7 +1,7 @@
 Package: ichimoku
 Type: Package
 Title: Visualization and Tools for Ichimoku Kinko Hyo Strategies
-Version: 0.3.0
+Version: 1.0.0
 Description: An implementation of 'Ichimoku Kinko Hyo', also commonly known as
     'cloud charts'. Static and interactive visualizations with tools for
     creating, backtesting and development of quantitative 'ichimoku' strategies.
@@ -27,14 +27,15 @@ URL: https://shikokuchuo.net/ichimoku/,
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.2)
-Imports: Rcpp, ggplot2, httr, jsonlite, rlang, xts, zoo
-LinkingTo: Rcpp
-Suggests: shiny, keyring, knitr, rmarkdown, testthat (>= 3.0.0),
-        httptest, covr
+Imports: curl, ggplot2, jsonlite, rlang, stats, xts, zoo
+LinkingTo: cpp11
+Suggests: arrow, bslib, covr, keyring, knitr, openssl, rmarkdown,
+        shiny, testthat (>= 3.0.0)
+SystemRequirements: C++11
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
 Config/testthat/edition: 3
 NeedsCompilation: yes
-Packaged: 2021-07-22 10:25:55 UTC; cg334
+Packaged: 2021-08-17 10:12:52 UTC; cg334
 Repository: CRAN
-Date/Publication: 2021-07-22 14:00:11 UTC
+Date/Publication: 2021-08-17 10:30:02 UTC

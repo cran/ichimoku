@@ -15,6 +15,8 @@ df_append(new, old)
 A data.frame of the existing data appended with the new data. If the
     data in 'new' contains data with the same value for 'time' as 'old',
     the data in 'new' will overwrite the data in 'old'.
+
+    If the 'timestamp' attribute has been set in 'new', this will be retained.
 }
 \description{
 Update a 'data.frame' object with new data. Can be used to append new updated
@@ -28,10 +30,10 @@ Can be used to update price dataframes retrieved by \code{\link{oanda}}.
     will overwrite the data in 'old' rather than create duplicates.
 }
 \examples{
-data1 <- sample_ohlc_data[7:10, ]
+data1 <- sample_ohlc_data[1:8, ]
 data1
-data2 <- sample_ohlc_data[1:8, ]
+data2 <- sample_ohlc_data[7:10, ]
 data2
-df_append(data1, data2)
+df_append(data2, data1)
 
 }

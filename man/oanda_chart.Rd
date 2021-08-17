@@ -2,7 +2,7 @@
 % Please edit documentation in R/oanda.R
 \name{oanda_chart}
 \alias{oanda_chart}
-\title{Live Ichimoku Cloud Charts from OANDA Data}
+\title{OANDA Real-time Cloud Charts}
 \usage{
 oanda_chart(
   instrument,
@@ -14,7 +14,8 @@ oanda_chart(
   theme = c("original", "dark", "solarized", "mono"),
   server = c("practice", "live"),
   apikey,
-  ...
+  ...,
+  periods = c(9L, 26L, 52L)
 )
 }
 \arguments{
@@ -27,10 +28,12 @@ instruments.}
 one of "M", "W", "D", "H12", "H8", "H6", "H4", "H3", "H2", "H1", "M30",
 "M15", "M10", "M5", "M4", "M2", "M1", "S30", "S15", "S10", "S5".}
 
-\item{refresh}{[default 5] data refresh interval in seconds, with a minimum of 1.}
+\item{refresh}{[default 5] data refresh interval in seconds, with a minimum
+of 1.}
 
 \item{count}{[default 250] the number of periods to return. The API supports
-a maximum of 5000 for each individual request.}
+a maximum of 5000. Note that fewer periods are actually shown on the
+chart to ensure a full cloud is always displayed.}
 
 \item{price}{[default "M"] pricing component, one of "M" (midpoint), "B" (bid)
 or "A" (ask).}
@@ -47,15 +50,23 @@ specified if already stored by oanda_set_key(). Can also be entered
 interactively if not specified.}
 
 \item{...}{additional arguments passed along to \code{\link{ichimoku}} for
-calculating the ichimoku cloud.}
+calculating the ichimoku cloud or \code{\link{autoplot}} to set chart
+parameters.}
+
+\item{periods}{[default c(9L, 26L, 52L)] a vector defining the length of
+periods used for the cloud. This parameter shoud not normally be modified
+as using other values would be invalid in the context of traditional
+Ichimoku analysis.}
 }
 \value{
 Does not return a value, however a plot of the ichimoku chart for the
     price data requested is output to the graphical device at each refresh
-    interval as a side effect. Note that returned times are represented in UTC.
+    interval as a side effect.
 }
 \description{
-Live updating Ichimoku Kinko Hyo cloud charts using OANDA fxTrade API data.
+Plot real-time Ichimoku Kinko Hyo cloud charts for major currencies, metals,
+    commodities, government bonds and stock indices using OANDA fxTrade API
+    data.
 }
 \details{
 This function polls the OANDA fxTrade API for the latest live prices

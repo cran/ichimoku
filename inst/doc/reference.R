@@ -23,16 +23,20 @@ cloud <- ichimoku(TKR)
 print(cloud[100:110,], plot = FALSE, digits = 4)
 
 ## ----ichimokunotrun, eval = FALSE---------------------------------------------
-#  # to view data as well as chart, simply issue:
+#  # to view chart as well as data, simply issue:
 #  cloud
 
 ## ----holidays, eval = FALSE---------------------------------------------------
 #  # Holidays can be specified directly via a vector of dates:
-#  ichimoku(TKR, holidays = c("2021-12-25", "2022-01-01"))
+#  ichimoku(TKR, holidays = c("2020-01-13", "2020-02-11", "2020-02-24"))
 #  
 #  # Or via a functions that returns a vector of dates (e.g. from the 'timeDate' package):
 #  ichimoku(TKR, holidays = timeDate::holidayLONDON())
 #  ichimoku(TKR, holidays = timeDate::holidayNYSE())
+#  
+#  # For a market that trades 24/7:
+#  ichimoku(TKR, noholidays = TRUE)
+#  
 
 ## ----plot---------------------------------------------------------------------
 plot(cloud)
@@ -47,7 +51,7 @@ plot(cloud)
 #  plotly::ggplotly(plot)
 
 ## ----plot2--------------------------------------------------------------------
-plot(cloud, window = "2020-05-01/2020-11-01", ticker = "TKR Co.", theme = "dark")
+plot(cloud, window = "2020-05-01/2020-11-02", ticker = "TKR Co.", message = "一目均衡表", theme = "dark")
 
 ## ----pipe, eval = FALSE-------------------------------------------------------
 #  # Using R 4.1's new pipe operator:

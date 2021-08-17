@@ -4,15 +4,15 @@
 \alias{grid_dup}
 \title{Duplicates of expand.grid for 2 Variables}
 \usage{
-grid_dup(n, omit.id = FALSE)
+grid_dup(n, omit.id)
 }
 \arguments{
 \item{n}{the length of vector passed to \code{expand.grid()}.}
 
-\item{omit.id}{[default FALSE] to not select the elements where the 2 items
-are identical. Set to TRUE to also select these. The output of expand.grid,
-subset to remove duplicates with 'omit.id' set to TRUE would be the
-equivalent of \code{utils::combn(n, 2)}.}
+\item{omit.id}{(optional) set to TRUE to also select the elements where the 2
+items are identical. The output of expand.grid, subset to remove
+duplicates with 'omit.id' set to TRUE would be the equivalent of
+\code{utils::combn(n, 2)}.}
 }
 \value{
 A numeric vector.
@@ -22,10 +22,4 @@ Create a vector of element positions of duplicates in the output of expand.grid
     on 2 identical vectors. A faster method of creating combinations for 2
     variabes than \code{utils::combn()}.
 }
-\examples{
-n <- 3
-expand.grid(1:n, 1:n)
-expand.grid(1:n, 1:n)[-grid_dup(n), ]
-expand.grid(1:n, 1:n)[-grid_dup(n, omit.id = TRUE), ]
-
-}
+\keyword{internal}

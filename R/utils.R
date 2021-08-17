@@ -8,9 +8,14 @@
 #' @param holidays (optional) a vector, or function which outputs a
 #'     vector, of dates defined as holidays.
 #' @param ... other arguments not used by this function.
+#' @param noholidays (optional) if set, bypasses the function logic and selects
+#'     all dates in 'x'.
 #'
 #' @return A vector of logical values: TRUE if the corresponding element of 'x'
 #'     is a weekday and not a holiday, FALSE otherwise.
+#'
+#'     Or, if the parameter 'noholidays' is set (for example to TRUE or NA),
+#'     a vector of TRUE values of the same length as 'x'.
 #'
 #' @details New Year's Day (01/01) and Christmas Day (25/12) are defined as
 #'     holidays by default regardless of the values supplied by 'holidays'.
@@ -20,10 +25,12 @@
 #' dates
 #' tradingDays(dates)
 #' tradingDays(dates, holidays = c("2020-01-02", "2020-01-03"))
+#' tradingDays(dates, noholidays = TRUE)
 #'
 #' @export
 #'
-tradingDays <- function(x, holidays, ...) {
+tradingDays <- function(x, holidays, ..., noholidays) {
+  if (!missing(noholidays)) return(rep(TRUE, length(x)))
   posixlt <- as.POSIXlt.POSIXct(x)
   vec <- posixlt$wday %in% 1:5
   vec[(posixlt$mon == 0 & posixlt$mday == 1) | (posixlt$mon == 11 & posixlt$mday == 25) ] <- FALSE
@@ -45,25 +52,19 @@ tradingDays <- function(x, holidays, ...) {
 #'     variabes than \code{utils::combn()}.
 #'
 #' @param n the length of vector passed to \code{expand.grid()}.
-#' @param omit.id [default FALSE] to not select the elements where the 2 items
-#'     are identical. Set to TRUE to also select these. The output of expand.grid,
-#'     subset to remove duplicates with 'omit.id' set to TRUE would be the
-#'     equivalent of \code{utils::combn(n, 2)}.
+#' @param omit.id (optional) set to TRUE to also select the elements where the 2
+#'     items are identical. The output of expand.grid, subset to remove
+#'     duplicates with 'omit.id' set to TRUE would be the equivalent of
+#'     \code{utils::combn(n, 2)}.
 #'
 #' @return A numeric vector.
 #'
-#' @examples
-#' n <- 3
-#' expand.grid(1:n, 1:n)
-#' expand.grid(1:n, 1:n)[-grid_dup(n), ]
-#' expand.grid(1:n, 1:n)[-grid_dup(n, omit.id = TRUE), ]
+#' @keywords internal
 #'
-#' @export
-#'
-grid_dup <- function(n, omit.id = FALSE) {
+grid_dup <- function(n, omit.id) {
   vec <- do.call(c, lapply(seq_len(n - 1), function(x) x * n + 1:x))
-  if (isTRUE(omit.id)) {
-    vec <- c(vec, do.call(c, lapply(seq_len(n), function(x) x + n * (x -1))))
+  if (!missing(omit.id) && isTRUE(omit.id)) {
+    vec <- c(vec, do.call(c, lapply(seq_len(n), function(x) x + n * (x - 1))))
   }
   vec
 }
@@ -101,6 +102,8 @@ df_trim <- function(x) {
 #'     checking.
 #'
 #' @param x an 'xts' object.
+#' @param keep.attrs (optional) if set to TRUE, will preserve any custom
+#'     attributes set on the original object.
 #'
 #' @return A 'data.frame' object. The 'xts' index is preserved as the first
 #'     column with header 'index'.
@@ -110,14 +113,24 @@ df_trim <- function(x) {
 #' df <- xts_df(cloud)
 #' str(df)
 #'
+#' df2 <- xts_df(cloud, keep.attrs = TRUE)
+#' str(df2)
+#'
 #' @export
 #'
-xts_df <- function(x) {
+xts_df <- function(x, keep.attrs) {
   core <- coredata(x)
-  structure(c(list(index(x)), lapply(seq_len(dim(core)[2L]), function(i) core[, i])),
-            class = "data.frame",
-            names = c("index", colnames(core)),
-            row.names = seq_len(dim(x)[1L]))
+  dims <- dim(core)
+  df <- structure(c(list(index(x)), lapply(seq_len(dims[2L]), function(i) core[, i])),
+                  names = c("index", dimnames(core)[[2L]]),
+                  class = "data.frame",
+                  row.names = seq_len(dims[1L]))
+  if (!missing(keep.attrs) && isTRUE(keep.attrs)) {
+    lk <- look(x)
+    attrs <- attributes(df)
+    attributes(df) <- c(attrs, lk)
+  }
+  df
 }
 
 #' Convert matrix to data.frame
@@ -126,17 +139,12 @@ xts_df <- function(x) {
 #'     checking.
 #'
 #' @param x a matrix.
+#' @param keep.attrs (optional) if set to TRUE, will preserve any custom
+#'     attributes set on the original object.
 #'
-#' @return A 'data.frame' object.
-#'
-#' @details Designed for working with time series data where the date-time index
-#'     is contained in the row names of the matrix.
-#'
-#'     Note: the function only works with matrices containing row names, as these
-#'     are preserved in the data frame. If the row names are null, the 'data.frame'
-#'     object is still created but will display as having zero rows. This can be
-#'     fixed by appending an index value to the row names of the resultant object:
-#'     \code{row.names(x) <- 1:nrow(x)}.
+#' @return A 'data.frame' object. If the matrix has row names, these are retained
+#'     in the dataframe, otherwise the row names of the dataframe will be an
+#'     integer sequence.
 #'
 #' @examples
 #' cloud <- ichimoku(sample_ohlc_data)
@@ -147,12 +155,20 @@ xts_df <- function(x) {
 #'
 #' @export
 #'
-matrix_df <- function(x) {
-  y <- unname(x)
-  structure(lapply(seq_len(dim(y)[2L]), function(i) y[, i]),
+matrix_df <- function(x, keep.attrs) {
+  dnames <- dimnames(x)
+  mat <- unname(x)
+  dims <- dim(mat)
+  df <- structure(lapply(seq_len(dims[2L]), function(i) mat[, i]),
+            names = dnames[[2L]],
             class = "data.frame",
-            names = colnames(x),
-            row.names = rownames(x))
+            row.names = if (is.null(dnames[[1L]])) seq_len(dims[1L]) else dnames[[1L]])
+  if (!missing(keep.attrs) && isTRUE(keep.attrs)) {
+    lk <- look(x)
+    attrs <- attributes(df)
+    attributes(df) <- c(attrs, lk)
+  }
+  df
 }
 
 #' Merge Dataframes
@@ -187,9 +203,16 @@ matrix_df <- function(x) {
 df_merge <- function(...) {
   dots <- list(...)
   merge <- Reduce(function(x, y) merge.data.frame(x, y, all = TRUE), dots)
-  if (isTRUE(attr(dots[[1]], "oanda")) && FALSE %in% merge$complete) {
-    warning("Incomplete periods in merged dataframe, please check for possible duplicates",
-            call. = FALSE)
+  if (isTRUE(attr(dots[[1]], "oanda"))) {
+    merge <- structure(merge,
+                       instrument = attr(dots[[1]], "instrument"),
+                       price = attr(dots[[1]], "price"),
+                       timestamp = do.call(max, lapply(dots, attr, "timestamp")),
+                       oanda = TRUE)
+    if (FALSE %in% merge$complete) {
+      warning("Incomplete periods in merged dataframe, please check for possible duplicates",
+              call. = FALSE)
+    }
   }
   merge
 }
@@ -207,22 +230,24 @@ df_merge <- function(...) {
 #'     data in 'new' contains data with the same value for 'time' as 'old',
 #'     the data in 'new' will overwrite the data in 'old'.
 #'
+#'     If the 'timestamp' attribute has been set in 'new', this will be retained.
+#'
 #' @details Can be used to update price dataframes retrieved by \code{\link{oanda}}.
 #'     The function is designed to update existing data with new values as they
 #'     become available. As opposed to \code{\link{df_merge}}, the data in 'new'
 #'     will overwrite the data in 'old' rather than create duplicates.
 #'
 #' @examples
-#' data1 <- sample_ohlc_data[7:10, ]
+#' data1 <- sample_ohlc_data[1:8, ]
 #' data1
-#' data2 <- sample_ohlc_data[1:8, ]
+#' data2 <- sample_ohlc_data[7:10, ]
 #' data2
-#' df_append(data1, data2)
+#' df_append(data2, data1)
 #'
 #' @export
 #'
 df_append <- function(new, old) {
-  structure(rbind(old[!old$time %in% new$time, ], new),
+  structure(rbind.data.frame(old[!old$time %in% new$time, ], new),
             timestamp = attr(new, "timestamp"))
 }
 

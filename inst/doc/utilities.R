@@ -13,18 +13,34 @@ dates <- seq(from = as.POSIXct("2020-01-01"), by = "1 day", length.out = 7)
 dates
 tradingDays(dates)
 tradingDays(dates, holidays = c("2020-01-01", "2020-01-02"))
+tradingDays(dates, noholidays = TRUE)
 
 
-## ----griddup------------------------------------------------------------------
-n <- 3
-expand.grid(1:n, 1:n)
-expand.grid(1:n, 1:n)[-grid_dup(n), ]
-expand.grid(1:n, 1:n)[-grid_dup(n, omit.id = TRUE), ]
+## ----look---------------------------------------------------------------------
+cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
+look(cloud)
+
+grid <- mlgrid(cloud)
+look(grid)
+
+
+## ----look2--------------------------------------------------------------------
+stratlist <- autostrat(cloud, n = 3)
+
+# Extract the ichimoku object which is the second element of 'stratlist':
+strat <- look(stratlist, which = 2)
+# Inspect ichimoku object:
+look(strat)
+
 
 ## ----xtsdf--------------------------------------------------------------------
 cloud <- ichimoku(sample_ohlc_data)
 df <- xts_df(cloud)
 str(df)
+
+# Preserving custom attributes:
+df2 <- xts_df(cloud, keep.attrs = TRUE)
+str(df2)
 
 ## ----matrixdf-----------------------------------------------------------------
 cloud <- ichimoku(sample_ohlc_data)

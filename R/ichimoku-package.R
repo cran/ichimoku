@@ -18,6 +18,8 @@
 #' \itemize{
 #'     \item{\code{\link{ichimoku}}} {to create an ichimoku object from price
 #'     data.}
+#'     \item{\code{\link{archive}}} {for reading and writing ichimoku objects
+#'     to/from Apache Arrow storage.}
 #'     \item{\code{\link{oanda}}} {to retrieve price data from the OANDA fxTrade
 #'     API.}
 #'     \item{\code{\link{oanda_stream}}} {to stream a live data feed from the
@@ -29,7 +31,7 @@
 #'     ichimoku object.}
 #'     \item{\code{\link{iplot}}} {to plot an interactive cloud chart from an
 #'     ichimoku object.}
-#'     \item{\code{\link{oanda_chart}}} {to create live updating ichimoku cloud
+#'     \item{\code{\link{oanda_chart}}} {to plot real-time ichimoku cloud
 #'     charts using OANDA data.}
 #'     \item{\code{\link{oanda_studio}}} {a complete live analysis environment
 #'     using OANDA data implemented in R Shiny.}
@@ -37,37 +39,55 @@
 #' Strategies & ML
 #' \itemize{
 #'     \item{\code{\link{strat}}} {to augment an ichimoku object with a strategy,
-#'     including complex combined and asymmetric strategies.}
+#'     including combined and asymmetric complex strategies.}
 #'     \item{\code{\link{stratcombine}}} {to create custom combined strategies.}
 #'     \item{\code{\link{autostrat}}} {to automatically evaluate and rank
 #'     top-performing strategies.}
 #'     \item{\code{\link{mlgrid}}} {to generate a numeric representation of the
 #'     relationship between ichimoku cloud chart elements.}
 #' }
-#'
+#' @encoding UTF-8
 #' @author Charlie Gao <\email{charlie.gao@@shikokuchuo.net}>
-#' @references 'OANDA' and 'fxTrade' are trademarks owned by OANDA Corporation,
-#'     an entity unaffiliated with the ichimoku package.
+#' @references Sasaki, H. (1996), \emph{ichimoku kinkouhyou no kenkyuu}. Tokyo,
+#'     Japan: Toushi Radar.
 #'
-#'     Package website:
-#'     \url{https://shikokuchuo.net/ichimoku/}
+#'     OANDA' and 'fxTrade' are trademarks owned by OANDA Corporation, an entity
+#'     unaffiliated with the ichimoku package.
 #'
-#'     The most recent version of the package may be found at
-#'     \url{https://github.com/shikokuchuo/ichimoku/}
+#'     Gao, C. (2021), \emph{ichimoku: Visualization and Tools for Ichimoku
+#'     Kinko Hyo Strategies}. R package version 1.0.0,
+#'     \url{https://CRAN.R-project.org/package=ichimoku}.
 #'
 #' @useDynLib ichimoku, .registration = TRUE
-#' @importFrom Rcpp sourceCpp
+#' @importFrom stats na.omit
+#' @importFrom xts xts endpoints
+#' @importFrom zoo index coredata
 #' @importFrom ggplot2 ggplot aes geom_ribbon geom_line geom_segment geom_rect
 #'     scale_color_manual scale_fill_manual guides scale_x_datetime
 #'     scale_x_continuous scale_y_continuous labs theme_light theme element_rect
 #'     element_line element_text
-#' @importFrom httr GET add_headers user_agent write_stream
-#' @importFrom jsonlite fromJSON
 #' @importFrom rlang .data
-#' @importFrom xts xts
-#' @importFrom zoo index coredata
+#' @importFrom curl curl_fetch_memory curl_fetch_stream new_handle
+#'     handle_setheaders
+#' @importFrom jsonlite fromJSON
 #'
 #' @docType package
 #' @name ichimoku-package
 NULL
+
+#' @export
+zoo::index
+
+#' @export
+zoo::coredata
+
+#' @export
+xts::xts
+
+.onLoad <- function(libname, pkgname) {
+  oanda_get_key <<- oanda_get_key()
+  oandaAccount <<- oandaAccount()
+  oanda_instruments <<- oanda_instruments()
+  invisible()
+}
 
