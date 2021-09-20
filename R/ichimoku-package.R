@@ -39,7 +39,7 @@
 #' Strategies & ML
 #' \itemize{
 #'     \item{\code{\link{strat}}} {to augment an ichimoku object with a strategy,
-#'     including combined and asymmetric complex strategies.}
+#'     including combined and asymmetric strategies.}
 #'     \item{\code{\link{stratcombine}}} {to create custom combined strategies.}
 #'     \item{\code{\link{autostrat}}} {to automatically evaluate and rank
 #'     top-performing strategies.}
@@ -48,6 +48,7 @@
 #' }
 #' @encoding UTF-8
 #' @author Charlie Gao <\email{charlie.gao@@shikokuchuo.net}>
+#'     (\href{https://orcid.org/0000-0002-0750-061X}{ORCID})
 #' @references Sasaki, H. (1996), \emph{ichimoku kinkouhyou no kenkyuu}. Tokyo,
 #'     Japan: Toushi Radar.
 #'
@@ -55,21 +56,21 @@
 #'     unaffiliated with the ichimoku package.
 #'
 #'     Gao, C. (2021), \emph{ichimoku: Visualization and Tools for Ichimoku
-#'     Kinko Hyo Strategies}. R package version 1.1.0,
+#'     Kinko Hyo Strategies}. R package version 1.2.0,
 #'     \url{https://CRAN.R-project.org/package=ichimoku}.
 #'
 #' @useDynLib ichimoku, .registration = TRUE
-#' @importFrom stats na.omit
-#' @importFrom xts xts endpoints
-#' @importFrom zoo index coredata
-#' @importFrom ggplot2 ggplot aes geom_ribbon geom_line geom_segment geom_rect
-#'     scale_color_manual scale_fill_manual guides scale_x_datetime
-#'     scale_x_continuous scale_y_continuous labs theme_light theme element_rect
-#'     element_line element_text
-#' @importFrom rlang .data
 #' @importFrom curl curl_fetch_memory curl_fetch_stream new_handle
 #'     handle_setheaders
-#' @importFrom jsonlite fromJSON
+#' @importFrom ggplot2 autoplot ggplot aes geom_ribbon geom_line geom_segment
+#'     geom_rect scale_color_manual scale_fill_manual guides scale_x_datetime
+#'     scale_x_continuous scale_y_continuous labs theme_grey theme rel margin
+#'     element_rect element_line element_text element_blank %+replace%
+#' @importFrom gridExtra grid.arrange
+#' @importFrom jsonlite parse_json
+#' @importFrom stats na.omit setNames
+#' @importFrom xts xts endpoints
+#' @importFrom zoo index coredata
 #'
 #' @docType package
 #' @name ichimoku-package
@@ -84,10 +85,11 @@ zoo::coredata
 #' @export
 xts::xts
 
+utils::globalVariables(".data")
+
 .onLoad <- function(libname, pkgname) {
-  oanda_get_key <<- oanda_get_key()
-  oandaAccount <<- oandaAccount()
-  oanda_instruments <<- oanda_instruments()
+  do_oanda <- do_oanda()
+  do_oanda <<- do_oanda
   invisible()
 }
 

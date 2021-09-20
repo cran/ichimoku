@@ -11,34 +11,36 @@
 \usage{
 ichimoku(x, ...)
 
-\method{ichimoku}{ichimoku}(x, ticker, periods = c(9L, 26L, 52L), ...)
+\method{ichimoku}{ichimoku}(x, ticker, periods = c(9L, 26L, 52L), keep.data, ...)
 
-\method{ichimoku}{xts}(x, ticker, periods = c(9L, 26L, 52L), ...)
+\method{ichimoku}{xts}(x, ticker, periods = c(9L, 26L, 52L), keep.data, ...)
 
-\method{ichimoku}{data.frame}(x, ticker, periods = c(9L, 26L, 52L), ...)
+\method{ichimoku}{data.frame}(x, ticker, periods = c(9L, 26L, 52L), keep.data, ...)
 
-\method{ichimoku}{matrix}(x, ticker, periods = c(9L, 26L, 52L), ...)
+\method{ichimoku}{matrix}(x, ticker, periods = c(9L, 26L, 52L), keep.data, ...)
 
-\method{ichimoku}{default}(x, ticker, periods = c(9L, 26L, 52L), ...)
+\method{ichimoku}{default}(x, ticker, periods = c(9L, 26L, 52L), keep.data, ...)
 }
 \arguments{
 \item{x}{a data.frame or other compatible object, which includes xts,
-data.table, tibble, and matrix formats.}
+data.table, tibble, and matrix.}
 
 \item{...}{additional arguments, for instance 'holidays', passed along to
 \code{\link{tradingDays}} for calculating the future cloud on daily data.}
 
 \item{ticker}{(optional) specify a ticker to identify the instrument,
-otherwise this is set to the name of the input object 'x'.}
+otherwise this is set to the name of the input object.}
 
 \item{periods}{[default c(9L, 26L, 52L)] a vector defining the length of
 periods used for the cloud. This parameter shoud not normally be modified
 as using other values would be invalid in the context of traditional
-Ichimoku analysis.}
+ichimoku analysis.}
+
+\item{keep.data}{(optional) set to TRUE to retain additional data present
+in the input object as additional columns and/or attributes.}
 }
 \value{
-An ichimoku object is returned with S3 classes of 'ichimoku', 'xts'
-    and 'zoo'.
+An ichimoku object with S3 classes of 'ichimoku', 'xts' and 'zoo'.
 }
 \description{
 Create an ichimoku object containing values for all components of the
@@ -49,15 +51,15 @@ Create an ichimoku object containing values for all components of the
 }
 \details{
 Calling an ichimoku object automatically invokes its print method,
-    which will by default produce a printout of the data to the console as
-    well as a static plot of the cloud chart to the graphical device.
+    which by default produces a printout of the data to the console as well
+    as a plot of the cloud chart to the graphical device.
 
-    For further options, please use plot() on the returned ichimoku object to
-    pass further arguments for customising the chart. Use iplot() for
+    For further options, use \code{plot()} on the returned ichimoku object to
+    pass further arguments for customising the chart. Use \code{iplot()} for
     interactive charting.
 
-    Where an ichimoku object is passed to ichimoku(), the ichimoku object is
-    re-calculated using the OHLC pricing data contained within.
+    Where an ichimoku object is passed to \code{ichimoku()}, the ichimoku
+    object is re-calculated using the OHLC pricing data contained within.
 }
 \section{Object Specification}{
 
@@ -114,12 +116,25 @@ Calling an ichimoku object automatically invokes its print method,
 
 \section{Further Details}{
 
+
+    \code{ichimoku()} requires OHLC (or else HLC) price data as input to
+    calculate the cloud chart values.
+
+    If only single series price data is supplied, a \emph{pseudo} OHLC series
+    is generated and a \emph{pseudo} cloud chart is returned.
+
     Please refer to the reference vignette by running:
     \code{vignette("reference", package = "ichimoku")}
 }
 
 \examples{
-cloud <- ichimoku(sample_ohlc_data)
-ichimoku(sample_ohlc_data, ticker = "TKR", periods = c(9L, 26L, 52L))
+TKR <- sample_ohlc_data
+
+cloud <- ichimoku(TKR)
+plot(cloud)
+print(cloud[100:120,], plot = FALSE)
+
+kumo <- ichimoku(TKR, ticker = "TKR Co.", periods = c(9, 26, 52), keep.data = TRUE)
+plot(kumo, theme = "solarized", type = "bar", custom = "volume")
 
 }

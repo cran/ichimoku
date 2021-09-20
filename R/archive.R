@@ -13,8 +13,7 @@
 #'
 #' @return For read operations: the object originally archived.
 #'
-#'     For write operations: invisible NULL. 'object' is written to 'file' as a
-#'     side effect.
+#'     For write operations: invisible NULL. 'object' is written to 'file'.
 #'
 #' @details For read operations: specify only 'file'. 'file' is read and the
 #'     return value may be assigned to an object. A confirmation message is
@@ -53,25 +52,21 @@ archive <- function(..., object, file) {
   if (missing(object) && missing(file)) {
 
     dots <- list(...)
+    dlen <- length(dots)
 
-    if (length(dots) == 1L) {
+    if (dlen == 1L) {
       file <- dots[[1L]]
       readArchive(file = file)
 
-    } else if (length(dots) == 2L) {
+    } else if (dlen == 2L) {
       object <- dots[[1L]]
       file <- dots[[2L]]
       writeArchive(object = object, file = file)
 
-    } else if (length(dots) > 2L) {
-      stop("Too many arguments passed to archive()",
-           "\nFor read operations please specify 'file' only",
-           "\nFor write operations please specify both 'object' and 'file'", call. = FALSE)
-
     } else {
-      stop("archive() is used to read/write objects to/from archive files",
-           "\nFor read operations please specify 'file' only",
-           "\nFor write operations please specify both 'object' and 'file'", call. = FALSE)
+      stop(dlen, " arguments passed to archive() which requires 1 or 2",
+           "\nFor read operations specify 'file' only, write operations both 'object' and 'file'", call. = FALSE)
+
     }
 
   } else if (!missing(file)) {
@@ -82,7 +77,9 @@ archive <- function(..., object, file) {
       writeArchive(object = object, file = file)
     }
 
-  } else stop("in archive(object, file): 'object' specified without 'file'", call. = FALSE)
+  } else {
+    stop("in archive(object, file): 'object' specified without 'file'", call. = FALSE)
+  }
 
 }
 
@@ -95,9 +92,9 @@ archive <- function(..., object, file) {
 #' @param file the name of the file or a connection where the object is saved to
 #'     or read from.
 #'
-#' @return Invisible NULL. 'object' is written to 'file' as a side effect.
+#' @return Invisible NULL. 'object' is written to 'file'.
 #'
-#' @keywords internal
+#' @noRd
 #'
 writeArchive <- function(object, file) {
 
@@ -107,22 +104,23 @@ writeArchive <- function(object, file) {
   }
 
   if (file.exists(file)) {
-    continue <- readline(prompt = paste0("The file '", file,
-                                         "' already exists. Overwrite? [y/N] "))
+    continue <- readline(prompt = paste0("The file '", file, "' already exists. Overwrite? [y/N] "))
     if (!continue %in% c("y", "Y", "yes", "YES")) {
       message("Request cancelled")
       return(invisible())
     }
   }
 
+  x_archive_sha256 <- NA
   if (requireNamespace("openssl", quietly = TRUE)) {
     x_archive_sha256 <- openssl::sha256(serialize(object = object, connection = NULL))
   }
 
   save(object, x_archive_sha256, file = file, compress = TRUE)
   message("Archive written to '", file, "'\nsha256: ", x_archive_sha256,
-          if (is.na(x_archive_sha256[1])) " ['openssl' package not installed]")
+          if (is.na(x_archive_sha256[1L])) " ['openssl' package not installed]")
   invisible()
+
 }
 
 #' Read Objects from Archive
@@ -135,7 +133,7 @@ writeArchive <- function(object, file) {
 #'
 #' @return The object that was originally archived.
 #'
-#' @keywords internal
+#' @noRd
 #'
 readArchive <- function(file) {
 
@@ -144,13 +142,13 @@ readArchive <- function(file) {
          "\nDid you omit the surrounding quotes \"\"?", call. = FALSE)
   }
 
+  object <- x_archive_sha256 <- NULL
   x_archive_names <- load(file)
-  object <- get(x_archive_names[1])
-  if (!length(x_archive_names) == 2L || !identical(x_archive_names[2], "x_archive_sha256")) {
+  if (!identical(x_archive_names[2L], "x_archive_sha256") || !identical(x_archive_names[1L], "object")) {
     stop("archive file was not created by archive()", call. = FALSE)
   }
 
-  if (is.na(x_archive_sha256[1])) {
+  if (is.na(x_archive_sha256[1L])) {
     message("Archive read from '", file, "'\nData unverified: sha256 hash not present")
 
   } else if (requireNamespace("openssl", quietly = TRUE)) {

@@ -3,10 +3,15 @@ xtsobject <- ichimoku(sample_ohlc_data)[1:10, ]
 test_that("tradingDays ok", {
   expect_true(tradingDays(sample_ohlc_data$time[2], holidays = NULL))
   expect_vector(tradingDays(sample_ohlc_data$time[1:3]), ptype = logical(), size = 3)
-  expect_warning(tradingDays(sample_ohlc_data$time[4], holidays = 0))
+  expect_warning(tradingDays(sample_ohlc_data$time[4], holidays = 0), regexp = "holidays are invalid")
   expect_true(all(tradingDays(as.POSIXct(c("2021-01-01", "2021-01-02", "2021-01-03")),
                               noholidays = TRUE)))
   expect_false(all(tradingDays(as.POSIXct(c("2021-01-01", "2021-01-02", "2021-01-03")))))
+})
+
+test_that("grid_dup ok", {
+  expect_identical(grid_dup(3), c(4, 7, 8))
+  expect_identical(grid_dup(3, omit.id = TRUE), c(4, 7, 8, 1, 5, 9))
 })
 
 test_that("xts_df ok", {
@@ -42,4 +47,10 @@ test_that("df_merge ok", {
 
 test_that("df_append ok", {
   expect_equal(dim(df_append(sample_ohlc_data[4:10, ], sample_ohlc_data[1:6, ]))[1L], 10)
+})
+
+test_that("internal window functions ok", {
+  expect_equal(minOver(as.numeric(1:6), 3), c(NA, NA, 1, 2, 3, 4))
+  expect_equal(maxOver(as.numeric(1:6), 3), c(NA, NA, 3, 4, 5, 6))
+  expect_equal(meanOver(as.numeric(1:6), 3), c(NA, NA, 2, 3, 4, 5))
 })

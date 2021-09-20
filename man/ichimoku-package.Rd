@@ -46,7 +46,7 @@ Visualization
 Strategies & ML
 \itemize{
     \item{\code{\link{strat}}} {to augment an ichimoku object with a strategy,
-    including combined and asymmetric complex strategies.}
+    including combined and asymmetric strategies.}
     \item{\code{\link{stratcombine}}} {to create custom combined strategies.}
     \item{\code{\link{autostrat}}} {to automatically evaluate and rank
     top-performing strategies.}
@@ -63,9 +63,10 @@ Sasaki, H. (1996), \emph{ichimoku kinkouhyou no kenkyuu}. Tokyo,
     unaffiliated with the ichimoku package.
 
     Gao, C. (2021), \emph{ichimoku: Visualization and Tools for Ichimoku
-    Kinko Hyo Strategies}. R package version 1.1.0,
+    Kinko Hyo Strategies}. R package version 1.2.0,
     \url{https://CRAN.R-project.org/package=ichimoku}.
 }
 \author{
 Charlie Gao <\email{charlie.gao@shikokuchuo.net}>
+    (\href{https://orcid.org/0000-0002-0750-061X}{ORCID})
 }

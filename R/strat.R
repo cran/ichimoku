@@ -51,8 +51,8 @@
 #'         \item{\code{$strat}:} {the strategy summary [matrix]}
 #'      }
 #'
-#'     The strategy summary may be accessed by the summary() function or via
-#'     \code{\link{look}}.
+#'     The strategy summary may be accessed by the \code{summary()} method for
+#'     ichimoku objects or via \code{\link{look}}.
 #'
 #' @section Complex Strategies:
 #'     For complex strategies: 's1' denotes the strategy 'c1 > c2' and 's2'
@@ -157,13 +157,12 @@ strat <- function(x,
       s2exit <- s2exit[s2exit > s1entry[1L]]
     }
 
-  } else stop("Invalid type specified", call. = FALSE)
+  } else stop("Specified type invalid - 'type' should be either 2 or 3", call. = FALSE)
 
   txn <- c(NA, diff(posn))
   txn[posn == 1 & is.na(txn)] <- 1
   if (posn[end] == 1) txn[end + 1L] <- -1
-  if (!sum(txn, na.rm = TRUE) == 0) stop("Calculation error - please check validity of data",
-                                         call. = FALSE)
+  if (!sum(txn, na.rm = TRUE) == 0) stop("Calculation error - please check validity of data", call. = FALSE)
 
   logret <- c(diff(log(core[, "open"])), NA)
   if (dir == "short") logret <- -logret
@@ -197,7 +196,7 @@ strat <- function(x,
 #' @details The stategy summary may subsequently be accessed by the summary()
 #'     function or via \code{\link{look}}.
 #'
-#' @keywords internal
+#' @noRd
 #'
 writeStrat <- function(x, strategy, dir) {
 
@@ -215,7 +214,7 @@ writeStrat <- function(x, strategy, dir) {
                    short = (openvec - closevec) / openvec)
   tlen <- length(trades)
 
-  structure(x, strat = cbind(list(
+  attr(x, "strat") <- cbind(list(
     Strategy = strategy,
     `---------------------` = "----------",
     `Strategy cuml return %` = round((exp(sum(core[start:end, "slogret"])) - 1) * 100, 2),
@@ -234,14 +233,16 @@ writeStrat <- function(x, strategy, dir) {
     Start = index[start],
     End = index[end],
     Ticker = attr(x, "ticker")
-  )))
+  ))
+
+  x
 
 }
 
 #' Combine Ichimoku Strategies
 #'
-#' Create custom strategies from combining existing strategies contained in 's1'
-#'     and 's2' to form 's1 & s2'.
+#' Create custom strategies from combining existing strategies contained in
+#'     ichimoku objects 's1' and 's2' to form 's1 & s2'.
 #'
 #' @param s1 an ichimoku object containing a strategy.
 #' @param s2 an ichimoku object containing a strategy.
@@ -254,8 +255,8 @@ writeStrat <- function(x, strategy, dir) {
 #'     The boolean values showing whether these conditions are met are stored in
 #'     the 'cond' column.
 #'
-#'     The stategy summary may be accessed by the summary() function or via
-#'     \code{\link{look}}.
+#'     The strategy summary may be accessed by the \code{summary()} method for
+#'     ichimoku objects or via \code{\link{look}}.
 #'
 #' @section Further Details:
 #'     Please refer to the strategies vignette by running:
@@ -278,15 +279,15 @@ stratcombine <- function(s1, s2) {
   }
   core1 <- coredata(s1)
   core2 <- coredata(s2)
-  if (!identical(core1[, 1:4], core2[, 1:4])) {
+  if (!identical(core1[, c("high", "low", "close")], core2[, c("high", "low", "close")])) {
     stop("Strategies must be for the same data", call. = FALSE)
   }
-  dir <- attr(s1, "strat")["Direction", ][[1]]
-  if (!identical(dir, attr(s2, "strat")["Direction", ][[1]])) {
+  dir <- attr(s1, "strat")["Direction", ][[1L]]
+  if (!identical(dir, attr(s2, "strat")["Direction", ][[1L]])) {
     stop("Trade direction must be the same for all strategies", call. = FALSE)
   }
-  strat1 <- attr(s1, "strat")["Strategy", ][[1]]
-  strat2 <- attr(s2, "strat")["Strategy", ][[1]]
+  strat1 <- attr(s1, "strat")["Strategy", ][[1L]]
+  strat2 <- attr(s2, "strat")["Strategy", ][[1L]]
   if (identical(strat1, strat2)) return(s1)
 
   strategy <- paste0(strat1, " & ", strat2)
@@ -299,8 +300,7 @@ stratcombine <- function(s1, s2) {
   txn <- c(NA, diff(posn))
   txn[posn == 1 & is.na(txn)] <- 1
   if (posn[end] == 1) txn[end + 1L] <- -1
-  if (!sum(txn, na.rm = TRUE) == 0) stop("Calculation error - please check validity of data",
-                                         call. = FALSE)
+  if (!sum(txn, na.rm = TRUE) == 0) stop("Calculation error - please check validity of data", call. = FALSE)
   slogret <- s1[, "logret"] * posn
 
   s1$cond <- cond

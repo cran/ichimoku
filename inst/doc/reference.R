@@ -8,12 +8,18 @@ knitr::opts_chunk$set(
 ## ----setup--------------------------------------------------------------------
 library(ichimoku)
 
-## ----loaddatanotrun, eval = FALSE---------------------------------------------
-#  # ichimoku is designed to interface well with other packages, for example:
-#  cloud <- ichimoku(quantmod::getSymbols("C"))
+## ----oandadatanotrun, eval = FALSE--------------------------------------------
+#  # ichimoku can create clouds directly from OANDA data, for example:
+#  cloud <- ichimoku(oanda("USD_JPY"))
+
+## ----pipe, eval = FALSE-------------------------------------------------------
+#  # Using R 4.1's new pipe operator:
+#  quantmod::getSymbols("C") |> ichimoku() |> plot()
+#  # Or equally using the 'magrittr' pipe:
+#  quantmod::getSymbols("C") %>% ichimoku() %>% plot()
 
 ## ----viewdata-----------------------------------------------------------------
-# Simulated OHLC price data is assigned to data frame 'TKR':
+# Sample OHLC price data is assigned to data frame 'TKR':
 TKR <- sample_ohlc_data
 head(TKR)
 
@@ -25,6 +31,11 @@ print(cloud[100:110,], plot = FALSE, digits = 4)
 ## ----ichimokunotrun, eval = FALSE---------------------------------------------
 #  # to view chart as well as data, simply issue:
 #  cloud
+
+## ----ichimokupreserve---------------------------------------------------------
+kumo <- ichimoku(TKR, keep.data = TRUE)
+
+print(kumo[100,], plot = FALSE, digits = 4)
 
 ## ----holidays, eval = FALSE---------------------------------------------------
 #  # Holidays can be specified directly via a vector of dates:
@@ -38,24 +49,20 @@ print(cloud[100:110,], plot = FALSE, digits = 4)
 #  ichimoku(TKR, noholidays = TRUE)
 #  
 
-## ----plot---------------------------------------------------------------------
-plot(cloud)
-
-## ----plotnotrun, eval = FALSE-------------------------------------------------
-#  # Example code for incrementally updating ggplot2 layers:
-#  plot <- plot(cloud)
-#  plot + ggplot2::theme_classic()
-
-## ----iplotnotrun, eval = FALSE------------------------------------------------
-#  # For a plotly interactive plot:
-#  plotly::ggplotly(plot)
-
 ## ----plot2--------------------------------------------------------------------
-plot(cloud, window = "2020-05-01/2020-11-02", ticker = "TKR Co.", message = "一目均衡表", theme = "dark")
+plot(cloud, window = "2020-05/", ticker = "一目均衡表", subtitle = "Sample Data Series")
 
-## ----pipe, eval = FALSE-------------------------------------------------------
-#  # Using R 4.1's new pipe operator:
-#  quantmod::getSymbols("C") |> ichimoku() |> plot()
-#  # Or equally using the 'magrittr' pipe:
-#  quantmod::getSymbols("C") %>% ichimoku() %>% plot()
+## ----plotr, eval=FALSE--------------------------------------------------------
+#  # To plot an R-type oscillator:
+#  plot(cloud, type = "r")
+
+## ----plots--------------------------------------------------------------------
+plot(cloud, window = "2020-04-01/2020-12-01", theme = "solarized", type = "s")
+
+## ----plotbar------------------------------------------------------------------
+plot(kumo, window = "2020-04/2020-11", theme = "mono", type = "bar", custom = "volume")
+
+## ----iplot, eval=FALSE--------------------------------------------------------
+#  # For an interactive plot:
+#  iplot(cloud)
 

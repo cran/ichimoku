@@ -21,7 +21,7 @@ print(strat[100:105], plot = FALSE)
 summary(strat)
 
 ## ----plot---------------------------------------------------------------------
-plot(strat)
+plot(strat, theme = "dark")
 
 ## ----combine------------------------------------------------------------------
 strat2 <- strat(cloud, "kijun", "tenkan")

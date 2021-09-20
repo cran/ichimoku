@@ -7,9 +7,11 @@
 iplot(
   x,
   ticker,
+  subtitle,
   theme = c("original", "dark", "solarized", "mono"),
-  message,
   strat = TRUE,
+  type = c("none", "r", "s", "bar", "line"),
+  custom,
   ...,
   launch.browser = TRUE
 )
@@ -21,27 +23,37 @@ iplot(
 chart heading. If not set, the ticker saved within the ichimoku object
 will be used.}
 
+\item{subtitle}{(optional) specify a subtitle to display under the chart title.}
+
 \item{theme}{[default 'original'] with alternative choices of 'dark',
 'solarized' or 'mono'.}
 
-\item{message}{(optional) specify a chart message to display under the title.}
-
 \item{strat}{[default TRUE] if the ichimoku object contains a strategy, the
 periods for which the strategy results in a position will be shaded, and
-the strategy printed as the chart message (if a message is not already
-specified). Set to FALSE to turn off this behaviour.}
+the strategy printed as the chart subtitle (if not otherwise specified).
+Set to FALSE to turn off this behaviour.}
+
+\item{type}{[default 'none'] type of sub-plot to display beneath the ichimoku
+cloud chart, with a choice of 'none', 'r' or 's' for the corresponding
+oscillator type, and 'bar' or 'line' for custom plots.}
+
+\item{custom}{(optional) character string (containing a regular expression)
+matching the column name of the variable to be displayed as sub-plot.
+Specify \code{type = 'bar'} or \code{type = 'line'}, otherwise other type
+settings will take precedence.}
 
 \item{...}{additional parameters passed along to the 'options' argument of
 \code{shiny::shinyApp()}.}
 
-\item{launch.browser}{[default TRUE] If TRUE, the system's default web
-browser will be launched automatically after the app is started. The value
-of this argument can also be a function to call with the application's URL.
-To use the default Shiny viewer in RStudio, please specify
+\item{launch.browser}{[default TRUE] If TRUE, the system's default web browser
+will be launched automatically after the app is started. The value of this
+argument can also be a function to call with the application's URL. To use
+the default Shiny viewer in RStudio, please specify
 \code{getOption("shiny.launch.browser")}.}
 }
 \value{
-Returns a Shiny app object with class 'shiny.appobj'.
+A Shiny app object with class 'shiny.appobj'. With default arguments,
+    the Shiny app is launched in the default browser.
 }
 \description{
 Plot Ichimoku Kinko Hyo cloud charts from ichimoku objects in R Shiny,

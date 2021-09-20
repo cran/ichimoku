@@ -12,7 +12,7 @@ oanda_studio(
   count = 300,
   price = c("M", "B", "A"),
   theme = c("original", "dark", "solarized", "mono"),
-  server = c("practice", "live"),
+  server,
   apikey,
   ...,
   launch.browser = TRUE,
@@ -41,8 +41,9 @@ or "A" (ask).}
 \item{theme}{[default 'original'] chart theme with alternative choices of
 'dark', 'solarized' or 'mono'.}
 
-\item{server}{[default "practice"] select either the "practice" or "live" server
-depending on the account type held with OANDA.}
+\item{server}{(optional) specify the "practice" or "live" server according to
+the account type held. If not specified, will default to "practice", unless
+this has been changed by \code{\link{oanda_switch}}.}
 
 \item{apikey}{(optional) string containing the OANDA fxTrade API key (personal
 access token), or function that returns this string. Does not need to be
@@ -53,19 +54,20 @@ interactively if not specified.}
 calculating the ichimoku cloud, \code{\link{autoplot}} to set chart
 parameters, or the 'options' argument of \code{shiny::shinyApp()}.}
 
-\item{launch.browser}{[default TRUE] If TRUE, the system's default web
-browser will be launched automatically after the app is started. The value
-of this argument can also be a function to call with the application's URL.
-To use the default Shiny viewer in RStudio, please specify
+\item{launch.browser}{[default TRUE] If TRUE, the system's default web browser
+will be launched automatically after the app is started. The value of this
+argument can also be a function to call with the application's URL. To use
+the default Shiny viewer in RStudio, please specify
 \code{getOption("shiny.launch.browser")}.}
 
 \item{periods}{[default c(9L, 26L, 52L)] a vector defining the length of
 periods used for the cloud. This parameter shoud not normally be modified
 as using other values would be invalid in the context of traditional
-Ichimoku analysis.}
+ichimoku analysis.}
 }
 \value{
-Returns a Shiny app object with class 'shiny.appobj'.
+A Shiny app object with class 'shiny.appobj'. With default arguments,
+    the Shiny app is launched in the default browser.
 }
 \description{
 Interactive and fully-customisable R Shiny environment providing real-time
@@ -82,7 +84,7 @@ This function polls the OANDA fxTrade API for the latest prices and
 }
 \examples{
 \dontrun{
-# OANDA fxTrade API key required to run this example
+# OANDA fxTrade API key required to run these examples
 oanda_studio()
 
 # To open in RStudio viewer instead of default browser

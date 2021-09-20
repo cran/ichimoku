@@ -5,11 +5,11 @@
 #' Used by \code{\link{ichimoku}} to subset a vector of dates to trading days.
 #'
 #' @param x a vector of POSIXct date objects.
-#' @param holidays (optional) a vector, or function which outputs a
-#'     vector, of dates defined as holidays.
+#' @param holidays (optional) a vector, or function which outputs a vector, of
+#'     dates defined as holidays.
 #' @param ... other arguments not used by this function.
-#' @param noholidays (optional) if set, bypasses the function logic and selects
-#'     all dates in 'x'.
+#' @param noholidays (optional) if set, bypasses the function logic and returns
+#'     TRUE for all dates in 'x'.
 #'
 #' @return A vector of logical values: TRUE if the corresponding element of 'x'
 #'     is a weekday and not a holiday, FALSE otherwise.
@@ -17,7 +17,7 @@
 #'     Or, if the parameter 'noholidays' is set (for example to TRUE or NA),
 #'     a vector of TRUE values of the same length as 'x'.
 #'
-#' @details New Year's Day (01/01) and Christmas Day (25/12) are defined as
+#' @details New Year's Day (01-01) and Christmas Day (12-25) are defined as
 #'     holidays by default regardless of the values supplied by 'holidays'.
 #'
 #' @examples
@@ -33,13 +33,12 @@ tradingDays <- function(x, holidays, ..., noholidays) {
   if (!missing(noholidays)) return(rep(TRUE, length(x)))
   posixlt <- as.POSIXlt.POSIXct(x)
   vec <- posixlt$wday %in% 1:5
-  vec[(posixlt$mon == 0 & posixlt$mday == 1) | (posixlt$mon == 11 & posixlt$mday == 25) ] <- FALSE
+  vec[(posixlt$mon == 0L & posixlt$mday == 1L) | (posixlt$mon == 11L & posixlt$mday == 25L)] <- FALSE
   if (!missing(holidays)) {
-    holidays <- tryCatch(as.POSIXct(holidays),
-                         error = function(e) {
-                           warning("Specified holidays are invalid - disregarding", call. = FALSE)
-                           return(vec)
-                         })
+    holidays <- tryCatch(as.POSIXct(holidays), error = function(e) {
+      warning("Specified holidays are invalid - falling back to defaults", call. = FALSE)
+      return(vec)
+    })
     vec[x %in% holidays] <- FALSE
   }
   vec
@@ -48,8 +47,8 @@ tradingDays <- function(x, holidays, ..., noholidays) {
 #' Duplicates of expand.grid for 2 Variables
 #'
 #' Create a vector of element positions of duplicates in the output of expand.grid
-#'     on 2 identical vectors. A faster method of creating combinations for 2
-#'     variabes than \code{utils::combn()}.
+#'     on 2 identical vectors. An efficient method of creating combinations for
+#'     2 variables.
 #'
 #' @param n the length of vector passed to \code{expand.grid()}.
 #' @param omit.id (optional) set to TRUE to also select the elements where the 2
@@ -59,7 +58,14 @@ tradingDays <- function(x, holidays, ..., noholidays) {
 #'
 #' @return A numeric vector.
 #'
+#' @examples
+#' n <- 3
+#' expand.grid(1:n, 1:n)
+#' expand.grid(1:n, 1:n)[-grid_dup(n), ]
+#' expand.grid(1:n, 1:n)[-grid_dup(n, omit.id = TRUE), ]
+#'
 #' @keywords internal
+#' @export
 #'
 grid_dup <- function(n, omit.id) {
   vec <- do.call(c, lapply(seq_len(n - 1), function(x) x * n + 1:x))
@@ -71,7 +77,7 @@ grid_dup <- function(n, omit.id) {
 
 #' Trim Dataframe Rows with NA Values
 #'
-#' Trim rows containing NA values from a 'data.frame' object. A more performant
+#' Trim rows containing NA values from a 'data.frame' object. An efficient
 #'     version of \code{stats::na.omit()} with no data validation or checking.
 #'
 #' @param x the data.frame to trim.
@@ -121,15 +127,11 @@ df_trim <- function(x) {
 xts_df <- function(x, keep.attrs) {
   core <- coredata(x)
   dims <- dim(core)
-  df <- structure(c(list(index(x)), lapply(seq_len(dims[2L]), function(i) core[, i])),
-                  names = c("index", dimnames(core)[[2L]]),
-                  class = "data.frame",
-                  row.names = seq_len(dims[1L]))
-  if (!missing(keep.attrs) && isTRUE(keep.attrs)) {
-    lk <- look(x)
-    attrs <- attributes(df)
-    attributes(df) <- c(attrs, lk)
-  }
+  df <- c(list(index(x)), lapply(seq_len(dims[2L]), function(i) core[, i]))
+  attributes(df) <- c(list(names = c("index", dimnames(core)[[2L]]),
+                           class = "data.frame",
+                           row.names = .set_row_names(dims[1L])),
+                      if (!missing(keep.attrs) && isTRUE(keep.attrs)) look(x))
   df
 }
 
@@ -142,9 +144,8 @@ xts_df <- function(x, keep.attrs) {
 #' @param keep.attrs (optional) if set to TRUE, will preserve any custom
 #'     attributes set on the original object.
 #'
-#' @return A 'data.frame' object. If the matrix has row names, these are retained
-#'     in the dataframe, otherwise the row names of the dataframe will be an
-#'     integer sequence.
+#' @return A 'data.frame' object. If the matrix has row names, these are
+#'     retained by the dataframe.
 #'
 #' @examples
 #' cloud <- ichimoku(sample_ohlc_data)
@@ -159,15 +160,11 @@ matrix_df <- function(x, keep.attrs) {
   dnames <- dimnames(x)
   mat <- unname(x)
   dims <- dim(mat)
-  df <- structure(lapply(seq_len(dims[2L]), function(i) mat[, i]),
-            names = dnames[[2L]],
-            class = "data.frame",
-            row.names = if (is.null(dnames[[1L]])) seq_len(dims[1L]) else dnames[[1L]])
-  if (!missing(keep.attrs) && isTRUE(keep.attrs)) {
-    lk <- look(x)
-    attrs <- attributes(df)
-    attributes(df) <- c(attrs, lk)
-  }
+  df <- lapply(seq_len(dims[2L]), function(i) mat[, i])
+  attributes(df) <- c(list(names = dnames[[2L]],
+                           class = "data.frame",
+                           row.names = if (is.null(dnames[[1L]])) .set_row_names(dims[1L]) else dnames[[1L]]),
+                      if (!missing(keep.attrs) && isTRUE(keep.attrs)) look(x))
   df
 }
 
@@ -180,8 +177,8 @@ matrix_df <- function(x, keep.attrs) {
 #'
 #' @param ... data.frame objects to combine.
 #'
-#' @return A data.frame containing all unique entries in the objects passed is
-#'     returned.
+#' @return A data.frame containing all unique entries in the objects passed as
+#'     argument.
 #'
 #' @details Can be used to join price dataframes retrieved by \code{\link{oanda}}.
 #'     The function is designed to join complete historical data. If the data to
@@ -203,16 +200,13 @@ matrix_df <- function(x, keep.attrs) {
 df_merge <- function(...) {
   dots <- list(...)
   merge <- Reduce(function(x, y) merge.data.frame(x, y, all = TRUE), dots)
-  if (isTRUE(attr(dots[[1]], "oanda"))) {
-    merge <- structure(merge,
-                       instrument = attr(dots[[1]], "instrument"),
-                       price = attr(dots[[1]], "price"),
+  if (isTRUE(attr(dots[[1L]], "oanda"))) {
+    merge <- structure(.Data = merge,
+                       instrument = attr(dots[[1L]], "instrument"),
+                       price = attr(dots[[1L]], "price"),
                        timestamp = do.call(max, lapply(dots, attr, "timestamp")),
                        oanda = TRUE)
-    if (FALSE %in% merge$complete) {
-      warning("Incomplete periods in merged dataframe, please check for possible duplicates",
-              call. = FALSE)
-    }
+    if (FALSE %in% merge$complete) warning("Incomplete periods in merged dataframe - please check for possible duplicates", call. = FALSE)
   }
   merge
 }
@@ -230,7 +224,7 @@ df_merge <- function(...) {
 #'     data in 'new' contains data with the same value for 'time' as 'old',
 #'     the data in 'new' will overwrite the data in 'old'.
 #'
-#'     If the 'timestamp' attribute has been set in 'new', this will be retained.
+#'     If the 'timestamp' attribute exists in 'new', this will be retained.
 #'
 #' @details Can be used to update price dataframes retrieved by \code{\link{oanda}}.
 #'     The function is designed to update existing data with new values as they
@@ -247,7 +241,8 @@ df_merge <- function(...) {
 #' @export
 #'
 df_append <- function(new, old) {
-  structure(rbind.data.frame(old[!old$time %in% new$time, ], new),
-            timestamp = attr(new, "timestamp"))
+  df <- rbind.data.frame(old[!old$time %in% new$time, ], new)
+  attr(df, "timestamp") <- attr(new, "timestamp")
+  df
 }
 

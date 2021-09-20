@@ -12,7 +12,7 @@ oanda(
   from = NULL,
   to = NULL,
   price = c("M", "B", "A"),
-  server = c("practice", "live"),
+  server,
   apikey
 )
 }
@@ -41,8 +41,9 @@ for example "2020-06-30".}
 \item{price}{[default "M"] pricing component, one of "M" (midpoint), "B" (bid)
 or "A" (ask).}
 
-\item{server}{[default "practice"] select either the "practice" or "live" server
-depending on the account type held with OANDA.}
+\item{server}{(optional) specify the "practice" or "live" server according to
+the account type held. If not specified, will default to "practice", unless
+this has been changed by \code{\link{oanda_switch}}.}
 
 \item{apikey}{(optional) string containing the OANDA fxTrade API key (personal
 access token), or function that returns this string. Does not need to be
@@ -78,7 +79,7 @@ This function queries the OANDA fxTrade API.
 }
 \examples{
 \dontrun{
-# OANDA fxTrade API key required to run this example
+# OANDA fxTrade API key required to run these examples
 prices <- oanda("USD_JPY")
 ichimoku(prices)
 

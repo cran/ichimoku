@@ -8,16 +8,17 @@
 #'     directly from the chart.
 #'
 #' @param x an object of class 'ichimoku'.
-#' @inheritParams autoplot
+#' @inheritParams plot.ichimoku
 #' @param ... additional parameters passed along to the 'options' argument of
 #'     \code{shiny::shinyApp()}.
-#' @param launch.browser [default TRUE] If TRUE, the system's default web
-#'     browser will be launched automatically after the app is started. The value
-#'     of this argument can also be a function to call with the application's URL.
-#'     To use the default Shiny viewer in RStudio, please specify
+#' @param launch.browser [default TRUE] If TRUE, the system's default web browser
+#'     will be launched automatically after the app is started. The value of this
+#'     argument can also be a function to call with the application's URL. To use
+#'     the default Shiny viewer in RStudio, please specify
 #'     \code{getOption("shiny.launch.browser")}.
 #'
-#' @return Returns a Shiny app object with class 'shiny.appobj'.
+#' @return A Shiny app object with class 'shiny.appobj'. With default arguments,
+#'     the Shiny app is launched in the default browser.
 #'
 #' @details This function has a dependency on the 'shiny' package.
 #'
@@ -35,9 +36,11 @@
 #'
 iplot <- function(x,
                   ticker,
+                  subtitle,
                   theme = c("original", "dark", "solarized", "mono"),
-                  message,
                   strat = TRUE,
+                  type = c("none", "r", "s", "bar", "line"),
+                  custom,
                   ...,
                   launch.browser = TRUE) {
 
@@ -45,11 +48,10 @@ iplot <- function(x,
 
     if (!is.ichimoku(x)) stop("iplot() only works with ichimoku objects", call. = FALSE)
     theme <- match.arg(theme)
+    type <- match.arg(type)
     if (missing(ticker)) ticker <- attr(x, "ticker")
-    if (missing(message)) {
-      message <- if (hasStrat(x) && isTRUE(strat)) {
-        paste0("Strategy: ", attr(x, "strat")["Strategy", ][[1]])
-      }
+    if (missing(subtitle)) {
+      subtitle <- if (hasStrat(x) && isTRUE(strat)) paste0("Strategy: ", attr(x, "strat")["Strategy", ][[1L]])
     }
 
     tformat <- if (attr(x, "periodicity") > 80000) "%F" else "%F %T"
@@ -81,17 +83,27 @@ iplot <- function(x,
                                          width = "100%", timeFormat = tformat))
         ),
       shiny::fluidRow(
-        shiny::column(width = 2, offset = 1,
+        shiny::column(width = 2,
                       shiny::selectInput("theme", label = "Theme",
                                          choices = c("original", "dark", "solarized", "mono"),
                                          selected = theme,
                                          selectize = FALSE)),
         shiny::column(width = 2,
+                      shiny::selectInput("type", label = "Type",
+                                         choices = c("none", "r", "s", "bar", "line"),
+                                         selected = type,
+                                         selectize = FALSE)),
+        shiny::column(width = 2,
+                      shiny::selectInput("custom", label = "Custom",
+                                         choices = dimnames(x)[[2L]],
+                                         selected = NULL,
+                                         selectize = FALSE)),
+        shiny::column(width = 2,
                       shiny::textInput("ticker", label = "Ticker",
                                        value = ticker, width = "100%")),
         shiny::column(width = 2,
-                      shiny::textInput("message", label = "Message",
-                                       value = message, width = "100%")),
+                      shiny::textInput("subtitle", label = "Subtitle",
+                                       value = subtitle, width = "100%")),
         shiny::column(width = 1,
                       shiny::HTML("<label class='control-label'>Show</label>"),
                       shiny::checkboxInput("infotip", "Infotip", value = TRUE)),
@@ -120,26 +132,31 @@ iplot <- function(x,
       }
 
       output$chart <- shiny::renderPlot(
-        autoplot.ichimoku(pdata(), ticker = input$ticker, message = input$message,
-                          theme = input$theme, strat = input$strat)
+        if (input$type == "none") {
+          autoplot.ichimoku(pdata(), ticker = input$ticker, subtitle = input$subtitle,
+                            theme = input$theme, strat = input$strat)
+        } else {
+          extraplot(pdata(), ticker = input$ticker, subtitle = input$subtitle, theme = input$theme,
+                    strat = input$strat, type = input$type, custom = input$custom)
+        }
       )
       output$hover_x <- shiny::renderUI({
-        shiny::req(input$plot_hover, posi_x() > 0, posi_x() <= dim(pdata())[1L])
+        shiny::req(input$type == "none", input$plot_hover, posi_x() > 0, posi_x() <= dim(pdata())[1L])
         drawGuide(label = index(pdata())[posi_x()], left = left_px() + xadj, top = 60)
       })
       output$hover_y <- shiny::renderUI({
-        shiny::req(input$plot_hover)
-        drawGuide(label = signif(input$plot_hover$y, digits = 5L), left = 75, top = top_px() + 11)
+        shiny::req(input$type == "none", input$plot_hover)
+        drawGuide(label = signif(input$plot_hover$y, digits = 5), left = 75, top = top_px() + 11)
       })
       output$infotip <- shiny::renderUI({
-        shiny::req(input$infotip, input$plot_hover, posi_x() > 0, posi_x() <= dim(pdata())[1L])
+        shiny::req(input$type == "none", input$infotip, input$plot_hover, posi_x() > 0, posi_x() <= dim(pdata())[1L])
         drawInfotip(sdata = pdata()[posi_x(), ], left_px = left_px(), top_px = top_px())
       })
 
       session$onSessionEnded(function() shiny::stopApp())
     }
 
-    shiny::shinyApp(ui, server, options = list(launch.browser = launch.browser, ...))
+    shiny::shinyApp(ui = ui, server = server, options = list(launch.browser = launch.browser, ...))
 
   } else {
     message("Please install the 'shiny' package to enable interactive charting",
@@ -158,7 +175,7 @@ iplot <- function(x,
 #'
 #' @return An object of class 'shiny.tag' comprising the HTML to be rendered.
 #'
-#' @keywords internal
+#' @noRd
 #'
 drawGuide <- function(label, left, top) {
   shiny::wellPanel(
@@ -179,7 +196,7 @@ drawGuide <- function(label, left, top) {
 #'
 #' @return An object of class 'shiny.tag' comprising the HTML to be rendered.
 #'
-#' @keywords internal
+#' @noRd
 #'
 drawInfotip <- function(sdata, left_px, top_px) {
   shiny::wellPanel(
@@ -190,18 +207,18 @@ drawInfotip <- function(sdata, left_px, top_px) {
                        if (isTRUE(sdata$cd == 1)) "&#9651;<br />" else if (isTRUE(sdata$cd == -1)) "&#9660;<br />" else "&#8212;<br />",
                        index(sdata),
                        "</div><div style='text-align:center; margin:2px 0 0 0; padding:0'>H: ",
-                       signif(sdata$high, digits = 5L),
+                       signif(sdata$high, digits = 5),
                        "</div><div style='margin:0; padding:0'>O: ",
-                       signif(sdata$open, digits = 5L),
-                       "&nbsp;&nbsp;C: ", signif(sdata$close, digits = 5L),
+                       signif(sdata$open, digits = 5),
+                       "&nbsp;&nbsp;C: ", signif(sdata$close, digits = 5),
                        "</div><div style='text-align:center; margin:0; padding:0'>L: ",
-                       signif(sdata$low, digits = 5L),
+                       signif(sdata$low, digits = 5),
                        "</div><div style='margin:2px 0 0 0; padding:0'>Tenkan: ",
-                       signif(sdata$tenkan, digits = 5L),
-                       "<br />Kijun: ", signif(sdata$kijun, digits = 5L),
-                       "<br />Senkou A: ", signif(sdata$senkouA, digits = 5L),
-                       "<br />Senkou B: ", signif(sdata$senkouB, digits = 5L),
-                       "<br />Chikou: ", signif(sdata$chikou, digits = 5L), "</div>"))
+                       signif(sdata$tenkan, digits = 5),
+                       "<br />Kijun: ", signif(sdata$kijun, digits = 5),
+                       "<br />Senkou A: ", signif(sdata$senkouA, digits = 5),
+                       "<br />Senkou B: ", signif(sdata$senkouB, digits = 5),
+                       "<br />Chikou: ", signif(sdata$chikou, digits = 5), "</div>"))
   )
 }
 

@@ -8,19 +8,19 @@
 #'     asymmetric strategies of the form 'c1 > c2 x c3 > c4' (level 3).
 #'
 #' @inheritParams strat
-#' @param n [default 8] select top n number of strategies to return.
+#' @param n [default 8] select top 'n' number of strategies to return.
 #' @param level [default 1] to return simple strategies. For complex strategies,
-#'     set level to 2 to return strategies of the form 's1 & s2' or level to 3
-#'     to return strategies of the form 's1 x s2'
+#'     set level to 2 to return combined strategies of the form 's1 & s2' or
+#'     level to 3 to return asymmetric strategies of the form 's1 x s2'
 #'
-#' @return A list of 'n' ichimoku objects containing strategies. The
-#'     cumulative log returns for all strategies as well as the summaries for
-#'     the 'n' top strategies are saved as attributes to the list. The strategy
-#'     summaries are printed to the console as a side effect.
+#' @return Returned invisibly, a list of 'n' ichimoku objects containing strategies,
+#'     with attributes 'logret', a matrix of cumulative log returns for all
+#'     strategies, and 'summary', a matrix of summaries for the top 'n' strategies.
+#'     The strategy summaries are printed to the console.
 #'
 #' @details Ichimoku objects for each strategy are returned as a list. The
 #'     cumulative log returns for all strategies as well as the summaries for
-#'     the 'n' top strategies are saved as attributes to the list. This
+#'     the top 'n' strategies are saved as attributes to the list. This
 #'     information may be retrieved by using \code{\link{look}} on the returned list.
 #'
 #'     Each individual ichimoku object may be accessed via its position in the
@@ -52,7 +52,7 @@ autostrat <- function(x,
   if (!is.ichimoku(x)) stop("autostrat() only works on ichimoku objects", call. = FALSE)
   dir <- match.arg(dir)
   if (!level %in% 1:3) {
-    warning("Invalid level specified, using default level of 1", call. = FALSE)
+    warning("Specified 'level' invalid - falling back to default of 1", call. = FALSE)
     level <- 1
   }
 
@@ -128,18 +128,18 @@ autostrat <- function(x,
 
   }
 
-  invisible(structure(list,
-                      logret = cbind(logret),
-                      summary = print(do.call(cbind, lapply(list, attr, which = "strat"))),
-                      autostrat = TRUE))
+  attributes(list) <- list(logret = cbind(logret),
+                           summary = print(do.call(cbind, lapply(list, attr, which = "strat"))),
+                           autostrat = TRUE)
+  invisible(list)
 
 }
 
 #' mlgrid Numeric Representation
 #'
 #' Create a grid of ichimoku indicator conditions and next period returns. The
-#'     grid facilitates comparing strategy returns or as a basis for further
-#'     processing in machine learning applications. Translates the visual
+#'     grid facilitates the comparison of strategy returns and provides a basis
+#'     for use in machine learning applications. Translates the visual
 #'     representation of the relationship between cloud chart elements into a
 #'     numerical format for further analysis.
 #'
@@ -158,7 +158,7 @@ autostrat <- function(x,
 #'     feature per column with the target 'y' as the first column.
 #'
 #'     The 'y' parameter and trade direction are set as atrributes. To view these,
-#'     use the \code{\link{look}} function on the returned object.
+#'     use \code{\link{look}} on the returned object.
 #'
 #' @details The date-time index corresponds to when the indicator condition is
 #'     met at the close for that period. The return is the single-period return
@@ -206,8 +206,8 @@ mlgrid <- function(x,
 
   cols <- c("chikou", "close", "high", "low", "tenkan", "kijun",
             "senkouA", "senkouB", "cloudT", "cloudB")
-  comb <- as.matrix(expand.grid(cols, cols, KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
-  )[-grid_dup(length(cols), omit.id = TRUE), ]
+  comb <- as.matrix(expand.grid(cols, cols, KEEP.OUT.ATTRS = FALSE,
+                                stringsAsFactors = FALSE))[-grid_dup(length(cols), omit.id = TRUE), ]
   pairs <- comb[-c(10L, 11L, 18L, 41L, 42L, 43L, 44L, 45L), ]
   matrix <- writeMatrix(x = core, pairs = pairs, p2 = p2, xlen = xlen, type = type)
 
@@ -218,17 +218,18 @@ mlgrid <- function(x,
   }
 
   mat <- unname(matrix)
-  grid <- structure(c(list(y), lapply(seq_len(dim(mat)[2L]), function(i) mat[, i])),
-                    names = c("y", dimnames(matrix)[[2L]]),
-                    class = "data.frame",
-                    row.names = as.character(index(x)),
-                    y = target,
-                    direction = dir,
-                    ticker = attr(x, "ticker"),
-                    mlgrid = TRUE)
+  grid <- c(list(y), lapply(seq_len(dim(mat)[2L]), function(i) mat[, i]))
+  attributes(grid) <- list(names = c("y", dimnames(matrix)[[2L]]),
+                           class = "data.frame",
+                           row.names = as.character(index(x)),
+                           y = target,
+                           direction = dir,
+                           ticker = attr(x, "ticker"),
+                           mlgrid = TRUE)
   df_trim(grid)
 
 }
+
 
 #' writeMatrix
 #'
@@ -242,7 +243,7 @@ mlgrid <- function(x,
 #'
 #' @return A matrix with column headings.
 #'
-#' @keywords internal
+#' @noRd
 #'
 writeMatrix <- function(x, pairs, p2, xlen, type) {
 

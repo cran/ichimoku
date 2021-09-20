@@ -23,8 +23,9 @@
 #'     for example "2020-06-30".
 #' @param price [default "M"] pricing component, one of "M" (midpoint), "B" (bid)
 #'     or "A" (ask).
-#' @param server [default "practice"] select either the "practice" or "live" server
-#'     depending on the account type held with OANDA.
+#' @param server (optional) specify the "practice" or "live" server according to
+#'     the account type held. If not specified, will default to "practice", unless
+#'     this has been changed by \code{\link{oanda_switch}}.
 #' @param apikey (optional) string containing the OANDA fxTrade API key (personal
 #'     access token), or function that returns this string. Does not need to be
 #'     specified if already stored by oanda_set_key(). Can also be entered
@@ -53,7 +54,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' # OANDA fxTrade API key required to run this example
+#' # OANDA fxTrade API key required to run these examples
 #' prices <- oanda("USD_JPY")
 #' ichimoku(prices)
 #'
@@ -71,20 +72,22 @@ oanda <- function(instrument,
                   from = NULL,
                   to = NULL,
                   price = c("M", "B", "A"),
-                  server = c("practice", "live"),
+                  server,
                   apikey) {
 
   if (missing(instrument)) stop("Argument 'instrument' must be specified", call. = FALSE)
   granularity <- match.arg(granularity)
   price <- match.arg(price)
-  server <- match.arg(server)
-  if (missing(apikey)) apikey <- oanda_get_key()
+  server <- if (missing(server)) do_oanda$getServer() else match.arg(server, c("practice", "live"))
+  if (missing(apikey)) apikey <- do_oanda$getKey()
 
   if (!missing(from) && !missing(to)) {
     d1 <- tryCatch(as.POSIXct(from), error = function(e) {
-      stop("Specified value of 'from' is not convertible to a POSIXct date-time format", call. = FALSE)})
+      stop("Specified value of 'from' is not convertible to a POSIXct date-time format", call. = FALSE)
+    })
     d2 <- tryCatch(as.POSIXct(to), error = function(e) {
-      stop("Specified value of 'to' is not convertible to a POSIXct date-time format", call. = FALSE)})
+      stop("Specified value of 'to' is not convertible to a POSIXct date-time format", call. = FALSE)
+    })
     interval <- unclass(d2) - unclass(d1)
     if (interval < 0) stop("Requested time period invalid - 'to' takes place before 'from'", call. = FALSE)
     denom <- switch(granularity,
@@ -119,20 +122,20 @@ oanda <- function(instrument,
       })
       message("Merging data partitions...")
       df <- do.call(df_merge, list)
-      message("Complete.")
+      message("Complete")
       }
 
     } else {
       if (!missing(from)) {
         from <- tryCatch(as.POSIXct(from), error = function(e) {
-          stop("Specified value of 'from' is not convertible to a POSIXct date-time format",
-               call. = FALSE)})
+          stop("Specified value of 'from' is not convertible to a POSIXct date-time format", call. = FALSE)
+        })
         from <- strftime(from, format = "%Y-%m-%dT%H:%M:%S")
       }
       if (!missing(to)) {
         to <- tryCatch(as.POSIXct(to), error = function(e) {
-          stop("Specified value of 'to' is not convertible to a POSIXct date-time format",
-               call. = FALSE)})
+          stop("Specified value of 'to' is not convertible to a POSIXct date-time format", call. = FALSE)
+        })
         to <- strftime(to, format = "%Y-%m-%dT%H:%M:%S")
       }
 
@@ -149,33 +152,16 @@ oanda <- function(instrument,
 #' Internal function used by ichimoku to retrieve price candles from the OANDA
 #'     fxTrade REST API.
 #'
-#' @param instrument string containing the base currency and quote currency
-#'     delimited by a '_' (for example "USD_JPY").
-#' @param granularity the granularity of the price data to fetch,
-#'     one of "M", "W", "D", "H12", "H8", "H6", "H4", "H3", "H2", "H1", "M30",
-#'     "M15", "M10", "M5", "M4", "M2", "M1", "S30", "S15", "S10", "S5".
-#' @param count (optional) the number of periods to return. The API supports a
-#'     maximum of 5000 for each individual request, and defaults to 500 if not
-#'     specified.
-#' @param from (optional) the start of the time range for which to fetch price
-#'     data, for example "2020-02-01".
-#' @param to (optional) the end of the time range for which to fetch price data,
-#'     for example "2020-06-30".
-#' @param price pricing component, one of "M" (midpoint), "B" (bid)
-#'     or "A" (ask).
-#' @param server select either the "practice" or "live" server
-#'     depending on the account type held with OANDA.
-#' @param apikey (optional) string containing the OANDA fxTrade API key (personal
-#'     access token), or function that returns this string.
+#' @inheritParams oanda
 #' @param .validate (optional) only used internally by other functions. Do not
 #'     set this parameter.
 #'
 #' @return A data.frame containing the price data requested.
 #'
-#' @keywords internal
+#' @noRd
 #'
-getPrices <- function(instrument, granularity, count, from, to, price,
-                      server, apikey, .validate) {
+getPrices <- function(instrument, granularity, count, from, to, price, server,
+                      apikey, .validate) {
 
   url <- paste0("https://api-fx", switch(server, practice = "practice", live = "trade"),
                 ".oanda.com/v3/instruments/", instrument, "/candles?granularity=",
@@ -190,14 +176,14 @@ getPrices <- function(instrument, granularity, count, from, to, price,
                     "User-Agent" = x_user_agent)
   resp <- curl_fetch_memory(url = url, handle = h)
 
-  if (resp$status_code != 200L) stop("code ", resp$status_code, " - ",
-                                     fromJSON(rawToChar(resp$content)), call. = FALSE)
+  if (resp$status_code != 200L) stop("server code ", resp$status_code, " - ",
+                                     parse_json(rawToChar(resp$content)), call. = FALSE)
   headers <- rawToChar(resp$headers)
-  hdate <- strsplit(headers, "date: | GMT", perl = TRUE)[[1]][2]
+  hdate <- strsplit(headers, "date: | GMT", perl = TRUE)[[1L]][2L]
   timestamp <- as.POSIXct.POSIXlt(strptime(hdate, format = "%a, %d %b %Y %H:%M:%S", tz = "UTC"))
-  data <- fromJSON(rawToChar(resp$content))$candles
+  data <- parse_json(rawToChar(resp$content), simplifyVector = TRUE)$candles
 
-  time <- strptime(data[, 3L], format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
+  time <- strptime(data$time, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
   if (!missing(.validate) && .validate == FALSE) {
     time <- as.POSIXct.POSIXlt(time)
   } else {
@@ -213,7 +199,7 @@ getPrices <- function(instrument, granularity, count, from, to, price,
       }
       data <- data[keep, ]
       time <- time[keep, ]
-    } else if (missing(.validate)){
+    } else if (missing(.validate)) {
       cut <- (time$wday == 5L & time$hour > 20L) | time$wday == 6L | (time$wday == 0L & time$hour < 21L)
       data <- data[!cut, ]
       time <- time[!cut, ]
@@ -226,21 +212,23 @@ getPrices <- function(instrument, granularity, count, from, to, price,
     time <- time + periodicity
   }
 
-  ohlc <- data[, 4L]
+  ohlc <- switch(price, M = data$mid, B = data$bid, A = data$ask)
 
-  structure(list(time = .POSIXct(time),
-                 open = as.numeric(ohlc[, 1L]),
-                 high = as.numeric(ohlc[, 2L]),
-                 low = as.numeric(ohlc[, 3L]),
-                 close = as.numeric(ohlc[, 4L]),
-                 volume = data[, 2L],
-                 complete = data[, 1L]),
-            class = "data.frame",
-            row.names = seq_len(dim(ohlc)[1L]),
-            instrument = instrument,
-            price = price,
-            timestamp = .POSIXct(timestamp),
-            oanda = TRUE)
+  df <- list(.POSIXct(time),
+             as.numeric(ohlc$o),
+             as.numeric(ohlc$h),
+             as.numeric(ohlc$l),
+             as.numeric(ohlc$c),
+             data$volume,
+             data$complete)
+  attributes(df) <- list(names = c("time", "open", "high", "low", "close", "volume", "complete"),
+                         class = "data.frame",
+                         row.names = .set_row_names(length(time)),
+                         instrument = instrument,
+                         price = price,
+                         timestamp = .POSIXct(timestamp),
+                         oanda = TRUE)
+  df
 
 }
 
@@ -255,11 +243,15 @@ getPrices <- function(instrument, granularity, count, from, to, price,
 #' @details This function connects to the OANDA fxTrade Streaming API. Use the
 #'     'Esc' key to stop the stream.
 #'
+#'     The output contains ANSI escape codes for console formatting, but
+#'     otherwise represents the raw feed without omission. Note that as this is
+#'     a raw stream, returned times are in UTC.
+#'
 #'     For further details please refer to the OANDA fxTrade API vignette by
 #'     running: \code{vignette("xoanda", package = "ichimoku")}.
 #'
-#' @return Does not return a value, however the streaming data is output to the
-#'     console as a side effect.
+#' @return Invisible NULL on function exit. The streaming data is output as text
+#'     to the console.
 #'
 #' @section Streaming Data:
 #'
@@ -276,10 +268,6 @@ getPrices <- function(instrument, granularity, count, from, to, price,
 #'     periods of rapid price movement, different subscribers may observe
 #'     different prices depending on their alignment.
 #'
-#'     The streamed data is formatted for easier reading, but otherwise
-#'     represents the raw feed without omission. Note that as this is a raw
-#'     stream, returned times are in UTC.
-#'
 #' @examples
 #' \dontrun{
 #' # OANDA fxTrade API key required to run this example
@@ -288,13 +276,13 @@ getPrices <- function(instrument, granularity, count, from, to, price,
 #'
 #' @export
 #'
-oanda_stream <- function(instrument, server = c("practice", "live"), apikey) {
+oanda_stream <- function(instrument, server, apikey) {
 
   if (missing(instrument)) stop("Argument 'instrument' must be specified", call. = FALSE)
-  if (missing(apikey)) apikey <- oanda_get_key()
-  server <- match.arg(server)
+  if (missing(apikey)) apikey <- do_oanda$getKey()
+  server <- if (missing(server)) do_oanda$getServer() else match.arg(server, c("practice", "live"))
   url <- paste0("https://stream-fx", switch(server, practice = "practice", live = "trade"),
-                ".oanda.com/v3/accounts/", oandaAccount(),
+                ".oanda.com/v3/accounts/", do_oanda$getAccount(server = server, apikey = apikey),
                 "/pricing/stream?instruments=", instrument)
   h <- new_handle()
   handle_setheaders(handle = h,
@@ -303,6 +291,7 @@ oanda_stream <- function(instrument, server = c("practice", "live"), apikey) {
                     "User-Agent" = x_user_agent)
 
   message("Streaming data... Press 'Esc' to return")
+  on.exit(expr = return(invisible()))
   curl_fetch_stream(url = url, handle = h, fun = function(x) {
     stream <- sub("close", "\033[49m\033[39m\nclose",
                   sub("asks:", "\033[49m\033[39m asks: \033[90m\033[42m",
@@ -333,22 +322,28 @@ oanda_stream <- function(instrument, server = c("practice", "live"), apikey) {
 #'     calculating the ichimoku cloud or \code{\link{autoplot}} to set chart
 #'     parameters.
 #'
-#' @return Does not return a value, however a plot of the ichimoku chart for the
-#'     price data requested is output to the graphical device at each refresh
-#'     interval as a side effect.
+#' @return The ichimoku object underlying the chart (invisibly) on function exit.
+#'     A plot of the ichimoku chart for the price data requested is output to the
+#'     graphical device at each refresh interval.
 #'
 #' @details This function polls the OANDA fxTrade API for the latest live prices
 #'     and updates the plot in the graphical device at each refresh interval.
 #'     Use the 'Esc' key to stop updating.
+#'
+#'     To access the underlying data, assign the function to an object, for
+#'     example: \code{cloud <- oanda_chart("USD_JPY")}.
 #'
 #'     For further details please refer to the OANDA fxTrade API vignette by
 #'     running: \code{vignette("xoanda", package = "ichimoku")}.
 #'
 #' @examples
 #' \dontrun{
-#' # OANDA fxTrade API key required to run this example
+#' # OANDA fxTrade API key required to run these examples
 #' oanda_chart("USD_JPY")
 #' oanda_chart("EUR_JPY", granularity = "H1", refresh = 3, count = 300, price = "B", theme = "mono")
+#'
+#' # Save data underlying chart at time of function exit
+#' cloud <- oanda_chart("USD_JPY")
 #' }
 #'
 #' @export
@@ -362,36 +357,35 @@ oanda_chart <- function(instrument,
                         count = 250,
                         price = c("M", "B", "A"),
                         theme = c("original", "dark", "solarized", "mono"),
-                        server = c("practice", "live"),
+                        server,
                         apikey,
                         ...,
                         periods = c(9L, 26L, 52L)) {
 
   if (missing(instrument)) stop("Argument 'instrument' must be specified", call. = FALSE)
-  if (missing(apikey)) apikey <- oanda_get_key()
+  if (missing(apikey)) apikey <- do_oanda$getKey()
   granularity <- match.arg(granularity)
   price <- match.arg(price)
   theme <- match.arg(theme)
-  server <- match.arg(server)
+  server <- if (missing(server)) do_oanda$getServer() else match.arg(server, c("practice", "live"))
   if (!is.numeric(refresh) || refresh < 1) {
-    message("Invalid refresh interval '", refresh, "' secs specified - using default of 5 secs instead")
+    message("Specified refresh interval invalid - falling back to default of 5 secs")
     refresh <- 5
   }
   if (is.numeric(periods) && length(periods) == 3L && all(periods >= 1)) {
     periods <- as.integer(periods)
   } else {
-    warning("Specified cloud periods invalid - using defaults c(9L, 26L, 52L) instead",
-            call. = FALSE)
+    warning("Specified cloud periods invalid - falling back to defaults c(9L, 26L, 52L)", call. = FALSE)
     periods <- c(9L, 26L, 52L)
   }
   p2 <- periods[2L]
   minlen <- p2 + periods[3L]
   if (!is.numeric(count) || count < minlen) {
-    message("Invalid count specified - using default of 250 instead")
+    message("Specified 'count' invalid - falling back to default of 250")
     count <- 250
   }
 
-  ins <- oanda_instruments(server = server, apikey = apikey)
+  ins <- do_oanda$getInstruments(server = server, apikey = apikey)
   ticker <- ins$displayName[ins$name %in% instrument]
   periodicity <- switch(granularity,
                         M = 2419200, W = 604800, D = 86400, H12 = 43200, H8 = 28800,
@@ -411,12 +405,13 @@ oanda_chart <- function(instrument,
   xlen <- dim(data)[1L]
 
   message("Chart updating every ", refresh, " secs in graphical device... Press 'Esc' to return")
+  on.exit(expr = return(invisible(pdata)))
   while (TRUE) {
     pdata <- ichimoku.data.frame(data, periods = periods, ...)[minlen:(xlen + p2 - 1L), ]
-    message <- paste(instrument, ptype, "price [",
-                     data$close[xlen], "] at", attr(data, "timestamp"),
-                     "| Chart:", ctype, "| Cmplt:", data$complete[xlen])
-    plot.ichimoku(pdata, ticker = ticker, message = message, theme = theme,
+    subtitle <- paste(instrument, ptype, "price [",
+                      data$close[xlen], "] at", attr(data, "timestamp"),
+                      "| Chart:", ctype, "| Cmplt:", data$complete[xlen])
+    plot.ichimoku(pdata, ticker = ticker, subtitle = subtitle, theme = theme,
                   newpage = FALSE, ...)
     Sys.sleep(refresh)
     newdata <- getPrices(instrument = instrument, granularity = granularity,
@@ -448,7 +443,8 @@ oanda_chart <- function(instrument,
 #'     calculating the ichimoku cloud, \code{\link{autoplot}} to set chart
 #'     parameters, or the 'options' argument of \code{shiny::shinyApp()}.
 #'
-#' @return Returns a Shiny app object with class 'shiny.appobj'.
+#' @return A Shiny app object with class 'shiny.appobj'. With default arguments,
+#'     the Shiny app is launched in the default browser.
 #'
 #' @details This function polls the OANDA fxTrade API for the latest prices and
 #'     updates a customisable reactive Shiny app at each refresh interval.
@@ -458,7 +454,7 @@ oanda_chart <- function(instrument,
 #'
 #' @examples
 #' \dontrun{
-#' # OANDA fxTrade API key required to run this example
+#' # OANDA fxTrade API key required to run these examples
 #' oanda_studio()
 #'
 #' # To open in RStudio viewer instead of default browser
@@ -476,7 +472,7 @@ oanda_studio <- function(instrument = "USD_JPY",
                          count = 300,
                          price = c("M", "B", "A"),
                          theme = c("original", "dark", "solarized", "mono"),
-                         server = c("practice", "live"),
+                         server,
                          apikey,
                          ...,
                          launch.browser = TRUE,
@@ -484,33 +480,31 @@ oanda_studio <- function(instrument = "USD_JPY",
 
   if (requireNamespace("shiny", quietly = TRUE)) {
 
-    if (missing(apikey)) apikey <- oanda_get_key()
+    if (missing(apikey)) apikey <- do_oanda$getKey()
     if (!is.numeric(refresh) || refresh < 1) {
-      message("Invalid refresh interval '", refresh, "' secs specified - using default of 5 secs instead")
+      message("Specified refresh interval invalid - falling back to default of 5 secs")
       refresh <- 5
     }
     granularity <- match.arg(granularity)
     price <- match.arg(price)
     theme <- match.arg(theme)
-    srvr <- match.arg(server)
+    srvr <- if (missing(server)) do_oanda$getServer() else match.arg(server, c("practice", "live"))
     if (is.numeric(periods) && length(periods) == 3L && all(periods >= 1)) {
       periods <- as.integer(periods)
     } else {
-      warning("Specified cloud periods invalid - using defaults c(9L, 26L, 52L) instead",
-              call. = FALSE)
+      warning("Specified cloud periods invalid - falling back to defaults c(9L, 26L, 52L)", call. = FALSE)
       periods <- c(9L, 26L, 52L)
     }
     p2 <- periods[2L]
     minlen <- p2 + periods[3L]
     if (!is.numeric(count) || count <= minlen) {
-      message("Invalid count specified - using default of 300 instead")
+      message("Specified 'count' invalid - falling back to default of 300")
       count <- 300
     }
 
-    ins <- oanda_instruments(server = srvr, apikey = apikey)
+    ins <- do_oanda$getInstruments(server = srvr, apikey = apikey)
     ichimoku_stheme <- if (requireNamespace("bslib", quietly = TRUE)) {
-      bslib::bs_theme(version = 4, bootswatch = "solar", bg = "#ffffff", fg = "#002b36",
-                      primary = "#073642", font_scale = 0.85)
+      bslib::bs_theme(version = 4, bootswatch = "solar", bg = "#ffffff", fg = "#002b36", primary = "#073642", font_scale = 0.85)
     }
 
     ui <- shiny::fluidPage(
@@ -519,12 +513,11 @@ oanda_studio <- function(instrument = "USD_JPY",
         padding = 20,
         shiny::tags$style(type = "text/css", "#chart {height: calc(100vh - 150px) !important;}"),
         shiny::plotOutput("chart", width = "100%",
-                          hover = shiny::hoverOpts(id = "plot_hover",
-                                                   delay = 80, delayType = "throttle")),
+                          hover = shiny::hoverOpts(id = "plot_hover", delay = 80, delayType = "throttle")),
         shiny::uiOutput("hover_x"), shiny::uiOutput("hover_y"), shiny::uiOutput("infotip")
       ),
       shiny::fluidRow(
-        shiny::column(width = 2,
+        shiny::column(width = 12,
                       shiny::HTML("&nbsp;")
         )
       ),
@@ -555,7 +548,11 @@ oanda_studio <- function(instrument = "USD_JPY",
         shiny::column(width = 1,
                       shiny::numericInput("refresh", label = "Refresh",
                                           value = refresh, min = 1, max = 86400)),
-        shiny::column(width = 4,
+        shiny::column(width = 1,
+                      shiny::HTML("<label class='control-label'>Data</label><div class='form-group shiny-input-container'>"),
+                      shiny::downloadButton("savedata", label = "> Archive"),
+                      shiny::HTML("</div>")),
+        shiny::column(width = 3,
                       shiny::sliderInput("count", label = "Data Periods",
                                          min = 100, max = 800,
                                          value = count,
@@ -631,10 +628,13 @@ oanda_studio <- function(instrument = "USD_JPY",
       data <- shiny::reactive({
         if (unclass(attr(datastore(), "timestamp")) > unclass(attr(idata(), "timestamp"))) {
           datastore()
-        } else idata()
+        } else {
+          idata()
+        }
       })
       xlen <- shiny::reactive(dim(data())[1L])
-      pdata <- shiny::reactive(ichimoku(data(), periods = periods, ...)[minlen:(xlen() + p2 - 1L), ])
+      pdata <- shiny::reactive(ichimoku(data(), ticker = input$instrument,
+                                        periods = periods, ...)[minlen:(xlen() + p2 - 1L), ])
       ticker <- shiny::reactive(paste(dispname(), "  |", input$instrument, ptype(), "price [",
                                       data()$close[xlen()], "] at", attr(data(), "timestamp"),
                                       "| Chart:", ctype(), "| Cmplt:", data()$complete[xlen()]))
@@ -642,8 +642,7 @@ oanda_studio <- function(instrument = "USD_JPY",
       if (requireNamespace("bslib", quietly = TRUE)) {
         shiny::observe({
           session$setCurrentTheme(
-            bslib::bs_theme_update(ichimoku_stheme,
-                                   bootswatch = switch(input$theme, dark = "solar", NULL)))
+            bslib::bs_theme_update(ichimoku_stheme, bootswatch = switch(input$theme, dark = "solar", NULL)))
         })
       }
 
@@ -656,12 +655,15 @@ oanda_studio <- function(instrument = "USD_JPY",
       })
       output$hover_y <- shiny::renderUI({
         shiny::req(input$plot_hover)
-        drawGuide(label = signif(input$plot_hover$y, digits = 5L), left = 75, top = top_px() + 11)
+        drawGuide(label = signif(input$plot_hover$y, digits = 5), left = 75, top = top_px() + 11)
       })
       output$infotip <- shiny::renderUI({
         shiny::req(input$infotip, input$plot_hover, posi_x() > 0, posi_x() <= dim(pdata())[1L])
         drawInfotip(sdata = pdata()[posi_x(), ], left_px = left_px(), top_px = top_px())
       })
+
+      output$savedata <- shiny::downloadHandler(filename = function() paste0(input$instrument, "_", input$granularity, "_", input$price, ".rda"),
+                                                content = function(file) archive(pdata(), file))
 
       session$onSessionEnded(function() shiny::stopApp())
     }
@@ -681,7 +683,7 @@ oanda_studio <- function(instrument = "USD_JPY",
 #'
 #' @inheritParams oanda
 #'
-#' @return A data.frame containing the instrument name, type, and full display name.
+#' @return A data.frame containing the instrument name, full display name, and type.
 #'
 #' @details This function returns a data.frame listing the instrument names
 #'     available for an account associated with the supplied OANDA fxTrade API key.
@@ -697,62 +699,10 @@ oanda_studio <- function(instrument = "USD_JPY",
 #'
 #' @export
 #'
-oanda_instruments <- function(server = c("practice", "live"), apikey) {
-  cache <- NULL
-  function(server = c("practice", "live"), apikey) {
-    if (is.null(cache)) {
-      if (missing(apikey)) apikey <- oanda_get_key()
-      server <- match.arg(server)
-      url <- paste0("https://api-fx", switch(server, practice = "practice", live = "trade"),
-                    ".oanda.com/v3/accounts/", oandaAccount(), "/instruments")
-      h <- new_handle()
-      handle_setheaders(handle = h,
-                        "Authorization" = paste0("Bearer ", apikey),
-                        "User-Agent" = x_user_agent)
-      resp <- curl_fetch_memory(url = url, handle = h)
-      if (resp$status_code != 200L) stop("code ", resp$status_code, " - ",
-                                         fromJSON(rawToChar(resp$content)), call. = FALSE)
-      data <- fromJSON(rawToChar(resp$content))$instruments
-      cache <<- data[order(data[, 1L]), 1:3]
-    }
-    cache
-  }
-}
+oanda_instruments <- function(server, apikey) {
 
-#' Account associated with an OANDA fxTrade API Key
-#'
-#' Return an account authorised to be accessed by an OANDA fxTrade API key
-#'     (personal access token). Used by other OANDA functions to access API
-#'     endpoints that require an account ID.
-#'
-#' @inheritParams oanda
-#'
-#' @return A character string of the first listed account the authorization
-#'     bearer token is authorized to access.
-#'
-#' @keywords internal
-#'
-oandaAccount <- function(server = c("practice", "live"), apikey) {
-  cache <- NULL
-  function(server = c("practice", "live"), apikey) {
-    if (is.null(cache)) {
-      if (missing(apikey)) apikey <- oanda_get_key()
-      server <- match.arg(server)
-      url <- switch(server,
-                    practice = "https://api-fxpractice.oanda.com/v3/accounts",
-                    live = "https://api-fxtrade.oanda.com/v3/accounts")
-      h <- new_handle()
-      handle_setheaders(handle = h,
-                        "Authorization" = paste0("Bearer ", apikey),
-                        "User-Agent" = x_user_agent)
-      resp <- curl_fetch_memory(url = url, handle = h)
-      if (resp$status_code != 200L) stop("code ", resp$status_code, " - ",
-                                         fromJSON(rawToChar(resp$content)), call. = FALSE)
-      data <- fromJSON(rawToChar(resp$content))$accounts
-      cache <<- unlist(data, use.names = FALSE)[[1]]
-    }
-    cache
-  }
+  do_oanda$getInstruments(server = server, apikey = apikey)
+
 }
 
 #' Set OANDA fxTrade API Key
@@ -760,11 +710,15 @@ oandaAccount <- function(server = c("practice", "live"), apikey) {
 #' Save OANDA fxTrade API key (personal access token) to the system credential
 #'     store.
 #'
-#' @return A key is set in the default keyring under the service name 'OANDA_API_KEY'.
+#' @return Invisible NULL. A key is set in the default keyring under the service
+#'     name 'OANDA_API_KEY' for practice accounts or 'OANDA_LIVE_KEY' for live
+#'     accounts.
 #'
-#' @details The key is read interactively.
+#' @details The key is read interactively. Different keys can be set for practice
+#'     and live accounts; enter 1 when prompted to set a practice account key or
+#'     2 to set a live account key.
 #'
-#'     This function only needs to be run once to set the key, it does not need
+#'     This function only needs to be run once to set the key; it does not need
 #'     to be run each session.
 #'
 #'     This function has a dependency on the 'keyring' package.
@@ -781,52 +735,24 @@ oandaAccount <- function(server = c("practice", "live"), apikey) {
 #' @export
 #'
 oanda_set_key <- function() {
-  if (requireNamespace("keyring", quietly = TRUE)) {
-    keyring::key_set(service = "OANDA_API_KEY")
-  } else {
-    message("Please install the 'keyring' package in order to store your OANDA API key")
-  }
-}
 
-#' Get OANDA fxTrade API Key
-#'
-#' Return OANDA fxTrade API key (personal access token) saved in the system
-#'     credential store, or else prompts the user to provide a key interactively.
-#'
-#' @return A temporarily invisible character string, respresenting the key stored
-#'     in the default keyring under the service name 'OANDA_API_KEY' if present,
-#'     otherwise the key supplied by the user interactively.
-#'
-#' @details For retrieving the key from the keyring, this function has a dependency
-#'     on the 'keyring' package, otherwise it can be used to read a key supplied
-#'     interactively.
-#'
-#'     For further details please refer to the OANDA fxTrade API vignette by
-#'     running: \code{vignette("xoanda", package = "ichimoku")}.
-#'
-#' @examples
-#' if (interactive()) {
-#' # Only run example in interactive R sessions
-#' oanda_get_key()
-#' }
-#'
-#' @export
-#'
-oanda_get_key <- function() {
-  keystore <- NULL
-  function() {
-    if (is.null(keystore)) {
-      if (requireNamespace("keyring", quietly = TRUE)) {
-        apikey <- tryCatch(keyring::key_get(service = "OANDA_API_KEY"), error = function(e) {
-          message("Note: oanda_set_key() can be used to store your API key for automatic retrieval")
-          readline("Please enter OANDA API key: ")
-        })
-      } else {
-        apikey <- readline("Please enter OANDA API key: ")
-      }
-      keystore <<- apikey
+  if (requireNamespace("keyring", quietly = TRUE)) {
+
+    type <- readline("Please choose:\n(1) for practice account \n(2) for live account")
+
+    if (type == 1) {
+      keyring::key_set(service = "OANDA_API_KEY")
+    } else if (type == 2) {
+      keyring::key_set(service = "OANDA_LIVE_KEY")
+    } else {
+      message("Invalid choice - choice must be either 1 or 2")
     }
-    invisible(keystore)
+
+  } else {
+    message("Please install the 'keyring' package to store your OANDA API key")
   }
+
+  invisible()
+
 }
 

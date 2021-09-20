@@ -4,7 +4,7 @@
 \alias{oanda_stream}
 \title{OANDA Streaming Data}
 \usage{
-oanda_stream(instrument, server = c("practice", "live"), apikey)
+oanda_stream(instrument, server, apikey)
 }
 \arguments{
 \item{instrument}{string containing the base currency and quote currency
@@ -12,8 +12,9 @@ delimited by a '_' (for example "USD_JPY"). Use the
 \code{\link{oanda_instruments}} function to return a list of all valid
 instruments.}
 
-\item{server}{[default "practice"] select either the "practice" or "live" server
-depending on the account type held with OANDA.}
+\item{server}{(optional) specify the "practice" or "live" server according to
+the account type held. If not specified, will default to "practice", unless
+this has been changed by \code{\link{oanda_switch}}.}
 
 \item{apikey}{(optional) string containing the OANDA fxTrade API key (personal
 access token), or function that returns this string. Does not need to be
@@ -21,8 +22,8 @@ specified if already stored by oanda_set_key(). Can also be entered
 interactively if not specified.}
 }
 \value{
-Does not return a value, however the streaming data is output to the
-    console as a side effect.
+Invisible NULL on function exit. The streaming data is output as text
+    to the console.
 }
 \description{
 Stream live price and liquidity data for major currencies, metals,
@@ -32,6 +33,10 @@ Stream live price and liquidity data for major currencies, metals,
 \details{
 This function connects to the OANDA fxTrade Streaming API. Use the
     'Esc' key to stop the stream.
+
+    The output contains ANSI escape codes for console formatting, but
+    otherwise represents the raw feed without omission. Note that as this is
+    a raw stream, returned times are in UTC.
 
     For further details please refer to the OANDA fxTrade API vignette by
     running: \code{vignette("xoanda", package = "ichimoku")}.
@@ -51,10 +56,6 @@ This function connects to the OANDA fxTrade Streaming API. Use the
     not all aligned to the top of the second). This means that during
     periods of rapid price movement, different subscribers may observe
     different prices depending on their alignment.
-
-    The streamed data is formatted for easier reading, but otherwise
-    represents the raw feed without omission. Note that as this is a raw
-    stream, returned times are in UTC.
 }
 
 \examples{

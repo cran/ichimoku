@@ -1,13 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ichimoku <img src='man/figures/logo.jpg' align="right" height="79" />
+# ichimoku <img src='man/figures/logo.png' align="right" />
 
 <!-- badges: start -->
 
 [![CRAN
-Status](https://www.r-pkg.org/badges/version/ichimoku)](https://CRAN.R-project.org/package=ichimoku)
-[![r-universe](https://shikokuchuo.r-universe.dev/badges/ichimoku)](https://shikokuchuo.r-universe.dev/)
+Status](https://www.r-pkg.org/badges/version/ichimoku?color=0b800e)](https://CRAN.R-project.org/package=ichimoku)
+[![r-universe](https://shikokuchuo.r-universe.dev/badges/ichimoku?color=6bd54f)](https://shikokuchuo.r-universe.dev/)
 [![R-CMD-check](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/shikokuchuo/ichimoku/branch/main/graph/badge.svg)](https://codecov.io/gh/shikokuchuo/ichimoku?branch=main)
@@ -61,7 +61,7 @@ Simply `ichimoku()` and `plot()`:
 
 ``` r
 cloud <- ichimoku(TKR)
-plot(cloud, window = "2020-04/")
+plot(cloud, window = "2020-05/")
 ```
 
 <img src="man/figures/README-ichimoku-1.png" />
@@ -87,8 +87,8 @@ autostrat(cloud, n = 3)
 #> Periods in market      178                178               178              
 #> ---------------------  "----------"       "----------"      "----------"     
 #> Direction              "long"             "long"            "long"           
-#> Start                  2020-04-01         2020-04-01        2020-04-01       
-#> End                    2020-10-29         2020-10-29        2020-10-29       
+#> Start                  2020-04-20         2020-04-20        2020-04-20       
+#> End                    2020-12-23         2020-12-23        2020-12-23       
 #> Ticker                 "TKR"              "TKR"             "TKR"
 ```
 
@@ -128,7 +128,7 @@ autostrat(cloud, n = 3)
 
 -   [`strat()`](https://shikokuchuo.net/ichimoku/reference/strat.html) -
     to augment an ichimoku object with a strategy, including combined
-    and asymmetric complex strategies.
+    and asymmetric strategies.
 
 -   [`stratcombine()`](https://shikokuchuo.net/ichimoku/reference/stratcombine.html) -
     to create custom combined strategies.
@@ -140,6 +140,22 @@ autostrat(cloud, n = 3)
     to generate a numeric representation of the relationship between
     ichimoku cloud chart elements.
 
+## Vignettes
+
+Long-form documentation links:
+
+{ 1 } [Cloud Charts - The Reference
+Manual](https://shikokuchuo.net/ichimoku/articles/reference.html)
+
+{ 2 } [Beyond Visualization - Quantitative
+Strategies](https://shikokuchuo.net/ichimoku/articles/strategies.html)
+
+{ 3 } [Auxiliary
+Functions](https://shikokuchuo.net/ichimoku/articles/utilities.html)
+
+{ 4 } [The OANDA fxTrade
+API](https://shikokuchuo.net/ichimoku/articles/xoanda.html)
+
 ## References
 
 Sasaki, H. 佐々木 英信 (1996), *一目均衡表の研究 [ichimoku kinkouhyou
@@ -149,7 +165,7 @@ no kenkyuu]*. Tokyo, Japan: Toushi Radar.
 entity unaffiliated with the ichimoku package.
 
 Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko
-Hyo Strategies*. R package version 1.1.0,
+Hyo Strategies*. R package version 1.2.0,
 <https://CRAN.R-project.org/package=ichimoku>.
 
 –

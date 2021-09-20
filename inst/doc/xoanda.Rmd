@@ -20,11 +20,11 @@ knitr::opts_chunk$set(
 
 ## About OANDA fxTrade
 
-ichimoku contains an interface to the OANDA fxTrade API, creating a binding for the R language.
+ichimoku contains an interface, or binding for the R language, to the OANDA fxTrade API.
 
-OANDA is an authoritative source of foreign exchange data used by governments and global corporations alike. The API can be used for retrieving historical and live streaming price data for major currencies, metals, commodities, government bonds and stock indices.
+OANDA is a primary source of foreign exchange data used by corporations and governments around the world. The API can be used for retrieving historical and live streaming price data for major currencies, metals, commodities, government bonds and stock indices.
 
-It is considered a rich source of financial data with excellent availability. As an example, daily OHLC pricing data is available for major forex pairs from the start of 2005, with data granularity ranging from 5 seconds to monthly. For the total list of over 120 covered instruments please refer to the [Available Instruments](#available-instruments) section below.
+As an example of the financial data that is available: OHLC pricing data can be obtained for major forex pairs from the start of 2005 with granularity ranging from 5 seconds to monthly. For the total list of over 120 covered instruments please refer to the [Available Instruments](#available-instruments) section below.
 
 Please note that 'OANDA' and 'fxTrade' are trademarks owned by OANDA Corporation, an entity unaffiliated with the ichimoku package.
 
@@ -36,13 +36,25 @@ Registering for a 'demo' or 'practice' account is entirely free at the time of w
 
 After successful registration, a link can be found on your OANDA fxTrade account profile page 'Manage API Access' (My Account -> My Services -> Manage API Access). From there, a personal access token to use with the OANDA API can be generated, as well as revoked. This access token will enable all the OANDA functions in this package.
 
-Note: this package only contains functions for retrieving available instruments and price data. It does not contain any code which implements any trading capability whatsoever. Hence using your access token with this package should be safe even for live accounts. However, the access token can be used (outside of this package) for all operations on your account including placing orders and trades. It is recommended therefore, for maximum security, that you sign up for a demo/practice account and use the access token for that account even if you hold an existing live account with OANDA.
-
 ## Setting your OANDA API Key
 
 If the 'keyring' package is available on your machine, the OANDA API key (personal access token) can be set once and saved in your system credential store by using `oanda_set_key()`. This will enable it to be retrieved automatically for all subsequent sessions.
 
+Separate keys can be set for practice and live accounts; please choose the correct account type when prompted.
+
 If an access token is revoked and re-generated, please remember to set the API key again through the `oanda_set_key()` function.
+
+## Using a Live Account
+
+If you are using an access token for a live (real money) account, you will want to call `oanda_switch()` at the beginning of each session; this switches the default server from the practice server to the live server. Settings will persist only until the end of the session.
+
+```{r oandaswitch}
+library(ichimoku)
+
+oanda_switch()
+```
+
+Note: this package only contains functions for retrieving available instruments and price data. It does not contain code to implement any trading capability whatsoever. However, a personal access token can be used (outside of this package) for all operations on your account including placing orders and trades. Please be aware of this and take the appropriate precautions when using your access token.
 
 ## The OANDA Functions
 
@@ -60,13 +72,12 @@ The arguments to the function are phrased identically to that of the API itself 
 - `from` (optional) the start of the time range for which to fetch price data, for example "2020-02-01"
 - `to` (optional) the end of the time range for which to fetch price data, for example "2020-06-30"
 - `price` [default "M"] the pricing component, one of "M" (midpoint), "B" (bid) or "A" (ask)
-- `server` [default "practice"] select either the "practice" or "live" server depending on the account type held with OANDA
+- `server` (optional) Specify the "practice" or "live" server according to the account type held with OANDA. If not specified, will default to "practice", unless this has been changed by `oanda_switch()`.
 - `apikey` (optional) string containing the OANDA fxTrade API key (personal access token). This argument is designed for specifying a function that returns such a string rather than the string itself, which could be potentially unsecure. This allows other packages that provide secure storage of secrets to be used if preferred over 'keyring'
 
 Note: if both `from` and `to` are specified and the request would result in over 5000 periods being returned, the function automatically prompts the user to confirm if multiple requests should be submitted. Unless the user response is "n" or "no", the data will proceed to be downloaded with rate limiting in place as per API best practices, and merged together into a single dataframe.
 
 ```{r oanda, eval=FALSE}
-library(ichimoku)
 oanda("USD_JPY", count = 3, from = "2010-11-01", price = "B")
 ```
 ```{r oanda2, echo=FALSE}
@@ -103,7 +114,9 @@ Requires a single argument, the 'instrument' to stream data for (please refer to
 
 The 'server' and 'apikey' arguments are also available if required.
 
-The streamed data is formatted for legibility, including the use of colour blocks in the console, but otherwise represents the raw data feed without omission. As this is a raw feed, please note that the returned times are in UTC.
+![](oanda-stream.jpg)
+
+The stream output contains injected ANSI escape codes to create the colour blocks in the console, but otherwise represents the raw data feed without omission. As this is a raw feed, please note that the returned times are in UTC.
 
 The following should be noted from the streaming API documentation:
 
@@ -124,117 +137,72 @@ The arguments are identical to `oanda()` above with the addition of:
 
 The arguments 'from' and 'to' are excluded as they are not relevant in this context.
 
-If focus is not initially on the plot pane (in RStudio), please switch to it to view the chart.
+```{r oandac, eval=FALSE}
+# For a live Palladium price chart:
+oanda_chart("XPD_USD")
+```
 
-Note also that the periods displayed on the chart will be fewer than the 'count' specified. This is by design to ensure a full cloud is always displayed (i.e. there are no missing values for certain cloud lines at the start of the data). If using the default cloud periods, the first 77 datapoints will be excluded from the chart. Please take this into account when setting the 'count' parameter.
+If using RStudio, please switch to the plots plane (if not already in focus) to view the chart.
+
+Note that the periods displayed on the chart will be fewer than the 'count' specified - using default cloud periods, the first 77 datapoints will be excluded. This is by design to ensure a full cloud is displayed (i.e. there are no missing values for any cloud lines at the start of the data). Please take this into account when setting the 'count' parameter.
+
+On exit from the function, the ichimoku object underlying the chart will be returned (invisibly). This allows the data to be saved simply by assigning to an object.
+
+```{r oandacs, eval=FALSE}
+# To access the data, simply assign the return value to an object:
+cloud <- oanda_chart("XPD_USD")
+```
 
 ### `oanda_studio()`
 
 Create an interactive session in an R Shiny app for working with real-time Ichimoku cloud charts. Provides a live analysis environment where parameters may be set interactively as required. The cursor infotip provides ready access to the data directly from the chart.
 
-As all parameters can be set interactively in-app, the function may simply be launched as `oanda_studio()` without specifying any arguments. Otherwise, parameters may be set beforehand in the same way as `oanda_chart()`.
+As all parameters can be set interactively in-app, `oanda_studio()` may be called without specifying any arguments. Otherwise, parameters may be set beforehand in the same way as `oanda_chart()`.
+
+```{r oandas, eval=FALSE}
+oanda_studio()
+```
+![](oanda-studio.jpg)
 
 The following additional parameters can be used to customise the behaviour of the Shiny environment:
 
 - `...` additional arguments passed to `ichimoku()` for calculating the ichimoku cloud, `autoplot()` to set chart parameters, or the 'options' argument of `shiny::shinyApp()`
 - `launch.browser` [default TRUE] If TRUE, the system’s default web browser will be launched automatically after the app is started. The value of this argument can also be a function to call with the application’s URL. To use the default Shiny viewer in RStudio, please specify `getOption("shiny.launch.browser")`
 
-## Available Instruments
+#### Downloading Data
 
-The list of financial instruments below serves as a reference only and may not be exhaustive and/or differ from those available for your account type or country/region.
+The ichimoku object underlying the live cloud chart can be saved by selecting the Data Archive button. 
+
+This button uses `archive()` to save the ichimoku object to disk. The filename will be of the form: `instrument_granularity_price.rda`, e.g. `SUGAR_USD_D_A.rda`. If confirmed, the file is saved to the browser's default download location.
+
+To read back the file, use `archive()` supplying the quoted file path / name, for example: `archive("~/Downloads/SUGAR_USD_D_A.rda")`.
+
+## Available Instruments
 
 The list of financial instruments available for your account may be retrieved by `oanda_instruments()`. The available instruments are also automatically populated as an input in `oanda_studio()`.
 
-```{r instruments, echo=FALSE}
-data.frame(
-  stringsAsFactors = FALSE,
-              name = c("AU200_AUD","AUD_CAD",
-                       "AUD_CHF","AUD_HKD","AUD_JPY","AUD_NZD","AUD_SGD","AUD_USD",
-                       "BCO_USD","CAD_CHF","CAD_HKD","CAD_JPY","CAD_SGD",
-                       "CHF_HKD","CHF_JPY","CHF_ZAR","CN50_USD","CORN_USD",
-                       "DE10YB_EUR","DE30_EUR","EU50_EUR","EUR_AUD",
-                       "EUR_CAD","EUR_CHF","EUR_CZK","EUR_DKK","EUR_GBP","EUR_HKD",
-                       "EUR_HUF","EUR_JPY","EUR_NOK","EUR_NZD","EUR_PLN",
-                       "EUR_SEK","EUR_SGD","EUR_TRY","EUR_USD","EUR_ZAR",
-                       "FR40_EUR","GBP_AUD","GBP_CAD","GBP_CHF","GBP_HKD",
-                       "GBP_JPY","GBP_NZD","GBP_PLN","GBP_SGD","GBP_USD",
-                       "GBP_ZAR","HK33_HKD","HKD_JPY","IN50_USD","JP225_USD",
-                       "NAS100_USD","NATGAS_USD","NL25_EUR","NZD_CAD","NZD_CHF",
-                       "NZD_HKD","NZD_JPY","NZD_SGD","NZD_USD","SG30_SGD",
-                       "SGD_CHF","SGD_JPY","SOYBN_USD","SPX500_USD",
-                       "SUGAR_USD","TRY_JPY","TWIX_USD","UK100_GBP","UK10YB_GBP",
-                       "US2000_USD","US30_USD","USB02Y_USD","USB05Y_USD",
-                       "USB10Y_USD","USB30Y_USD","USD_CAD","USD_CHF","USD_CNH",
-                       "USD_CZK","USD_DKK","USD_HKD","USD_HUF","USD_INR",
-                       "USD_JPY","USD_MXN","USD_NOK","USD_PLN","USD_SEK",
-                       "USD_SGD","USD_THB","USD_TRY","USD_ZAR","WHEAT_USD",
-                       "WTICO_USD","XAG_AUD","XAG_CAD","XAG_CHF","XAG_EUR",
-                       "XAG_GBP","XAG_HKD","XAG_JPY","XAG_NZD","XAG_SGD",
-                       "XAG_USD","XAU_AUD","XAU_CAD","XAU_CHF","XAU_EUR","XAU_GBP",
-                       "XAU_HKD","XAU_JPY","XAU_NZD","XAU_SGD","XAU_USD",
-                       "XAU_XAG","XCU_USD","XPD_USD","XPT_USD","ZAR_JPY"),
-              type = c("CFD","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CFD","CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CFD","CFD","CFD",
-                       "CFD","CFD","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY","CFD",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CFD","CURRENCY","CFD","CFD","CFD","CFD","CFD",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CFD","CURRENCY","CURRENCY","CFD",
-                       "CFD","CFD","CURRENCY","CFD","CFD","CFD","CFD","CFD",
-                       "CFD","CFD","CFD","CFD","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CURRENCY","CURRENCY","CURRENCY",
-                       "CURRENCY","CFD","CFD","METAL","METAL","METAL","METAL",
-                       "METAL","METAL","METAL","METAL","METAL","METAL",
-                       "METAL","METAL","METAL","METAL","METAL","METAL","METAL",
-                       "METAL","METAL","METAL","METAL","CFD","METAL",
-                       "METAL","CURRENCY"),
-       displayName = c("Australia 200","AUD/CAD",
-                       "AUD/CHF","AUD/HKD","AUD/JPY","AUD/NZD","AUD/SGD",
-                       "AUD/USD","Brent Crude Oil","CAD/CHF","CAD/HKD","CAD/JPY",
-                       "CAD/SGD","CHF/HKD","CHF/JPY","CHF/ZAR","China A50",
-                       "Corn","Bund","Germany 30","Europe 50","EUR/AUD",
-                       "EUR/CAD","EUR/CHF","EUR/CZK","EUR/DKK","EUR/GBP",
-                       "EUR/HKD","EUR/HUF","EUR/JPY","EUR/NOK","EUR/NZD",
-                       "EUR/PLN","EUR/SEK","EUR/SGD","EUR/TRY","EUR/USD",
-                       "EUR/ZAR","France 40","GBP/AUD","GBP/CAD","GBP/CHF",
-                       "GBP/HKD","GBP/JPY","GBP/NZD","GBP/PLN","GBP/SGD","GBP/USD",
-                       "GBP/ZAR","Hong Kong 33","HKD/JPY","India 50",
-                       "Japan 225","US Nas 100","Natural Gas","Netherlands 25",
-                       "NZD/CAD","NZD/CHF","NZD/HKD","NZD/JPY","NZD/SGD",
-                       "NZD/USD","Singapore 30","SGD/CHF","SGD/JPY","Soybeans",
-                       "US SPX 500","Sugar","TRY/JPY","Taiwan Index","UK 100",
-                       "UK 10Y Gilt","US Russ 2000","US Wall St 30",
-                       "US 2Y T-Note","US 5Y T-Note","US 10Y T-Note","US T-Bond",
-                       "USD/CAD","USD/CHF","USD/CNH","USD/CZK","USD/DKK",
-                       "USD/HKD","USD/HUF","USD/INR","USD/JPY","USD/MXN",
-                       "USD/NOK","USD/PLN","USD/SEK","USD/SGD","USD/THB",
-                       "USD/TRY","USD/ZAR","Wheat","West Texas Oil","Silver/AUD",
-                       "Silver/CAD","Silver/CHF","Silver/EUR","Silver/GBP",
-                       "Silver/HKD","Silver/JPY","Silver/NZD","Silver/SGD",
-                       "Silver","Gold/AUD","Gold/CAD","Gold/CHF","Gold/EUR",
-                       "Gold/GBP","Gold/HKD","Gold/JPY","Gold/NZD","Gold/SGD",
-                       "Gold","Gold/Silver","Copper","Palladium","Platinum",
-                       "ZAR/JPY")
-)
+The list below serves as a reference only and may differ from those actually available for your account type and/or country/region.
+
+```{r oandai, eval=FALSE}
+oanda_instruments()
 ```
+```{r ins, echo=FALSE}
+print(ichimoku:::x_oanda_instruments)
+```
+
+Note: the above table is saved as internal package data and used as a fallback if the API call fails. In such a case, a warning is issued once per session as subsequent calls will return the cached list.
 
 ## Caching Implementation
 
-The package retrieves the following once only during a single R session (the first time they are used) and caches the variables for further use throughout the session:
+The package retrieves the following once only during a single session (the first time they are used) and caches the variables for further use throughout the session:
 
 - OANDA fxTrade API key
 - OANDA fxTrade account associated with an fxTrade API key
 - OANDA list of available instruments
 
-If for any reason these become invalid or outdated, please restart your R session to enable these variables to be refreshed.
+If for any reason these become invalid or outdated, please re-load the package (or restart your R session) to enable these variables to be refreshed.
+
+Calling `oanda_switch()` will also clear all cached variables.
 
 ## References
 
@@ -242,6 +210,6 @@ If for any reason these become invalid or outdated, please restart your R sessio
 
 OANDA fxTrade API developer website: <https://developer.oanda.com/>.
 
-Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.1.0, <https://CRAN.R-project.org/package=ichimoku>.
+Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.0, <https://CRAN.R-project.org/package=ichimoku>.
 
 ---

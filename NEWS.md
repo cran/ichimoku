@@ -1,15 +1,50 @@
+# ichimoku 1.2.0
+
+#### New features:
+
+* `ichimoku()` adds ability to create *pseudo* cloud charts from single series price data where OHLC data is not available.
+* `ichimoku()` gains a 'keep.data' argument for retaining additional data present in the input object.
+* Plot functions gain a 'type' argument to enable a choice of oscillator (R-type and S-type) to be shown as a sub-plot.
+* Plot functions gain a 'custom' argument to enable a custom data variable to be plot as a line or bar chart in the sub-plot area.
+* `oanda_studio()` adds a button for saving the underlying data of the live ichimoku cloud chart using `archive()`.
+* `oanda_chart()` now returns the underlying ichimoku object (invisibly) on function exit, providing easy access to the chart data.
+* `oanda_set_key()` adds support for storing both practice and live account API keys.
+* New `oanda_switch()` function allows the default server to be switched from 'practice' to 'live' for the session.
+
+#### Updates:
+
+* Adds fallback for `oanda_instruments()` using an internal instruments table when the API call fails.
+* `plot.ichimoku()` now returns the original object invisibly, use autoplot() and extraplot() to return plot objects.
+* For all plot functions, the argument 'message' is renamed to 'subtitle'.
+* Plots now show Tenkan-sen over Kijun-sen.
+* Slight adjustments to original theme: cloud edges now plum-tinted for Senkou A, cyan-tinted for Senkou B.
+* Fixes certain cases where calculation of the future cloud could fail for data frequency lower than daily.
+* Updates to `sample_ohlc_data` to add volume column, adhere to working days etc.
+* OANDA internal functions re-implemented as encapsulated closure list.
+* `oanda_get_key()` is removed as functionality incorporated elsewhere.
+* New sub-plot functionality adds 'gridExtra' package dependency.
+* 'rlang' package dependency is retired as no longer required.
+* Internal C++ code: now includes only required cpp11 headers, adds rolling mean function, miscellaneous improvements.
+* Minor performance improvements for `ichimoku()`, plot functions, OANDA functions and various utilities.
+* Documentation refresh.
+
 # ichimoku 1.1.0
 
-* `archive()` moves to using the native RData format, enabling any R object to be stored perfectly with sha256 verfication. 'ArrowTabular' method for `ichimoku()` removed. 'arrow' optional dependency is retired.
-* Fixes data types bug present in v1.0.0 for dataframes returned by `oanda()`.
-* Fixes critical issues affecting the Solaris platform.
+#### New features:
+
+* `archive()` moves to using the native RData format, enabling any R object to be stored perfectly with sha256 verification.
+
+#### Updates:
+
+* 'ArrowTabular' method for `ichimoku()` removed and 'arrow' optional dependency retired.
+* Fixes data types issue affecting dataframes returned by `oanda()` in v1.0.0.
+* Fixes critical issues affecting the Solaris platform in v1.0.0.
 
 # ichimoku 1.0.0
 
-#### ichimoku object specification release:
+#### *ichimoku object specification v1 release:*
 
-* ichimoku objects created in versions prior to 0.3.51 will no longer work correctly with newer versions of the package.
-* Please upgrade to the latest package version and run `ichimoku()` on previously-created objects to re-create them according to the new specification (data is preserved)
+* ichimoku objects created in v0.x will no longer work correctly with newer versions of the package. Upgrade to the latest package version and run `ichimoku()` on previously-created objects to re-create them according to the new specification (data is preserved).
 
 #### New features:
 
@@ -25,14 +60,14 @@
 #### Updates:
 
 * Implements caching of certain OANDA variables so that they are retrieved once and then used throughout a session.
-* Charts of daily or lower frequency now have prettier and more usefully-aligned breaks using custom algorithm.
-* Improved handling of timezones. OANDA data and charts will now show correctly in the user timezone.
+* Charts of daily or lower frequency now have prettier and more usefully-aligned breaks.
+* Improved handling of timezones: OANDA data and charts will now show correctly in the user timezone.
 * `oanda()` arguments 'from' and 'to' can now take any date-time format convertible to POSIXct.
 * `oanda_studio()` subsets the plot window so as to always show a full cloud, consistent with the behaviour of `oanda_chart()`.
 * `oanda_chart()` and `oanda_studio()` add explicit support for the 'periods' argument passed to `ichimoku()`.
 * `oanda_chart()` now passes on additional parameters to `autoplot()`.
 * `ichimoku()` now enforces data types on the price data for higher certainty of success, and has more robust handling of matrices and 'data.frame' compatible formats such as 'tibble'.
-* Fixes bug which caused `oanda()` not to return weekly data in certain cases.
+* Fixes issue which caused `oanda()` not to return weekly data in certain cases.
 * Corrects trade success statistics for short strategies returned by `strat()`.
 * The following functions are no longer exported to keep the package tidy: `grid_dup()`, `maxOver()`, `minOver()`, `oanda_accounts()`.
 * `sample_ohlc_data` slightly lengthened to better demonstrate strat features.
