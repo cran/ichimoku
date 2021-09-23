@@ -47,7 +47,7 @@
 #'     relationship between ichimoku cloud chart elements.}
 #' }
 #' @encoding UTF-8
-#' @author Charlie Gao <\email{charlie.gao@@shikokuchuo.net}>
+#' @author Charlie Gao \email{charlie.gao@@shikokuchuo.net}
 #'     (\href{https://orcid.org/0000-0002-0750-061X}{ORCID})
 #' @references Sasaki, H. (1996), \emph{ichimoku kinkouhyou no kenkyuu}. Tokyo,
 #'     Japan: Toushi Radar.
@@ -56,7 +56,7 @@
 #'     unaffiliated with the ichimoku package.
 #'
 #'     Gao, C. (2021), \emph{ichimoku: Visualization and Tools for Ichimoku
-#'     Kinko Hyo Strategies}. R package version 1.2.0,
+#'     Kinko Hyo Strategies}. R package version 1.2.1,
 #'     \url{https://CRAN.R-project.org/package=ichimoku}.
 #'
 #' @useDynLib ichimoku, .registration = TRUE
@@ -65,8 +65,10 @@
 #' @importFrom ggplot2 autoplot ggplot aes geom_ribbon geom_line geom_segment
 #'     geom_rect scale_color_manual scale_fill_manual guides scale_x_datetime
 #'     scale_x_continuous scale_y_continuous labs theme_grey theme rel margin
-#'     element_rect element_line element_text element_blank %+replace%
-#' @importFrom gridExtra grid.arrange
+#'     element_rect element_line element_text element_blank ggplotGrob
+#'     %+replace%
+#' @importFrom grid grid.draw grid.newpage unit
+#' @importFrom gtable gtable gtable_add_grob
 #' @importFrom jsonlite parse_json
 #' @importFrom stats na.omit setNames
 #' @importFrom xts xts endpoints

@@ -402,13 +402,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="df_append" class="section level4">
 <h4>df_append()</h4>
-<p>Update a ‘data.frame’ object with new data. Can be used to append new updated time series data to an existing dataframe, where each observation is indexed by a unique timestamp.</p>
+<p>Update a ‘data.frame’ object with new data. Can be used to append new updated time series data to an existing dataframe, where each observation is indexed by a unique timestamp in a column headed ‘time’.</p>
 <p>Takes 2 arguments:</p>
 <ul>
 <li><code>new</code> data.frame object containing new data.</li>
 <li><code>old</code> data.frame object containing existing data.</li>
 </ul>
 <p>Can be used to update price dataframes retrieved by <code>oanda()</code>. The function is designed to update existing data with new values as they become available. As opposed to <code>df_merge()</code>, the data in ‘new’ will overwrite the data in ‘old’ rather than create duplicates.</p>
+<p>If the ‘timestamp’ attribute exists in ‘new’, for example in pricing data returned by <code>oanda()</code>, this is retained. All other non-required attributes are dropped.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>data1 <span class="ot">&lt;-</span> sample_ohlc_data[<span class="dv">7</span><span class="sc">:</span><span class="dv">10</span>, ]</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>data1</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          time  open  high   low close volume</span></span>
@@ -443,7 +444,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
-<p>Gao, C. (2021), <em>ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies</em>. R package version 1.2.0, <a href="https://CRAN.R-project.org/package=ichimoku" class="uri">https://CRAN.R-project.org/package=ichimoku</a>.</p>
+<p>Gao, C. (2021), <em>ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies</em>. R package version 1.2.1, <a href="https://CRAN.R-project.org/package=ichimoku" class="uri">https://CRAN.R-project.org/package=ichimoku</a>.</p>
 <hr />
 </div>
 
