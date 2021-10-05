@@ -49,7 +49,7 @@ test_that("ichimoku error handling ok", {
   expect_error(ichimoku(recursive, regexp = "character"))
   expect_error(ichimoku("recursive", regexp = "character"))
   expect_error(ichimoku(data.frame(time = 1:10)), regexp = "not convertible")
-  expect_error(ichimoku(sample_ohlc_data[-1]), regexp = "Valid date-time")
+  expect_error(ichimoku(sample_ohlc_data[-1]), regexp = "valid date-time")
   expect_error(ichimoku(sample_ohlc_data[1, ]), regexp = "longer than")
   expect_error(ichimoku(sample_ohlc_data[, -5]), regexp = "data not found")
   expect_warning(ichimoku(sample_ohlc_data[, -3]), regexp = "pseudo-OHLC data")
@@ -63,6 +63,6 @@ test_that("is.ichimoku ok", {
 })
 
 test_that("print.ichimoku print method ok", {
-  expect_s3_class(print(cloud), "ichimoku")
-  expect_s3_class(print(cloud, plot = FALSE), "ichimoku")
+  expect_output(expect_s3_class(print(cloud), "ichimoku"))
+  expect_output(expect_s3_class(print(cloud, plot = FALSE), "ichimoku"))
 })

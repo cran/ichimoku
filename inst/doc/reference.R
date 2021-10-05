@@ -46,7 +46,7 @@ print(kumo[100,], plot = FALSE, digits = 4)
 #  ichimoku(TKR, holidays = timeDate::holidayNYSE())
 #  
 #  # For a market that trades 24/7:
-#  ichimoku(TKR, noholidays = TRUE)
+#  ichimoku(TKR, holidays = NULL)
 #  
 
 ## ----plot2--------------------------------------------------------------------

@@ -62,9 +62,9 @@ data2
 df_merge(data1, data2)
 
 ## ----dfappend-----------------------------------------------------------------
-data1 <- sample_ohlc_data[7:10, ]
+data1 <- sample_ohlc_data[1:8, ]
 data1
-data2 <- sample_ohlc_data[1:8, ]
+data2 <- sample_ohlc_data[7:10, ]
 data2
-df_append(data1, data2)
+df_append(data2, data1)
 
