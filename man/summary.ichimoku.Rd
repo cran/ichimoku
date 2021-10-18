@@ -2,7 +2,7 @@
 % Please edit documentation in R/ichimoku.R
 \name{summary.ichimoku}
 \alias{summary.ichimoku}
-\title{Summary of Ichimoku Strategies}
+\title{Summary of Ichimoku Objects and Strategies}
 \usage{
 \method{summary}{ichimoku}(object, strat = TRUE, ...)
 }
@@ -10,30 +10,35 @@
 \item{object}{an object of class 'ichimoku'.}
 
 \item{strat}{[default TRUE] to show the strategy summary if present. Set to
-FALSE to show the data summary instead.}
+FALSE to show the object summary instead.}
 
-\item{...}{additional arguments to be passed along.}
+\item{...}{arguments passed to or from other methods.}
 }
 \value{
-A matrix containing the strategy summary if present, otherwise a table
-    containing the data summary.
+A matrix containing the strategy summary, if present and 'strat' is
+    set to TRUE, otherwise a character vector containing an abbreviated object
+    summary (the full object summary is output to the console).
 }
 \description{
-Custom summary method for ichimoku objects for viewing strategies.
+Display summary information for an ichimoku object or its strategy.
 }
 \details{
 This function is an S3 method for the generic function summary() for
     class 'ichimoku'. It can be invoked by calling summary(x) on an object 'x'
     of class 'ichimoku'.
-}
-\section{Further Details}{
 
-    Please refer to the strategies vignette by running:
-    \code{vignette("strategies", package = "ichimoku")}
-}
+    Performs basic validation for an ichimoku object and will inform if an
+    ichimoku object contains invalid information.
 
+    For further details please refer to the reference vignette by calling:
+    \code{vignette("reference", package = "ichimoku")} and the strategies
+    vignette by calling: \code{vignette("strategies", package = "ichimoku")}
+}
 \examples{
-strat <- strat(ichimoku(sample_ohlc_data, ticker = "TKR"))
+cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
+summary(cloud)
+
+strat <- strat(cloud)
 summary(strat)
 
 }

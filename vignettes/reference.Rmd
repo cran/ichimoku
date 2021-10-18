@@ -130,17 +130,24 @@ Optional arguments:
 ```{r ichimoku}
 cloud <- ichimoku(TKR)
 
-print(cloud[100:110,], plot = FALSE, digits = 4)
+print(cloud[100:110, ], plot = FALSE, digits = 4)
 ```
 
 A section (rows 100 to 110) of the ichimoku object is shown above. Note that print is called setting 'plot = FALSE' to return just the data to the console. The default print method for ichimoku objects also plots the cloud chart to the graphical device.
 
-```{r ichimokunotrun, eval = FALSE}
-# to view chart as well as data, simply issue:
-cloud
+Use `str()` for a compact display of the object structure:
+
+```{r ichimokustr}
+str(cloud)
 ```
 
-As an ichimoku object inherits the ‘xts’ and ‘zoo’ classes, all existing methods for these classes should work seamlessly. For working with ichimoku objects, please see the section [re-exports](#re-exports).
+The summary method using `summary()` will also provide a brief description of the data:
+
+```{r ichimokusummary}
+summary(cloud)
+```
+
+As an ichimoku object inherits the ‘xts’ and ‘zoo’ classes, all existing methods for these classes should work seamlessly. Please refer to the section [Working with ichimoku objects](#working-with-ichimoku-objects).
 
 #### ichimoku.ichimoku()
 
@@ -150,17 +157,17 @@ Calling `ichimoku()` on an ichimoku object containing a strategy will return the
 
 #### Preserving Data
 
-The input object may contain additional data not required for ichimoku analysis, such as volume etc. To retain such data in the ichimoku object specify `keep.data = TRUE` when calling `ichimoku()`.
+The input object may contain additional data not required for ichimoku analysis, such as volume etc. To retain such data in the ichimoku object, specify `keep.data = TRUE` when calling `ichimoku()`.
 
 ```{r ichimokupreserve}
 kumo <- ichimoku(TKR, keep.data = TRUE)
 
-print(kumo[100,], plot = FALSE, digits = 4)
+print(kumo[100, ], plot = FALSE, digits = 4)
 ```
 
-This consolidates all relevant data into a single object. There is the additional benefit that it can now be plotted as a sub-plot beneath the main ichimoku cloud chart (see [custom sub-plots](#custom-sub-plots)).
+This consolidates all relevant data into a single object. The additional data can now also be plotted as a sub-plot beneath the main ichimoku cloud chart (see [custom sub-plots](#custom-sub-plots)).
 
-Note: only numeric data or data coercible to numeric type is preserved in this way, and other types will introduce NAs. This is as ichimoku objects are based on the 'xts' format which essentially uses a numeric matrix that does not support multiple data types. Custom attributes set on the input object (such as a timestamp or data source) are also preserved.
+Note: only numeric data or data coercible to numeric type is preserved in this way, and other types will introduce NAs. This is as the core data of an ichimoku object is a numeric matrix that does not support multiple data types. Custom attributes set on the input object (such as a timestamp or data source) are also preserved.
 
 #### Defining custom holidays
 
@@ -168,7 +175,7 @@ When calculating the future cloud for daily data, `ichimoku()` makes a call to t
 
 To define other dates as non-trading days, a vector of custom holidays may be supplied via a 'holidays' argument to `ichimoku()` which is then passed on to the `tradingDays()` function.
 
-If the relevant market trades continuously on a 24/7 basis, specify 'holidays = NULL'. This will bypass the logic of `tradingDays()` and return all dates for calculating the future cloud.
+If the relevant market trades continuously on a 24/7 basis, specify 'holidays = NULL'. This will bypass the logic of `tradingDays()` and return all dates when calculating the future cloud.
 
 ```{r holidays, eval = FALSE}
 # Holidays can be specified directly via a vector of dates:
@@ -182,6 +189,32 @@ ichimoku(TKR, holidays = timeDate::holidayNYSE())
 ichimoku(TKR, holidays = NULL)
 
 ```
+
+#### Working with ichimoku objects
+
+The following generic functions have optimised S3 methods for ichimoku objects:
+
+- `as.data.frame()` for converting an ichimoku object to a dataframe. Set the argument `keep.attrs = TRUE` to retain the attributes of the original ichimoku object
+- `index()` to extract the index of an ichimoku object as a vector of POSIXct values
+- `coredata()` to extract the columns of an ichimoku object as a numeric matrix
+
+As the resulting objects are simple base types, they can easily be modified as required.
+
+The below shows how to faithfully re-create an ichimoku object from its components:
+
+```{r bind}
+index <- index(cloud)
+core <- coredata(cloud)
+
+cloud2 <- ichimoku(ichimoku(cbind(index, core), ticker = attr(cloud, "ticker")))
+identical(cloud, cloud2)
+```
+
+Note specifically that ichimoku needs to be called twice - first to convert the matrix resulting from the `cbind()` operation, and then again to recalculate using the OHLC data contained within the object as the original data would have contained NAs. The ticker name should also be set explicitly as in the example. 
+
+A warning is issued about checking the validity of POSIX times, which in this case is safe to ignore as the POSIXct values in 'index' were simply coerced to numeric during the `cbind()` operation but remain valid.
+
+For additional functionality, the 'xts' package may be loaded to access a wide range of methods available for 'xts' objects, for example changing the periodicity of the data.
 
 ### plot()
 
@@ -230,7 +263,7 @@ Note that this corresponds to the usual RSI oscillator definition, although not 
 plot(cloud, type = "r")
 ```
 
-An **S-type oscillator** is based on the formula for the stochastic indicator. This is a 2-line indicator with fast and slow lines with look-back windows corresponding to the fast and medium cloud periods respectively (default 9 and 26). The fast line is quicker to react to price changes and the slow line can be used to provide confirmation or divergence.
+An **S-type oscillator** is based on the formula for the stochastic indicator. This is a 2-line indicator with fast and slow lines with look-back windows corresponding to the fast and medium cloud periods respectively (default 9 and 26). The fast line is quicker to react to price changes and the slow line can be used for confirmation / divergence.
 
 The fast S-type line is calculated as 100 times the ratio of the closing price minus the [9] period low to the [9] period high minus the [9] period low. The slow S-type line is calculated as 100 times the ratio of the closing price minus the [26] period low to the [26] period high minus the [26] period low.
 
@@ -316,9 +349,13 @@ When an archive is read back, the sha256 hash of the restored object is checked 
 
 ichimoku performs the following data validation steps before attempting to compute the cloud values. Failure at any step causes `ichimoku()` to halt.
 
-1. Searches column names of the data object for the first column containing 'index', 'date' or 'time' (not case-dependent). If such a column is found but the data is not convertible into POSIXct format, an error is returned
+1. Searches column names of the data object for the first column containing 'index', 'date' or 'time' (not case-dependent). 
 
-  + *If not found:* searches in row names of the data object if present. If the row names do not contain data that is convertible into POSIXct format, an error is returned. Note: 'xts' objects are always indexed by a valid timestamp and ichimoku handles this automatically
+  + *If found:* will attempt to convert the column to POSIXct by `as.POSIXct()`. If this fails, will check if the column is numeric and if so convert it to POSIXct by assuming the numeric value is a valid unix/POSIX time (a warning is issued to check the validity in case the numeric value is not a valid POSIX time)
+
+  + *If not found:* will attempt to convert the row names to POSIXct by `as.POSIXct()`. If this fails, will check if the row names are integer values that are not just the default row names for data frames, and if so convert it to POSIXct by assuming the numeric value is a valid unix/POSIX time (a warning is issued to check the validity in case the numeric value is not a valid POSIX time)
+
+  + Note: 'xts' objects are always indexed by a valid timestamp and ichimoku handles this automatically
 
 2. Searches for HLC price data in columns with names containing 'high', 'low' and 'close' (not case-dependent) respectively
 
@@ -364,29 +401,11 @@ There may however still be other issues with the input data that prevent cloud v
   + `$periodicity` - periodicity of the data in seconds [numeric]
   + `$ticker` - instrument identifier [character]
 
-### Re-exports
-
-For convenience, the following functions are re-exported by ichimoku:
-
-*from 'zoo':*
-
-- `index()` to extract the index of an ichimoku object
-- `coredata()` to extract the columns of an ichimoku object as a numeric matrix (without the date index)
-
-*from 'xts':* 
-
-- `xts()` to create an 'xts' object from data and a date-time index, use `xts(data, index)`
-
-If modifications have been made to the data of an ichimoku object, call `ichimoku()` on the modified object to re-create the object according to the correct specification.
-
-For additional functionality, the 'xts' package may be loaded to access a wide range of methods available for 'xts' objects, for example changing the periodicity of the data.
-
 ### API modifications
 
 #### Since version 0.x
 
-- ichimoku objects created in v0.x will no longer work correctly in v1.x and later of the package
-- To ensure compatibility with the ichimoku object specification v1, please upgrade to the latest package version and run `ichimoku()` on previously-created objects to re-create them according to the new specification (data is preserved)
+- ichimoku objects created in v0.x will no longer work correctly in v1.x and later of the package. To ensure compatibility with the ichimoku object specification v1, please upgrade to the latest package version and run `ichimoku()` on previously-created objects to re-create them according to the new specification (data is preserved)
 
 ## Dependencies
 
@@ -413,6 +432,6 @@ Optional (enables additional features):
 
 Sasaki, H. 佐々木 英信 (1996), *一目均衡表の研究 [ichimoku kinkouhyou no kenkyuu]*. Tokyo, Japan: Toushi Radar.
 
-Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.2, <https://CRAN.R-project.org/package=ichimoku>.
+Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.4, <https://CRAN.R-project.org/package=ichimoku>.
 
 ---

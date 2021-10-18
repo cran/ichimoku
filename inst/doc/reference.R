@@ -26,16 +26,18 @@ head(TKR)
 ## ----ichimoku-----------------------------------------------------------------
 cloud <- ichimoku(TKR)
 
-print(cloud[100:110,], plot = FALSE, digits = 4)
+print(cloud[100:110, ], plot = FALSE, digits = 4)
 
-## ----ichimokunotrun, eval = FALSE---------------------------------------------
-#  # to view chart as well as data, simply issue:
-#  cloud
+## ----ichimokustr--------------------------------------------------------------
+str(cloud)
+
+## ----ichimokusummary----------------------------------------------------------
+summary(cloud)
 
 ## ----ichimokupreserve---------------------------------------------------------
 kumo <- ichimoku(TKR, keep.data = TRUE)
 
-print(kumo[100,], plot = FALSE, digits = 4)
+print(kumo[100, ], plot = FALSE, digits = 4)
 
 ## ----holidays, eval = FALSE---------------------------------------------------
 #  # Holidays can be specified directly via a vector of dates:
@@ -48,6 +50,13 @@ print(kumo[100,], plot = FALSE, digits = 4)
 #  # For a market that trades 24/7:
 #  ichimoku(TKR, holidays = NULL)
 #  
+
+## ----bind---------------------------------------------------------------------
+index <- index(cloud)
+core <- coredata(cloud)
+
+cloud2 <- ichimoku(ichimoku(cbind(index, core), ticker = attr(cloud, "ticker")))
+identical(cloud, cloud2)
 
 ## ----plot2--------------------------------------------------------------------
 plot(cloud, window = "2020-05/", ticker = "一目均衡表", subtitle = "Sample Data Series")

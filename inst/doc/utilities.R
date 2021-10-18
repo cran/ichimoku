@@ -12,9 +12,8 @@ library(ichimoku)
 dates <- seq(from = as.POSIXct("2020-01-01"), by = "1 day", length.out = 7)
 dates
 tradingDays(dates)
-tradingDays(dates, holidays = c("2020-01-01", "2020-01-02"))
-tradingDays(dates, noholidays = TRUE)
-
+tradingDays(dates, holidays = c("2020-01-02", "2020-01-03"))
+tradingDays(dates, holidays = NULL)
 
 ## ----look---------------------------------------------------------------------
 cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
@@ -23,15 +22,14 @@ look(cloud)
 grid <- mlgrid(cloud)
 look(grid)
 
-
 ## ----look2--------------------------------------------------------------------
 stratlist <- autostrat(cloud, n = 3)
 
 # Extract the ichimoku object which is the second element of 'stratlist':
 strat <- look(stratlist, which = 2)
+
 # Inspect ichimoku object:
 look(strat)
-
 
 ## ----xtsdf--------------------------------------------------------------------
 cloud <- ichimoku(sample_ohlc_data)

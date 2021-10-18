@@ -15,7 +15,7 @@ cloud <- ichimoku(TKR)
 
 ## ----strat--------------------------------------------------------------------
 strat <- strat(cloud, c1 = "cloudB", c2 = "kijun")
-print(strat[100:105], plot = FALSE)
+print(strat[96:100, ], plot = FALSE)
 
 ## ----summary------------------------------------------------------------------
 summary(strat)
@@ -50,4 +50,7 @@ mlgrid(cloud, y = "logret", dir = "long", type = "boolean", unique = TRUE)[100:1
 
 ## ----mlgrid2------------------------------------------------------------------
 mlgrid(cloud, y = "ret", dir = "short", type = "numeric", unique = FALSE)[100:105, 1:4]
+
+## ----relative-----------------------------------------------------------------
+relative(cloud, signif = 0.4)[1:10, ]
 

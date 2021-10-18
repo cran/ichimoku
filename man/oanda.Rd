@@ -13,7 +13,8 @@ oanda(
   to = NULL,
   price = c("M", "B", "A"),
   server,
-  apikey
+  apikey,
+  quietly
 )
 }
 \arguments{
@@ -49,6 +50,9 @@ this has been changed by \code{\link{oanda_switch}}.}
 access token), or function that returns this string. Does not need to be
 specified if already stored by oanda_set_key(). Can also be entered
 interactively if not specified.}
+
+\item{quietly}{(optional) if set to TRUE, will suppress printing of auxiliary
+output to the console and return quietly.}
 }
 \value{
 A data.frame containing the price data requested.
@@ -70,13 +74,16 @@ This function queries the OANDA fxTrade API.
     The \code{\link{oanda_set_key}} function can be used to save the API key
     in the system credential store so that it is automatically recognised in
     future (requires the 'keyring' package to be installed).
+}
+\section{Further Details}{
 
-    For further details please refer to the OANDA fxTrade API vignette by
-    running: \code{vignette("xoanda", package = "ichimoku")}.
+    Please refer to the OANDA fxTrade API vignette by calling:
+    \code{vignette("xoanda", package = "ichimoku")}.
 
     'OANDA' and 'fxTrade' are trademarks owned by OANDA Corporation, an
     entity unaffiliated with the ichimoku package.
 }
+
 \examples{
 \dontrun{
 # OANDA fxTrade API key required to run these examples

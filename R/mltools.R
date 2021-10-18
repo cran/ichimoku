@@ -11,12 +11,16 @@
 #' @param n [default 8] select top 'n' number of strategies to return.
 #' @param level [default 1] to return simple strategies. For complex strategies,
 #'     set level to 2 to return combined strategies of the form 's1 & s2' or
-#'     level to 3 to return asymmetric strategies of the form 's1 x s2'
+#'     level to 3 to return asymmetric strategies of the form 's1 x s2'.
+#' @param quietly (optional) if set to TRUE, will suppress printing of additional
+#'     output to the console and return quietly.
 #'
-#' @return Returned invisibly, a list of 'n' ichimoku objects containing strategies,
-#'     with attributes 'logret' (a vector of cumulative log returns for all
-#'     strategies) and 'summary' (a matrix of summaries for the top 'n'
-#'     strategies). The strategy summaries are printed to the console.
+#' @return Returned invisibly, a list of 'n' ichimoku objects containing
+#'     strategies, with attributes 'logret' (a vector of cumulative log returns
+#'     for all strategies) and 'summary' (a matrix of summaries for the top 'n'
+#'     strategies).
+#'
+#'     In addition, the strategy summaries are printed to the console.
 #'
 #' @details Ichimoku objects for each strategy are returned as a list. The
 #'     cumulative log returns for all strategies as well as the summaries for
@@ -29,13 +33,13 @@
 #'     specifying the parameter 'which'.
 #'
 #' @section Further Details:
-#'     Please refer to the strategies vignette by running:
+#'     Please refer to the strategies vignette by calling:
 #'     \code{vignette("strategies", package = "ichimoku")}
 #'
 #' @examples
 #' cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
 #'
-#' stratlist <- autostrat(cloud, n = 3)
+#' stratlist <- autostrat(cloud, n = 3, quietly = TRUE)
 #' look(stratlist)
 #' strat <- look(stratlist, which = 1)
 #' summary(strat)
@@ -48,9 +52,10 @@
 autostrat <- function(x,
                       n = 8,
                       dir = c("long", "short"),
-                      level = 1) {
+                      level = 1,
+                      quietly) {
 
-  if (!is.ichimoku(x)) stop("autostrat() only works on ichimoku objects", call. = FALSE)
+  is.ichimoku(x) || stop("autostrat() only works on ichimoku objects", call. = FALSE)
   dir <- match.arg(dir)
   if (!level %in% 1:3) {
     warning("Specified 'level' invalid - reverting to default of 1", call. = FALSE)
@@ -130,8 +135,9 @@ autostrat <- function(x,
   }
 
   attributes(list) <- list(logret = logret,
-                           summary = print(do.call(cbind, lapply(list, attr, which = "strat"))),
+                           summary = do.call(cbind, lapply(list, attr, "strat")),
                            autostrat = TRUE)
+  if (missing(quietly) || !isTRUE(quietly)) print(attr(list, "summary"))
   invisible(list)
 
 }
@@ -144,10 +150,9 @@ autostrat <- function(x,
 #'     representation of the relationship between cloud chart elements into a
 #'     numerical format for further analysis.
 #'
-#' @param x an ichimoku object.
-#' @param y [default 'logret'] choose target variable 'logret' (log returns) or
-#'     'ret' (discrete returns).
-#' @param dir [default 'long'] trade direction, either 'long' or 'short'.
+#' @inheritParams strat
+#' @param y [default 'logret'] choose target variable 'logret' (log returns),
+#'     'ret' (discrete returns), or 'none'.
 #' @param type [default 'boolean'] either 'boolean' or 'numeric'. 'boolean'
 #'     creates a grid of dummy variables for ichimoku indicator conditions of
 #'     the form 1 if c1 > c2, 0 otherwise. 'numeric' creates a grid of the
@@ -156,7 +161,8 @@ autostrat <- function(x,
 #'     Set to FALSE to return both c1 > c2 and c2 > c1.
 #'
 #' @return A data.frame in a 'tidy' format with one observation per row and one
-#'     feature per column with the target 'y' as the first column.
+#'     feature per column with the target 'y' as the first column (unless set to
+#'     'none').
 #'
 #'     The 'y' parameter and trade direction are set as atrributes. To view these,
 #'     use \code{\link{look}} on the returned object.
@@ -173,11 +179,15 @@ autostrat <- function(x,
 #'     (cloudBase, senkou A), (cloudTop, senkouB), (cloudBase, senkouB),
 #'     (cloudBase, cloudTop).
 #'
-#'     mlgrid is used by \code{\link{autostrat}} to enumerate the returns for all
-#'     valid strategy combinations.
+#' @seealso \code{\link{autostrat}} which uses \code{mlgrid()} to enumerate all
+#'     valid return combinations.
+#'
+#'     \code{\link{relative}} which uses \code{mlgrid()} to relate the latest
+#'     observed numeric representation to historical values.
 #'
 #' @section Further Details:
-#'     Please refer to the strategies vignette by running:
+#'
+#'     Please refer to the strategies vignette by calling:
 #'     \code{vignette("strategies", package = "ichimoku")}
 #'
 #' @examples
@@ -188,22 +198,24 @@ autostrat <- function(x,
 #' @export
 #'
 mlgrid <- function(x,
-                   y = c("logret", "ret"),
+                   y = c("logret", "ret", "none"),
                    dir = c("long", "short"),
                    type = c("boolean", "numeric"),
                    unique = TRUE) {
 
-  if (!is.ichimoku(x)) stop("mlgrid() only works on ichimoku objects", call. = FALSE)
-  target <- match.arg(y)
+  is.ichimoku(x) || stop("mlgrid() only works on ichimoku objects", call. = FALSE)
+  y <- match.arg(y)
   dir <- match.arg(dir)
   type <- match.arg(type)
-
-  core <- coredata(x)
+  core <- coredata.ichimoku(x)
   xlen <- dim(core)[1L]
   p2 <- attr(x, "periods")[2L]
-  y <- c(diff(log(core[, "open"]))[2:(xlen - 1L)], NA, NA)
-  if (dir == "short") y <- -y
-  if (target == "ret") y <- exp(y) - 1
+
+  if (y != "none") {
+    target <- c(diff(log(core[, "open"]))[2:(xlen - 1L)], NA, NA)
+    if (dir == "short") target <- -target
+    if (y == "ret") target <- exp(target) - 1
+  }
 
   cols <- c("chikou", "close", "high", "low", "tenkan", "kijun", "senkouA", "senkouB", "cloudT", "cloudB")
   pairs <- list(character(37L), character(37L))
@@ -229,15 +241,19 @@ mlgrid <- function(x,
     veclist <- c(veclist, veclistf)
   }
 
-  grid <- c(list(y = y), veclist)
-  attributes(grid) <- list(names = attr(grid, "names"),
+  df <- if (y == "none") veclist else c(list(y = target), veclist)
+  cnames <- attr(df, "names")
+  attributes(df) <- list(names = cnames,
+                         class = "data.frame",
+                         row.names = format.POSIXct(index.ichimoku(x)))
+  grid <- df_trim(df)
+  attributes(grid) <- list(names = cnames,
                            class = "data.frame",
-                           row.names = as.character(index(x)),
-                           y = target,
+                           row.names = attr(grid, "row.names"),
+                           y = y,
                            direction = dir,
-                           ticker = attr(x, "ticker"),
-                           mlgrid = TRUE)
-  df_trim(grid)
+                           ticker = attr(x, "ticker"))
+  grid
 
 }
 
@@ -265,6 +281,104 @@ writeVectors <- function(x, pairs, p2, xlen, type) {
   }, c1 = pairs[[1L]], c2 = pairs[[2L]], SIMPLIFY = FALSE, USE.NAMES = FALSE),
   do.call(c, mapply(function(c1, c2) paste0(c1, "_", c2),
                     c1 = pairs[[1L]], c2 = pairs[[2L]], SIMPLIFY = FALSE, USE.NAMES = FALSE)))
+
+}
+
+#' Relative Numeric Representation
+#'
+#' Produce a statistical summary of the latest numeric representation of the
+#'     ichimoku cloud chart relative to historical values. For determining
+#'     whether current trading falls within or outside of normal ranges.
+#'
+#' @inheritParams autostrat
+#' @param order [default FALSE] set to TRUE to order the results by the absolute
+#'     'r value'.
+#' @param signif [default 0.2] set a significance threshold for which if 'p' is
+#'     equal or lower, the element will be starred with a '*'.
+#'
+#' @return A data frame containing a statistical summary of the latest ichimoku
+#'     cloud chart representation in relation to historical values.
+#'
+#'     In addition, the time index of the latest observed values and total
+#'     number of datapoints are printed to the console.
+#'
+#' @details 'mean(X)' is the mean value for each element X, 'sd(X)' the
+#'     standard deviation, and 'X[n]' the nth or latest observed values.
+#'
+#'     'res' is the residual X[n] - mean(X) and represents a centred measure of
+#'     deviation for the latest observed value.
+#'
+#'     The 'relative' or 'r value' is calculated as res / sd(X) and represents a
+#'     standardised (centred and scaled) measure of deviation for the latest
+#'     observed value.
+#'
+#'     'p >= |r|' represents the empirical probability of the latest observed
+#'     absolute 'r value' or greater.
+#'
+#'     'p*' will display a star if 'p >= |r|' is less than or equal to the value
+#'     of the argument 'signif'.
+#'
+#'     'E(|res|)|p' represents the mean or expected absolute value of 'res',
+#'     conditional upon the absolute 'r value' being greater than equal to the
+#'     latest observed absolute 'r value'.
+#'
+#' @section Further Details:
+#'     Please refer to the strategies vignette by calling:
+#'     \code{vignette("strategies", package = "ichimoku")}
+#'
+#' @examples
+#' cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
+#' statistics <- relative(cloud, quietly = TRUE)
+#' relative(cloud, signif = 0.4)
+#' relative(cloud, order = TRUE, signif = 0.4)
+#'
+#' @export
+#'
+relative <- function(x, order = FALSE, signif = 0.2, quietly) {
+
+  is.ichimoku(x) || stop("relative() only works on ichimoku objects", call. = FALSE)
+  grid <- mlgrid(x, y = "none", type = "numeric")
+  dims <- dim(grid)
+  xlen <- dims[1L]
+  xwid <- dims[2L]
+  cnames <- attr(grid, "names")
+  time <- index.ichimoku(x)[xlen]
+
+  xn <- as.numeric(grid[xlen, ])
+  means <- unname(unlist(lapply(grid, mean)))
+  sdevs <- unname(unlist(lapply(grid, sd)))
+  res <- xn - means
+  rval <- res / sdevs
+
+  expec <- pval <- numeric(xwid)
+  for (i in seq_len(xwid)) {
+    vec <- .subset2(grid, i)
+    rvec <- (vec - means[i]) / sdevs[i]
+    exceed <- abs(rvec) >= abs(rval[i])
+    pval[i] <- sum(exceed) / xlen
+    expec[i] <- mean(abs(vec[exceed] - means[i]))
+  }
+  star <- character(xwid)
+  star[pval <= signif] <- "*"
+
+  df <- lapply(list(means, sdevs, xn, res, rval, pval, star, expec),
+               function(x) if (is.numeric(x)) round(x, digits = 2) else x)
+  ordered <- !missing(order) && isTRUE(order)
+  if (ordered) {
+    reorder <- order(abs(rval), decreasing = TRUE)
+    df <- lapply(df, .subset, reorder)
+  }
+
+  attributes(df) <- list(names = c("mean(X)", "sd(X)", "X[n]", "res", "r value", "p >= |r|", "p*", "E(|res|)|p"),
+                         class = "data.frame",
+                         row.names = if (ordered) cnames[reorder] else cnames,
+                         latest = time,
+                         periods = attr(x, "periods"),
+                         periodicity = attr(x, "periodicity"),
+                         ticker = attr(x, "ticker"))
+
+  if (missing(quietly) || !isTRUE(quietly)) cat("Latest:", format.POSIXct(time), "| n:", xlen, "\n")
+  df
 
 }
 

@@ -3,7 +3,7 @@
 \name{autoplot}
 \alias{autoplot}
 \alias{autoplot.ichimoku}
-\title{autoplot.ichimoku}
+\title{Plot Ichimoku Objects with ggplot2}
 \usage{
 \method{autoplot}{ichimoku}(
   object,
@@ -49,10 +49,4 @@ This function is an S3 method for the generic function autoplot()
     for class 'ichimoku'. It can be invoked by calling autoplot(x) on an
     object 'x' of class 'ichimoku'.
 }
-\section{Further Details}{
-
-    Please refer to the reference vignette by running:
-    \code{vignette("reference", package = "ichimoku")}
-}
-
 \keyword{internal}

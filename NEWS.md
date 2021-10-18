@@ -1,3 +1,28 @@
+# ichimoku 1.2.4
+
+#### New features:
+
+* New `relative()` function produces a statistical summary of the latest ichimoku cloud chart numeric representation relative to historical values, for determining whether trading falls within or outside of normal ranges.
+* `oanda_studio()` gains the argument 'new.process', which when set to TRUE, starts the shiny session in a new R process, unblocking the current process and allowing continued use of the console.
+* `mlgrid()` gains the argument `y = 'none'` for a grid with the latest cloud representation and without 'y'.
+* `autostrat()`, `relative()` and `oanda()` gain the argument 'quietly' which suppresses additional console output if set to TRUE.
+* Improved time index handling for `ichimoku()`: where conversion by `as.POSIXct()` fails, will convert numeric values as POSIX times (with an appropriate warning).
+* Optimised 'ichimoku' methods for `coredata()` and `index()` generic functions.
+* 'ichimoku' method for `as.data.frame()` implemented as a marginally faster version of `xts_df()` for ichimoku objects.
+* More informative custom `str()` and `summary()` methods implemented for ichimoku objects.
+
+#### Updates:
+
+* For OANDA functions, where the 'server' parameter is specified, the corresponding API key will now be retrieved rather than the default, allowing for example `oanda_studio(server = "live", new.process = TRUE)`
+* Improved appearance of progress indicators for `oanda()` and `oanda_view()`.
+* `oanda()` now safe to use non-interactively - it will no longer prompt in such cases.
+* Improvements to the visual appearance of oscillator plots.
+* Update to the interactive interface for `oanda_set_key()`.
+* Fixes sign of %chg for `oanda_quote()`.
+* `xts()` is no longer re-exported from the 'xts' package as `ichimoku()` can now fully re-construct an ichimoku object from its components (see 'Working with ichimoku objects' in the Reference vignette).
+* Further performance improvements to `ichimoku()` and other functions.
+* Documentation refresh.
+
 # ichimoku 1.2.2
 
 #### New features:
@@ -5,7 +30,7 @@
 * New `oanda_quote()` function outputs the latest quote for an instrument along with intraday trading statistics to the console.
 * New `oanda_view()` function provides the latest overview of an entire market - showing the relative performance of constituents.
 * New `oanda_positions()` function provides the OANDA fxTrade position book (% longs and shorts at each price level) for certain major currency pairs.
-* `archive()` easier to use by allowing files to be chosen interactively using a system dialog - simply call with no arguments.
+* `archive()` now allows files to be chosen interactively using a system dialog - call the function with no arguments.
 * `df_append()` utility is now faster and gains the arguments 'key' and 'keep.attr'.
 
 #### Updates:
@@ -26,7 +51,6 @@
 * Fix cases of mis-alignment of main and sub-plots, axis label formatting of custom plots.
 * Fix issue which caused `iplot()` to re-calculate the indicators when adjusting the data window.
 * Package dependency switched from 'gridExtra' to 'gtable'.
-* Adds 'grid' R core package dependency.
 * Minor performance improvements for `ichimoku()` and other functions.
 
 # ichimoku 1.2.0
@@ -102,7 +126,6 @@
 * Corrects trade success statistics for short strategies returned by `strat()`.
 * The following functions are no longer exported to keep the package tidy: `grid_dup()`, `maxOver()`, `minOver()`, `oanda_accounts()`.
 * `sample_ohlc_data` slightly lengthened to better demonstrate strat features.
-* Adds 'stats' R core package dependency.
 * Package now links to 'cpp11' headers, retiring 'Rcpp' package dependency.
 * Package dependency 'httr' switched to 'curl'.
 * Miscellaneous performance optimisations.

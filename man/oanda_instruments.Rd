@@ -2,7 +2,7 @@
 % Please edit documentation in R/oanda.R
 \name{oanda_instruments}
 \alias{oanda_instruments}
-\title{List Available OANDA Instruments}
+\title{Available OANDA Instruments}
 \usage{
 oanda_instruments(server, apikey)
 }
@@ -29,7 +29,7 @@ This function returns a data.frame listing the instrument names
     available for an account associated with the supplied OANDA fxTrade API key.
 
     For further details please refer to the OANDA fxTrade API vignette by
-    running: \code{vignette("xoanda", package = "ichimoku")}.
+    calling: \code{vignette("xoanda", package = "ichimoku")}.
 }
 \examples{
 \dontrun{

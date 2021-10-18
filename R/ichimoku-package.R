@@ -28,16 +28,17 @@
 #' \itemize{
 #'     \item{\code{\link{strat}}} {to augment an ichimoku object with a strategy,
 #'     including combined and asymmetric strategies.}
-#'     \item{\code{\link{stratcombine}}} {to create custom combined strategies.}
 #'     \item{\code{\link{autostrat}}} {to automatically evaluate and rank
 #'     top-performing strategies.}
 #'     \item{\code{\link{mlgrid}}} {to generate a numeric representation of the
 #'     relationship between ichimoku cloud chart elements.}
+#'     \item{\code{\link{relative}}} {to produce a statistical summary of the
+#'     latest ichimoku numeric representation relative to historical values.}
 #' }
 #' Real-time
 #' \itemize{
-#'     \item{\code{\link{oanda_chart}}} {to plot real-time ichimoku cloud
-#'     charts using OANDA data.}
+#'     \item{\code{\link{oanda_chart}}} {to plot real-time ichimoku cloud charts
+#'     using OANDA data.}
 #'     \item{\code{\link{oanda_studio}}} {a complete live analysis environment
 #'     using OANDA data implemented in R Shiny.}
 #'     \item{\code{\link{oanda_stream}} / \code{\link{oanda_quote}}} {to obtain
@@ -56,7 +57,7 @@
 #'     unaffiliated with the ichimoku package.
 #'
 #'     Gao, C. (2021), \emph{ichimoku: Visualization and Tools for Ichimoku
-#'     Kinko Hyo Strategies}. R package version 1.2.2,
+#'     Kinko Hyo Strategies}. R package version 1.2.4,
 #'     \url{https://CRAN.R-project.org/package=ichimoku}.
 #'
 #' @useDynLib ichimoku, .registration = TRUE
@@ -70,22 +71,14 @@
 #' @importFrom grid grid.draw grid.newpage unit
 #' @importFrom gtable gtable gtable_add_grob
 #' @importFrom jsonlite parse_json
-#' @importFrom stats na.omit setNames
-#' @importFrom xts endpoints xts
+#' @importFrom stats na.omit sd setNames
+#' @importFrom utils str
+#' @importFrom xts endpoints
 #' @importFrom zoo coredata index
 #'
 #' @docType package
 #' @name ichimoku-package
 NULL
-
-#' @export
-zoo::index
-
-#' @export
-zoo::coredata
-
-#' @export
-xts::xts
 
 utils::globalVariables(".data")
 

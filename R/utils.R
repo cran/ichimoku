@@ -28,12 +28,15 @@
 #' @export
 #'
 tradingDays <- function(x, holidays, ...) {
-  posixlt <- as.POSIXlt.POSIXct(x)
-  vec <- posixlt$wday %in% 1:5
   if (missing(holidays)) {
+    posixlt <- as.POSIXlt.POSIXct(x)
+    vec <- posixlt$wday %in% 1:5
     vec[(posixlt$mon == 0L & posixlt$mday == 1L) | (posixlt$mon == 11L & posixlt$mday == 25L)] <- FALSE
+  } else if (is.null(holidays)) {
+    return(rep(TRUE, length(x)))
   } else {
-    if (is.null(holidays)) return(rep(TRUE, length(x)))
+    posixlt <- as.POSIXlt.POSIXct(x)
+    vec <- posixlt$wday %in% 1:5
     holidays <- tryCatch(as.POSIXct(holidays), error = function(e) {
       warning("Specified holidays are invalid - reverting to defaults", call. = FALSE)
       vec[(posixlt$mon == 0L & posixlt$mday == 1L) | (posixlt$mon == 11L & posixlt$mday == 25L)] <- FALSE
@@ -74,11 +77,7 @@ grid_dup <- function(n, omit.id) {
   }
   vec <- unlist(vec)
   if (!missing(omit.id) && isTRUE(omit.id)) {
-    vec2 <- numeric(n)
-    for (j in seq_len(n)) {
-      vec2[j] <- j + n * (j - 1)
-    }
-    vec <- c(vec, vec2)
+    vec <- c(vec, 1:n + n * (1:n - 1))
   }
   vec
 }
@@ -112,8 +111,7 @@ df_trim <- function(x) {
 
 #' Convert xts to data.frame
 #'
-#' A performant 'xts' to 'data.frame' constructor with no data validation or
-#'     checking.
+#' An optimised 'xts' to 'data.frame' constructor.
 #'
 #' @param x an 'xts' object.
 #' @param keep.attrs (optional) if set to TRUE, will preserve any custom
@@ -121,6 +119,10 @@ df_trim <- function(x) {
 #'
 #' @return A 'data.frame' object. The 'xts' index is preserved as the first
 #'     column with header 'index'.
+#'
+#' @details The optimised data.frame constructors are used internally within
+#'     the package and made available as utilities. Please note that no data
+#'     validation or checking is performed.
 #'
 #' @examples
 #' cloud <- ichimoku(sample_ohlc_data)
@@ -150,8 +152,7 @@ xts_df <- function(x, keep.attrs) {
 
 #' Convert matrix to data.frame
 #'
-#' A performant 'matrix' to 'data.frame' constructor with no data validation or
-#'     checking.
+#' An optimised 'matrix' to 'data.frame' constructor.
 #'
 #' @param x a matrix.
 #' @param keep.attrs (optional) if set to TRUE, will preserve any custom
@@ -159,6 +160,10 @@ xts_df <- function(x, keep.attrs) {
 #'
 #' @return A 'data.frame' object. If the matrix has row names, these are
 #'     retained by the dataframe.
+#'
+#' @details The optimised data.frame constructors are used internally within
+#'     the package and made available as utilities. Please note that no data
+#'     validation or checking is performed.
 #'
 #' @examples
 #' cloud <- ichimoku(sample_ohlc_data)
@@ -218,11 +223,11 @@ df_merge <- function(...) {
   dots <- list(...)
   merge <- Reduce(function(x, y) merge.data.frame(x, y, all = TRUE), dots)
   if (isTRUE(attr(dots[[1L]], "oanda"))) {
-    merge <- structure(.Data = merge,
-                       instrument = attr(dots[[1L]], "instrument"),
-                       price = attr(dots[[1L]], "price"),
-                       timestamp = do.call(max, lapply(dots, attr, "timestamp")),
-                       oanda = TRUE)
+    attributes(merge) <- c(attributes(merge),
+                           list(instrument = attr(dots[[1L]], "instrument"),
+                                price = attr(dots[[1L]], "price"),
+                                timestamp = .POSIXct(max(unlist(lapply(dots, attr, "timestamp")))),
+                                oanda = TRUE))
     if (FALSE %in% .subset2(merge, "complete")) warning("Incomplete periods in merged dataframe - please check for possible duplicates", call. = FALSE)
   }
   merge
@@ -236,7 +241,8 @@ df_merge <- function(...) {
 #'
 #' @param new data.frame object containing new data.
 #' @param old data.frame object containing existing data.
-#' @param key [default 'time'] column name used as key, provided as a character string.
+#' @param key [default 'time'] column name used as key, provided as a character
+#'     string.
 #' @param keep.attr [default 'timestamp'] name of an attribute in 'new' to retain
 #'     if it is present, provided as a character string.
 #'

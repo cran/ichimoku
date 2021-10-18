@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ichimoku <img src='man/figures/logo.png' align="right" />
+# ichimoku <img src="man/figures/logo.png" alt="ichimoku logo" style="float:right" />
 
 <!-- badges: start -->
 
@@ -10,7 +10,7 @@ Status](https://www.r-pkg.org/badges/version/ichimoku?color=0b800e)](https://CRA
 [![r-universe](https://shikokuchuo.r-universe.dev/badges/ichimoku?color=6bd54f)](https://shikokuchuo.r-universe.dev/)
 [![R-CMD-check](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/shikokuchuo/ichimoku/branch/main/graph/badge.svg)](https://codecov.io/gh/shikokuchuo/ichimoku?branch=main)
+coverage](https://codecov.io/gh/shikokuchuo/ichimoku/branch/main/graph/badge.svg)](https://app.codecov.io/gh/shikokuchuo/ichimoku)
 <!-- badges: end -->
 
 Visualization and Tools for Ichimoku Kinko Hyo Strategies
@@ -64,7 +64,8 @@ cloud <- ichimoku(TKR)
 plot(cloud, window = "2020-05/")
 ```
 
-<img src="man/figures/README-ichimoku-1.png" />
+<img src="man/figures/README-ichimoku-1.png" alt="ichimoku kinko hyo" />
+<!-- alt="ichimoku kinko hyo" -->
 
 `autostrat()` to automatically evaluate and rank top-performing
 strategies:
@@ -117,15 +118,16 @@ autostrat(cloud, n = 3)
     to augment an ichimoku object with a strategy, including combined
     and asymmetric strategies.
 
--   [`stratcombine()`](https://shikokuchuo.net/ichimoku/reference/stratcombine.html) -
-    to create custom combined strategies.
-
 -   [`autostrat()`](https://shikokuchuo.net/ichimoku/reference/autostrat.html) -
     to automatically evaluate and rank top-performing strategies.
 
 -   [`mlgrid()`](https://shikokuchuo.net/ichimoku/reference/mlgrid.html) -
     to generate a numeric representation of the relationship between
     ichimoku cloud chart elements.
+
+-   [`relative()`](https://shikokuchuo.net/ichimoku/reference/relative.html) -
+    to produce a statistical summary of the latest ichimoku numeric
+    representation relative to historical values.
 
 #### Real-time
 
@@ -171,7 +173,7 @@ no kenkyuu]*. Tokyo, Japan: Toushi Radar.
 entity unaffiliated with the ichimoku package.
 
 Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko
-Hyo Strategies*. R package version 1.2.2,
+Hyo Strategies*. R package version 1.2.4,
 <https://CRAN.R-project.org/package=ichimoku>.
 
 –

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{extraplot}
 \alias{extraplot}
-\title{extraplot}
+\title{Plot Ichimoku Objects with ggplot2 and gtable}
 \usage{
 extraplot(
   object,
@@ -63,10 +63,4 @@ The oscillator choices are between 'R-type', which is a modified form
     of a stochastic oscillator. The oscillator look-back parameters are based
     on the fast and medium cloud periods of the ichimoku object.
 }
-\section{Further Details}{
-
-    Please refer to the reference vignette by running:
-    \code{vignette("reference", package = "ichimoku")}
-}
-
 \keyword{internal}

@@ -37,6 +37,10 @@
 #'     For read operations: a 'data verified' message is issued if the sha256
 #'     hash found within the data file has been authenticated.
 #'
+#' @section Further Details:
+#'     Please refer to the reference vignette by calling:
+#'     \code{vignette("reference", package = "ichimoku")}
+#'
 #' @examples
 #' cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
 #' file <- tempfile()
@@ -70,7 +74,7 @@ archive <- function(..., object, file) {
       file <- dots[[2L]]
       writeArchive(object = object, file = file)
 
-    } else if (dlen == 0L) {
+    } else if (dlen == 0L && interactive()) {
       readArchive(file = file.choose())
 
     } else {
@@ -107,10 +111,8 @@ archive <- function(..., object, file) {
 #'
 writeArchive <- function(object, file) {
 
-  if (!is.character(file)) {
-    stop("in archive(object, file): 'file' must be supplied as a string. ",
-         "\nDid you omit the surrounding quotes \"\"?", call. = FALSE)
-  }
+  is.character(file) || stop("in archive(object, file): 'file' must be supplied as a string. ",
+                             "\nDid you omit the surrounding quotes \"\"?", call. = FALSE)
 
   if (file.exists(file)) {
     continue <- readline(prompt = paste0("The file '", file, "' already exists. Overwrite? [y/N] "))
@@ -146,16 +148,13 @@ writeArchive <- function(object, file) {
 #'
 readArchive <- function(file) {
 
-  if (!is.character(file)) {
-    stop("in archive(file): 'file' must be supplied as a string. ",
-         "\nDid you omit the surrounding quotes \"\"?", call. = FALSE)
-  }
+  is.character(file) ||
+    stop("in archive(file): 'file' must be supplied as a string.\nDid you omit the surrounding quotes \"\"?", call. = FALSE)
 
   object <- x_archive_sha256 <- NULL
   x_archive_names <- load(file)
-  if (!identical(x_archive_names[2L], "x_archive_sha256") || !identical(x_archive_names[1L], "object")) {
+  identical(x_archive_names[2L], "x_archive_sha256") && identical(x_archive_names[1L], "object") ||
     stop("archive file was not created by archive()", call. = FALSE)
-  }
 
   if (is.na(x_archive_sha256[1L])) {
     message("Archive read from '", file, "'\nData unverified: sha256 hash not present")

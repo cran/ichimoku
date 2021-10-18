@@ -56,10 +56,10 @@ Note: the indicator condition remains of the form c1 > c2 even for short trades.
 
 ```{r strat}
 strat <- strat(cloud, c1 = "cloudB", c2 = "kijun")
-print(strat[100:105], plot = FALSE)
+print(strat[96:100, ], plot = FALSE)
 ```
 
-The use of `strat()` returns an augmented ichimoku object. The printout above of a slice of the object (rows 100 to 105) shows that the following columns are appended:
+The use of `strat()` returns an augmented ichimoku object. The printout above of a slice of the object (rows 96 to 100) shows that the following columns are appended:
 
 - `$cond`: '1' if the indicator condition is met at the close of the the time period (note: if the indicator condition involves chikou span, the comparison will be of past periods)
 - `$posn`: '1' represents that a position is held during this time period (i.e. from the 'open' to the 'close')
@@ -157,6 +157,7 @@ The analytic capability of R can be leveraged to generate and evaluate all possi
 - `n` [default 8] number of strategies to return
 - `dir` [default 'long'] trade direction 'long' or 'short'
 - `level` [default 1] to return simple strategies. For complex strategies, set `level = 2` to return combined strategies of the form 's1 & s2' or `level = 3` to return asymmetric strategies of the form 's1 x s2'
+- `quietly` if set to TRUE, will suppress printing of additional output to the console and return quietly
 
 ```{r autostrat}
 autostrat(cloud, n = 3)
@@ -196,7 +197,7 @@ The ML layer provides tools for further developing quantitative ichimoku solutio
 
 `mlgrid()` generates a numeric representation of the relationship between ichimoku cloud chart elements. Its purpose is to provide a base grid which can then be manipulated as required before being fed into machine learning workflows.
 
-`mlgrid()` is used to power ichimoku's `autostrat()` function.
+`mlgrid()` is used to power the `autostrat()` and `relative()` functions.
 
 The object returned by the function is a data.frame in a 'tidy' format with one observation per row and one feature per column with the target 'y' as the first column. This is a format that is compatible with many machine learning packages.
 
@@ -214,7 +215,37 @@ Note: only valid combinations are included within the grid. Any combination invo
 
 The parameter 'unique' defaults to TRUE to return only unique combinations of c1 and c2, but can also be set to FALSE to return both c1 > c2 and c2 > c1 where the situation merits.
 
-The 'y' column can be switched between log and discrete returns. The date-time index corresponds to when the condition is met at the close for that period. The return is the single-period return achieved by transacting at the immediately following opening price until the next opening price. In this sense, the time periods do not strictly match, but are nevertheless correctly paired.
+The 'y' column can be switched between log and discrete returns. The date-time index corresponds to when the condition is met at the close for that period. The return is the single-period return achieved by transacting at the immediately following opening price until the next opening price. In this sense, the time periods do not strictly match, but are nevertheless correctly paired. 
+
+The calculation of the returns and correct pairing effectively uses up 2 periods, hence in order to obtain the grid for the latest available price data, y must be set to 'none', in which case a grid is returned without the target variable.
+
+### `relative()`
+
+Produces a statistical summary of the latest numeric representation of the ichimoku cloud chart relative to historical values contained within the ichimoku object. This can aid in determining whether current trading falls within or outside of normal ranges.
+
+Takes the following optional arguments:
+
+- `order` [default FALSE] set to TRUE to order the results by the absolue 'r value'. Those with the highest relative deviation are listed first
+- `signif` [default 0.2] set a significance threshold for which if 'p' is equal or lower, the element will be starred with a '*'. Note: this value may be freely set and the default of 0.2 is arbitrary with no special significance
+- `quietly` if set to TRUE, will suppress printing of additional output to the console and return quietly
+
+```{r relative}
+relative(cloud, signif = 0.4)[1:10, ]
+```
+
+'mean(X)' is the mean value for each element X, 'sd(X)' the standard deviation, and 'X[n]' the nth or latest observed values.
+
+'res' is the residual X[n] - mean(X) and represents a centred measure of deviation for the latest observed value.
+
+The 'relative' or 'r value' is calculated as res / sd(X) and represents a standardised (centred and scaled) measure of deviation for the latest observed value.
+
+'p >= |r|' represents the empirical probability of the latest observed absolute 'r value' or greater.
+
+'p*' will display a star if 'p >= |r|' is less than or equal to the value of the argument 'signif'.
+
+'E(|res|)|p' represents the mean or expected absolute value of 'res', conditional upon the absolute 'r value' being greater than equal to the latest observed absolute 'r value'. This provides an indication by how much 'res' might increase in more extreme cases.
+
+Note: All calculations are performed on the full values, but are rounded to 2 decimal places for final presentation.
 
 ## Strategy Summary Specification
 
@@ -254,6 +285,6 @@ The 'y' column can be switched between log and discrete returns. The date-time i
 
 Sasaki, H. 佐々木 英信 (1996), *一目均衡表の研究 [ichimoku kinkouhyou no kenkyuu]*. Tokyo, Japan: Toushi Radar.
 
-Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.2, <https://CRAN.R-project.org/package=ichimoku>.
+Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.4, <https://CRAN.R-project.org/package=ichimoku>.
 
 ---

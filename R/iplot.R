@@ -22,6 +22,9 @@
 #'
 #' @details This function has a dependency on the 'shiny' package.
 #'
+#'     For further details please refer to the reference vignette by calling:
+#'     \code{vignette("reference", package = "ichimoku")}
+#'
 #' @examples
 #' if (interactive()) {
 #' # Only run examples in interactive R sessions
@@ -46,7 +49,7 @@ iplot <- function(x,
 
   if (requireNamespace("shiny", quietly = TRUE)) {
 
-    if (!is.ichimoku(x)) stop("iplot() only works with ichimoku objects", call. = FALSE)
+    is.ichimoku(x) || stop("iplot() only works with ichimoku objects", call. = FALSE)
     theme <- match.arg(theme)
     type <- match.arg(type)
     if (missing(ticker)) ticker <- attr(x, "ticker")
@@ -55,10 +58,10 @@ iplot <- function(x,
     }
 
     tformat <- if (attr(x, "periodicity") > 80000) "%F" else "%F %T"
-    index <- index(x)
+    index <- index.ichimoku(x)
     start <- index[1L]
     end <- index[dim(x)[1L]]
-    xadj <- if (nchar(as.character(start)) > 10) -17 else 5
+    xadj <- if (nchar(format.POSIXct(start)) > 10) -17 else 5
 
     ui <- shiny::fluidPage(
       shiny::tags$head(shiny::tags$style("
@@ -127,7 +130,7 @@ iplot <- function(x,
       )
       output$hover_x <- shiny::renderUI({
         shiny::req(input$type == "none", input$plot_hover, posi_x() > 0, posi_x() <= plen())
-        drawGuide(label = index(pdata())[posi_x()], left = left_px() + xadj, top = 60)
+        drawGuide(label = index.ichimoku(pdata())[posi_x()], left = left_px() + xadj, top = 60)
       })
       output$hover_y <- shiny::renderUI({
         shiny::req(input$type == "none", input$plot_hover)
@@ -189,7 +192,7 @@ drawInfotip <- function(sdata, left_px, top_px) {
                    left_px + 50, "px; top: ", top_px + 40, "px; font-size: 0.8em; padding: 1px 5px 5px 5px;"),
     shiny::HTML(paste0("<div style='margin: 0; padding: 0; font-weight: bold'>",
                        if (isTRUE(sdata$cd == 1)) "&#9651;<br />" else if (isTRUE(sdata$cd == -1)) "&#9660;<br />" else "&#8212;<br />",
-                       index(sdata),
+                       index.ichimoku(sdata),
                        "</div><div style='text-align: center; margin: 2px 0 0 0; padding: 0'>H: ",
                        signif(sdata$high, digits = 5),
                        "</div><div style='margin: 0; padding: 0'>O: ",

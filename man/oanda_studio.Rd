@@ -14,6 +14,7 @@ oanda_studio(
   theme = c("original", "dark", "solarized", "mono"),
   server,
   apikey,
+  new.process = FALSE,
   ...,
   launch.browser = TRUE,
   periods = c(9L, 26L, 52L)
@@ -50,6 +51,10 @@ access token), or function that returns this string. Does not need to be
 specified if already stored by oanda_set_key(). Can also be entered
 interactively if not specified.}
 
+\item{new.process}{[default FALSE] if TRUE, will start the shiny session in a
+new R process, unblocking the current process and allowing continued use
+of the R console.}
+
 \item{...}{additional arguments passed along to \code{\link{ichimoku}} for
 calculating the ichimoku cloud, \code{\link{autoplot}} to set chart
 parameters, or the 'options' argument of \code{shiny::shinyApp()}.}
@@ -79,9 +84,14 @@ Interactive and fully-customisable R Shiny environment providing real-time
 This function polls the OANDA fxTrade API for the latest prices and
     updates a customisable reactive Shiny app at each refresh interval.
 
-    For further details please refer to the OANDA fxTrade API vignette by
-    running: \code{vignette("xoanda", package = "ichimoku")}.
+    This function has a dependency on the 'shiny' package.
 }
+\section{Further Details}{
+
+    Please refer to the OANDA fxTrade API vignette by calling:
+    \code{vignette("xoanda", package = "ichimoku")}.
+}
+
 \examples{
 \dontrun{
 # OANDA fxTrade API key required to run these examples
