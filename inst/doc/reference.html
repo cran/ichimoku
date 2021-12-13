@@ -191,8 +191,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="context" class="section level3">
 <h3>Context</h3>
-<p>Ichimoku analysis is the latest refinement in candlestick charting techniques, which also originated from Japan. Developed by 一目山人 <em>Ichimoku, Sanjin</em>, the pen name of 細田吾一 <em>Hosoda, Goichi</em>, his work was published in 1969 as the seminal <em>「一目均衡表」 [ichimoku kinkou hyou]</em>. It gained popularity in Japan especially after the publication of Sasaki’s <em>「一目均衡表の研究」 [ichimoku kinkouhyou no kenkyuu]</em> in 1996, and is now widely-used in technical analysis worldwide.</p>
-<p>The ichimoku time periods have traditionally been calculated as 9, 26 and 52 based on manual data analysis performed in Japan in a pre-computer age where there was a 6-day working week resulting in 26 average trading days in a month. Although this bears little relevance to the current day, the use of these time periods has persisted as an ‘industry norm’ or ‘accepted practice’. To use other periods would be meaningless in a sense as everyone uses these parameters and ‘market psychology’ can and often does create its own realities, independent of any fundamentals.</p>
+<p>Ichimoku analysis is the latest refinement in candlestick charting techniques, which also originated from Japan. Developed by 一目山人 <em>Ichimoku, Sanjin</em>, the pen name of 細田吾一 <em>Hosoda, Goichi</em>, the work was published in 1969 as the seminal <em>「一目均衡表」 [ichimoku kinkou hyou]</em>. It gained popularity in Japan especially after the publication of Sasaki’s <em>「一目均衡表の研究」 [ichimoku kinkouhyou no kenkyuu]</em> in 1996, and is now widely-used in technical analysis worldwide.</p>
+<p>The ichimoku time periods have traditionally been calculated as 9, 26 and 52 based on manual data analysis performed in Japan in a pre-computer age where there was a 6-day working week resulting in 26 average trading days in a month. Although this bears little relevance to the current day, the use of these time periods has persisted as an ‘industry norm’ or ‘accepted practice’. To use other periods would be meaningless in a sense as ‘market psychology’ can and often does create its own realities, independent of any fundamentals.</p>
 <p>However, there is no reason for the technique not to evolve, and to reflect changing trading realities perhaps other parameters will become more relevant in the collective psychology. For this reason, the length of these periods can be freely set in the ‘ichimoku’ package. However please do so only with caution and note that using other periods invalidates the traditional interpretations of Ichimoku Kinko Hyo.</p>
 <p>Finally, the use originated with daily candlesticks, and the most valid interpretation remains for daily data. However, it is equally used today for both shorter, e.g. 4-hour or hourly, and longer, e.g. weekly or monthly, charts.</p>
 </div>
@@ -202,7 +202,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ichimoku)</span></code></pre></div>
 <div id="data" class="section level3">
 <h3>Data</h3>
-<p>ichimoku works with data frames and tabular data. The <code>ichimoku()</code> function handles as input xts, data.frame, data.table, tibble, tsibble, matrix, and other data.frame compatible objects.</p>
+<p>ichimoku works with data frames and tabular data. The <code>ichimoku()</code> function handles as input xts, data.frame, data.table, tibble, matrix, and other data.frame compatible objects.</p>
 <p>ichimoku incorporates an interface with the OANDA fxTrade API to return data for major currencies, metals, commodities, government bonds and stock indices. Please refer to the <a href="xoanda.html">OANDA vignette</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ichimoku can create clouds directly from OANDA data, for example:</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>cloud <span class="ot">&lt;-</span> <span class="fu">ichimoku</span>(<span class="fu">oanda</span>(<span class="st">&quot;USD_JPY&quot;</span>))</span></code></pre></div>
@@ -255,42 +255,33 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>cloud <span class="ot">&lt;-</span> <span class="fu">ichimoku</span>(TKR)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(cloud[<span class="dv">100</span><span class="sc">:</span><span class="dv">110</span>, ], <span class="at">plot =</span> <span class="cn">FALSE</span>, <span class="at">digits =</span> <span class="dv">4</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             open  high   low close cd tenkan kijun senkouA senkouB chikou</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20 122.7 122.7 121.8 122.4 -1  121.0 123.9   125.7   124.8  135.1</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-21 122.4 122.6 121.1 121.9 -1  121.0 123.9   125.7   124.8  135.6</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-22 121.9 123.7 121.7 123.3  1  121.4 123.8   125.7   124.8  134.5</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-25 123.3 124.0 123.0 124.0  1  121.5 123.8   125.7   124.8  134.3</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-26 124.2 124.3 124.0 124.1 -1  121.8 123.6   126.0   124.8  135.9</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-27 124.1 124.1 123.4 123.9 -1  122.2 123.6   126.5   124.8  135.2</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-28 123.9 124.7 123.7 124.5  1  122.9 123.6   126.6   124.8  135.7</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-29 124.5 124.7 123.9 124.2 -1  122.9 123.6   126.2   124.8  135.4</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-06-01 124.2 125.2 124.0 124.7  1  123.2 123.6   126.1   124.8  135.7</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-06-02 124.7 129.8 124.7 129.6  1  125.5 124.5   125.7   124.8  135.6</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-06-03 129.9 130.6 129.9 130.2  1  126.2 124.8   125.6   124.8  136.2</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            cloudT cloudB</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20  125.7  124.8</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-21  125.7  124.8</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-22  125.7  124.8</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-25  125.7  124.8</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-26  126.0  124.8</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-27  126.5  124.8</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-28  126.6  124.8</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-29  126.2  124.8</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-06-01  126.1  124.8</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-06-02  125.7  124.8</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-06-03  125.6  124.8</span></span></code></pre></div>
-<p>A section (rows 100 to 110) of the ichimoku object is shown above. Note that print is called setting ‘plot = FALSE’ to return just the data to the console. The default print method for ichimoku objects also plots the cloud chart to the graphical device.</p>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(cloud, <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ichimoku object: use more() to display more rows, look() to inspect</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   attributes</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    index                open  high   low close    cd tenkan kijun senkouA</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;dttm&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1 2020-01-02 00:00:00 123   123.1 122.5 122.7    -1   NA      NA      NA</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2 2020-01-03 00:00:00 122.7 122.8 122.6 122.8     1   NA      NA      NA</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3 2020-01-06 00:00:00 122.8 123.4 122.4 123.3     1   NA      NA      NA</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4 2020-01-07 00:00:00 123.3 124.3 123.3 124.1     1   NA      NA      NA</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5 2020-01-08 00:00:00 124.1 124.8 124   124.8     1   NA      NA      NA</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6 2020-01-09 00:00:00 124.8 125.4 124.5 125.3     1   NA      NA      NA</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7 2020-01-10 00:00:00 125.3 125.3 124.8 125.2    -1   NA      NA      NA</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 2020-01-13 00:00:00 125.2 125.3 125.1 125.2     0   NA      NA      NA</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 2020-01-14 00:00:00 125.2 125.2 124.3 124.4    -1  123.9    NA      NA</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 2020-01-15 00:00:00 124.4 124.5 123.7 123.9    -1  123.9    NA      NA</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 271 more rows, and 4 more variables: senkouB &lt;dbl&gt;, chikou &lt;dbl&gt;,</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   cloudT &lt;dbl&gt;, cloudB &lt;dbl&gt;</span></span></code></pre></div>
+<p>The returned output is designed to fit the screen; call <code>more()</code> to display up to 100 more rows. Note that above, print is called setting ‘plot = FALSE’ to return just the data to the console. The default print method for ichimoku objects also plots the cloud chart to the graphical device.</p>
 <p>Use <code>str()</code> for a compact display of the object structure:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(cloud)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ichimoku object [2020-01-02 / 2021-02-01]</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Matrix &lt;numeric&gt; w/ dim: (281 rows, 12 cols)</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  dimnames[[2L]]: $open $high $low $close $cd $tenkan $kijun $senkouA $senkouB $chikou $cloudT $cloudB</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  index: &lt;POSIXct&gt; 2020-01-02 ... 2021-02-01</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Attributes:</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  periods: 9 26 52 </span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  periodicity: 1 days </span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  ticker: TKR</span></span></code></pre></div>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ichimoku object [2020-01-02 / 2021-02-01] (281, 12)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  &lt;double&gt; $open $high $low $close $cd $tenkan $kijun $senkouA $senkouB $chikou $cloudT $cloudB</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  index: &lt;POSIXct&gt; 2020-01-02 ... 2021-02-01 </span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  attributes:</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   periods: 9 26 52 </span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   periodicity: 1 days </span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ticker: TKR</span></span></code></pre></div>
 <p>The summary method using <code>summary()</code> will also provide a brief description of the data:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(cloud)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ichimoku object with dimensions (281, 12) </span></span>
@@ -313,11 +304,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>The input object may contain additional data not required for ichimoku analysis, such as volume etc. To retain such data in the ichimoku object, specify <code>keep.data = TRUE</code> when calling <code>ichimoku()</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>kumo <span class="ot">&lt;-</span> <span class="fu">ichimoku</span>(TKR, <span class="at">keep.data =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(kumo[<span class="dv">100</span>, ], <span class="at">plot =</span> <span class="cn">FALSE</span>, <span class="at">digits =</span> <span class="dv">4</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             open  high   low close cd tenkan kijun senkouA senkouB chikou</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20 122.7 122.7 121.8 122.4 -1    121 123.9   125.7   124.8  135.1</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            cloudT cloudB volume</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20  125.7  124.8   3440</span></span></code></pre></div>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(kumo[, <span class="st">&quot;volume&quot;</span>], <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ichimoku object: use more() to display more rows, look() to inspect</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   attributes</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    index               volume</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;dttm&gt;               &lt;dbl&gt;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1 2020-01-02 00:00:00   1875</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2 2020-01-03 00:00:00   1479</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3 2020-01-06 00:00:00   1792</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4 2020-01-07 00:00:00   1977</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5 2020-01-08 00:00:00   2239</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6 2020-01-09 00:00:00   1842</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7 2020-01-10 00:00:00   2548</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 2020-01-13 00:00:00   2946</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 2020-01-14 00:00:00   2796</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 2020-01-15 00:00:00   2879</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 271 more rows</span></span></code></pre></div>
 <p>This consolidates all relevant data into a single object. The additional data can now also be plotted as a sub-plot beneath the main ichimoku cloud chart (see <a href="#custom-sub-plots">custom sub-plots</a>).</p>
 <p>Note: only numeric data or data coercible to numeric type is preserved in this way, and other types will introduce NAs. This is as the core data of an ichimoku object is a numeric matrix that does not support multiple data types. Custom attributes set on the input object (such as a timestamp or data source) are also preserved.</p>
 </div>
@@ -341,10 +343,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>The following generic functions have optimised S3 methods for ichimoku objects:</p>
 <ul>
 <li><code>as.data.frame()</code> for converting an ichimoku object to a dataframe. Set the argument <code>keep.attrs = TRUE</code> to retain the attributes of the original ichimoku object</li>
+<li><code>as_tibble()</code> for converting an ichimoku object to a ‘tibble’. Set the argument <code>keep.attrs = TRUE</code> to retain the attributes of the original ichimoku object</li>
 <li><code>index()</code> to extract the index of an ichimoku object as a vector of POSIXct values</li>
 <li><code>coredata()</code> to extract the columns of an ichimoku object as a numeric matrix</li>
 </ul>
-<p>As the resulting objects are simple base types, they can easily be modified as required.</p>
 <p>The below shows how to faithfully re-create an ichimoku object from its components:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="fu">index</span>(cloud)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>core <span class="ot">&lt;-</span> <span class="fu">coredata</span>(cloud)</span>
@@ -374,7 +376,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><code>window</code> (optional) indispensable in a proper workflow. <code>ichimoku()</code> is run on a larger dataset than that of interest and at the visualization stage the data is subset to the window of interest. Supply as an ISO-8601 compatible range string in the format used for ‘xts’ objects, for example the range ‘2020-02-15/2020-08-15’ or ‘2020-02-15/’ (from 15 Feb 2020) or ‘/2020-08’ (until end-Aug 2020) or simply ‘2020’ to select all of the year 2020</li>
 <li><code>ticker</code> (optional) used to supply a different ticker to that stored in the ichimoku object, or alternatively a longer-form name or other text that will appear in the chart heading</li>
 <li><code>subtitle</code> (optional) used to specify a subtitle to display under the chart title</li>
-<li><code>theme</code> [default ‘original’] the following themes are also available: ‘dark’, ‘solarized’ and ‘mono’</li>
+<li><code>theme</code> [default ‘original’] with alternative choices of ‘conceptual’, ‘dark’, ‘fresh’, ‘mono’, or ‘solarized’</li>
 <li><code>strat</code> [default TRUE] if true, the periods for which a strategy results in a market position will be shaded (if the ichimoku object contains a strategy) with the strategy printed as the chart sustitle (if not otherwise specified). See the <a href="strategies.html">strategies vignette</a> for more information on working with strategies.</li>
 <li><code>type</code> [default ‘none’] type of sub-plot to display beneath the ichimoku cloud chart, with a choice of ‘none’, ‘r’ or ‘s’ for the corresponding oscillator type, and ‘bar’ or ‘line’ for custom plots.</li>
 <li><code>custom</code> (optional) character string (containing a regular expression) matching the column name of the variable to be displayed as sub-plot. Specify <code>type = &#39;bar&#39;</code> or <code>type = &#39;line&#39;</code>, otherwise other type settings will take precedence.</li>
@@ -442,11 +444,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Archive files created by this function are stored in the native RData format for maximum portability and reliability. They may be read using the base R <code>load()</code> function on machines without ‘ichimoku’ installed.</p>
 <div id="writing" class="section level4">
 <h4>Writing</h4>
-<p><code>archive()</code> for write operations will take 2 arguments: the object to be written, and the file path/name of the file to be stored. A confirmation is printed to the console that the file has been written.</p>
+<p><code>archive()</code> for write operations will take 2 arguments: the object to be written, and the file path/name of the file to be stored. If the second argument is left empty, a system dialog will be opened allowing the file save location to be set interactively. A confirmation is printed to the console that the file has been written.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Write object to file:</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">archive</span>(object, <span class="st">&quot;path/filename&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave second argument empty to choose file save location from a system dialog:</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">archive</span>(object, )</span></code></pre></div>
 </div>
 <div id="reading" class="section level4">
 <h4>Reading</h4>
 <p><code>archive()</code> for read operations takes a single argument: the file path/name of the file to be read. Alternatively, if no arguments are specified, a system dialog will be opened allowing a file to be chosen interactively. The return value of the function can be assigned to an object. A confirmation is printed to the console once the file has been read.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read from file to object:</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>object <span class="ot">&lt;-</span> <span class="fu">archive</span>(<span class="st">&quot;path/filename&quot;</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Choose a file from an interactive system dialog:</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>object <span class="ot">&lt;-</span> <span class="fu">archive</span>()</span></code></pre></div>
 </div>
 <div id="data-integrity-verification" class="section level4">
 <h4>Data Integrity Verification</h4>
@@ -532,16 +542,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2>Dependencies</h2>
 <p>ichimoku currently has the following external package dependencies:</p>
 <ul>
-<li>curl - for interfacing with external APIs</li>
-<li>ggplot2 - the R graphics system for visualization</li>
-<li>gtable - for arranging grid graphics objects</li>
-<li>jsonlite - for parsing JSON data retrieved from external APIs</li>
-<li>xts - ichimoku objects are based on the ‘xts’ format for time series</li>
-<li>zoo - ‘xts’ is built on ‘zoo’ technology</li>
+<li>ggplot2, gtable - for graphics and visualization</li>
+<li>tibble - for enhanced printing of ichimoku objects</li>
+<li>xts, zoo - for enhanced time series methods</li>
+<li>curl, jsonlite - for interfacing with external APIs</li>
 </ul>
 <p>Compile time:</p>
 <ul>
-<li>cpp11 - provides the C++ headers for various ichimoku internal functions</li>
+<li>cpp11 - provides the C++ headers for various internal calculation functions</li>
 </ul>
 <p>Optional (enables additional features):</p>
 <ul>
@@ -553,7 +561,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="references" class="section level2">
 <h2>References</h2>
 <p>Sasaki, H. 佐々木 英信 (1996), <em>一目均衡表の研究 [ichimoku kinkouhyou no kenkyuu]</em>. Tokyo, Japan: Toushi Radar.</p>
-<p>Gao, C. (2021), <em>ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies</em>. R package version 1.2.4, <a href="https://CRAN.R-project.org/package=ichimoku" class="uri">https://CRAN.R-project.org/package=ichimoku</a>.</p>
+<p>Gao, C. (2021), <em>ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies</em>. R package version 1.2.5, <a href="https://CRAN.R-project.org/package=ichimoku" class="uri">https://CRAN.R-project.org/package=ichimoku</a>.</p>
 <hr />
 </div>
 

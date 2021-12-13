@@ -30,16 +30,18 @@
 tradingDays <- function(x, holidays, ...) {
   if (missing(holidays)) {
     posixlt <- as.POSIXlt.POSIXct(x)
-    vec <- posixlt$wday %in% 1:5
-    vec[(posixlt$mon == 0L & posixlt$mday == 1L) | (posixlt$mon == 11L & posixlt$mday == 25L)] <- FALSE
+    vec <- .subset2(posixlt, "wday") %in% 1:5
+    vec[(.subset2(posixlt, "mon") == 0L & .subset2(posixlt, "mday") == 1L) |
+          (.subset2(posixlt, "mon") == 11L & .subset2(posixlt, "mday") == 25L)] <- FALSE
   } else if (is.null(holidays)) {
     return(rep(TRUE, length(x)))
   } else {
     posixlt <- as.POSIXlt.POSIXct(x)
-    vec <- posixlt$wday %in% 1:5
+    vec <- .subset2(posixlt, "wday") %in% 1:5
     holidays <- tryCatch(as.POSIXct(holidays), error = function(e) {
       warning("Specified holidays are invalid - reverting to defaults", call. = FALSE)
-      vec[(posixlt$mon == 0L & posixlt$mday == 1L) | (posixlt$mon == 11L & posixlt$mday == 25L)] <- FALSE
+      vec[(.subset2(posixlt, "mon") == 0L & .subset2(posixlt, "mday") == 1L) |
+            (.subset2(posixlt, "mon") == 11L & .subset2(posixlt, "mday") == 25L)] <- FALSE
       return(vec)
     })
     vec[x %in% holidays] <- FALSE
@@ -71,8 +73,8 @@ tradingDays <- function(x, holidays, ...) {
 #' @export
 #'
 grid_dup <- function(n, omit.id) {
-  vec <- vector(mode = "list", length = n - 1)
-  for (i in seq_len(n - 1)) {
+  vec <- vector(mode = "list", length = n - 1L)
+  for (i in seq_along(vec)) {
     vec[[i]] <- i * n + 1:i
   }
   vec <- unlist(vec)
@@ -103,7 +105,7 @@ grid_dup <- function(n, omit.id) {
 #'
 df_trim <- function(x) {
   omit <- logical(dim(x)[1L])
-  for (i in 1:length(x)) {
+  for (i in seq_len(length(x))) {
     omit <- omit | is.na(x[[i]])
   }
   x[!omit, , drop = FALSE]
@@ -178,9 +180,8 @@ matrix_df <- function(x, keep.attrs) {
   dnames <- dimnames(x)
   mat <- unname(x)
   dims <- dim(mat)
-  len <- dims[2L]
-  df <- vector(mode = "list", length = len)
-  for (i in seq_len(len)) {
+  df <- vector(mode = "list", length = dims[2L])
+  for (i in seq_along(df)) {
     df[[i]] <- mat[, i]
   }
   attributes(df) <- c(list(names = dnames[[2L]],
@@ -239,8 +240,8 @@ df_merge <- function(...) {
 #'     time series data to an existing dataframe, where each observation is
 #'     indexed by a unique timestamp/identifier in a key column.
 #'
-#' @param new data.frame object containing new data.
 #' @param old data.frame object containing existing data.
+#' @param new data.frame object containing new data.
 #' @param key [default 'time'] column name used as key, provided as a character
 #'     string.
 #' @param keep.attr [default 'timestamp'] name of an attribute in 'new' to retain
@@ -263,22 +264,115 @@ df_merge <- function(...) {
 #' data1
 #' data2 <- sample_ohlc_data[7:10, ]
 #' data2
-#' df_append(data2, data1)
+#' df_append(data1, data2)
 #'
 #' @export
 #'
-df_append <- function(new, old, key = "time", keep.attr = "timestamp") {
+df_append <- function(old, new, key = "time", keep.attr = "timestamp") {
   keep <- !.subset2(old, key) %in% .subset2(new, key)
   cnames <- attr(new, "names")
-  len <- length(new)
-  df <- vector(mode = "list", length = len)
-  for (i in seq_len(len)) {
+  df <- vector(mode = "list", length = length(new))
+  for (i in seq_along(df)) {
     df[[i]] <- c(.subset2(old, i)[keep], .subset2(new, i))
   }
-  attributes(df) <- list(names = cnames,
-                         class = "data.frame",
-                         row.names = .set_row_names(length(df[[1L]])))
-  attr(df, keep.attr) <- attr(new, keep.attr)
+  df <- `attributes<-`(df, `names<-`(
+    list(cnames, "data.frame", .set_row_names(length(df[[1L]])), attr(new, keep.attr)),
+    c("names", "class", "row.names", keep.attr)))
   df
 }
+
+#' Print More Rows of Ichimoku Objects
+#'
+#' After calling or invoking the default print method for ichimoku objects, the
+#'     console output will display \code{# … with x more rows} if the entire
+#'     data does not fit on-screen. Use \code{more()} to display more rows.
+#'
+#' @param n a parameter (optional) passed on to the argument 'n' of
+#'     \code{\link[tibble]{print.tbl}} controlling the number of rows to show.
+#'     Defaults to 100. Normally an integer, but supply a character string such
+#'     as 'a' to print all rows.
+#'
+#' @return The ichimoku object contained in \code{\link{.Last.value}} (invisibly)
+#'     or else invisible NULL (if .Last.value is not an ichimoku object).
+#'     The ichimoku object data is printed to the console.
+#'
+#' @examples
+#' cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
+#' cloud
+#' more()
+#' more(20)
+#'
+#' @export
+#'
+more <- function(n) {
+
+  is.ichimoku(lv <- .Last.value) || return(invisible())
+  print(lv, plot = FALSE, n = if (missing(n)) 100 else n)
+
+}
+
+#' Look at Informational Attributes
+#'
+#' Inspect the informational attributes of objects.
+#'
+#' @param x an object (optional). If 'x' is not supplied, \code{\link{.Last.value}}
+#'     will be used instead.
+#'
+#' @return For objects created by the ichimoku package, a list of attributes
+#'     specific to that data type.
+#'
+#'     For other objects, a list of non-standard attributes for matrix /
+#'     data.frame / xts classes, or else invisible NULL if none are present.
+#'
+#' @details Note: autostrat list attributes may be accessed directly using
+#'     \code{look(x)$logret} and \code{look(x)$summary}.
+#'
+#' @examples
+#' cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
+#' look(cloud)
+#'
+#' stratlist <- autostrat(cloud, n = 3)
+#' look(stratlist)
+#'
+#' strat <- stratlist[[1]]
+#' look(strat)
+#'
+#' grid <- mlgrid(cloud)
+#' look(grid)
+#'
+#' \dontrun{
+#' # OANDA API key required to run this example
+#' prices <- oanda("USD_JPY")
+#' look(prices)
+#' }
+#'
+#' @export
+#'
+look <- function(x) {
+
+  lk <- attributes(if (missing(x)) .Last.value else x)
+  lk <- lk[!names(lk) %in% c("dim", "dimnames", "names", "row.names", "index", "class", "oanda")]
+  if (length(lk)) lk else invisible()
+
+}
+
+#' is.ichimoku
+#'
+#' A function for checking if an object is an ichimoku object.
+#'
+#' @param x an object.
+#'
+#' @return A logical value of TRUE if 'x' is of class 'ichimoku', otherwise FALSE.
+#'
+#' @examples
+#' cloud <- ichimoku(sample_ohlc_data)
+#'
+#' # TRUE:
+#' is.ichimoku(cloud)
+#' # FALSE:
+#' is.ichimoku(sample_ohlc_data)
+#'
+#' @export
+#'
+is.ichimoku <- function(x) inherits(x, "ichimoku")
 

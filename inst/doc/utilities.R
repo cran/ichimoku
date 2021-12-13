@@ -19,17 +19,11 @@ tradingDays(dates, holidays = NULL)
 cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
 look(cloud)
 
+strat <- strat(cloud)
+look(strat)
+
 grid <- mlgrid(cloud)
 look(grid)
-
-## ----look2--------------------------------------------------------------------
-stratlist <- autostrat(cloud, n = 3)
-
-# Extract the ichimoku object which is the second element of 'stratlist':
-strat <- look(stratlist, which = 2)
-
-# Inspect ichimoku object:
-look(strat)
 
 ## ----xtsdf--------------------------------------------------------------------
 cloud <- ichimoku(sample_ohlc_data)
@@ -64,5 +58,5 @@ data1 <- sample_ohlc_data[1:8, ]
 data1
 data2 <- sample_ohlc_data[7:10, ]
 data2
-df_append(data2, data1)
+df_append(data1, data2)
 

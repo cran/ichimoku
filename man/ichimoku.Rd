@@ -9,7 +9,7 @@
 \alias{ichimoku.default}
 \title{ichimoku}
 \usage{
-ichimoku(x, ...)
+ichimoku(x, ticker, periods = c(9L, 26L, 52L), keep.data, ...)
 
 \method{ichimoku}{ichimoku}(x, ticker, periods = c(9L, 26L, 52L), keep.data, ...)
 
@@ -23,10 +23,7 @@ ichimoku(x, ...)
 }
 \arguments{
 \item{x}{a data.frame or other compatible object, which includes xts,
-data.table, tibble, tsibble, and matrix.}
-
-\item{...}{additional arguments, for instance 'holidays', passed along to
-\code{\link{tradingDays}} for calculating the future cloud on daily data.}
+data.table, tibble, and matrix.}
 
 \item{ticker}{(optional) specify a ticker to identify the instrument,
 otherwise this is set to the name of the input object.}
@@ -38,6 +35,9 @@ ichimoku analysis.}
 
 \item{keep.data}{(optional) set to TRUE to retain additional data present
 in the input object as additional columns and/or attributes.}
+
+\item{...}{additional arguments, for instance 'holidays', passed along to
+\code{\link{tradingDays}} for calculating the future cloud on daily data.}
 }
 \value{
 An ichimoku object with S3 classes of 'ichimoku', 'xts' and 'zoo'.
@@ -110,10 +110,11 @@ Calling an ichimoku object automatically invokes its print method,
 TKR <- sample_ohlc_data
 
 cloud <- ichimoku(TKR)
-plot(cloud)
-print(cloud[101:120, ], plot = FALSE)
+cloud
 
 kumo <- ichimoku(TKR, ticker = "TKR Co.", periods = c(9, 26, 52), keep.data = TRUE)
+summary(kumo)
+print(kumo, plot = FALSE, n = 20)
 plot(kumo, theme = "solarized", type = "bar", custom = "volume")
 
 }

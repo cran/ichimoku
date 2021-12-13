@@ -24,7 +24,7 @@ library(ichimoku)
 
 This vignette is dedicated to the auxiliary functions exported by the ichimoku package. 
 
-Note that all of the auxiliary functions are programmed for performance and are hence stripped of superfluous validation and error-checking code. If they are used outside of their intended scopes then errors can be expected. In particular, the input types must match exactly.
+Note that these auxiliary functions are programmed for performance and hence stripped of superfluous validation and error-checking code. If they are used outside of their intended scopes then errors may be expected. In particular, input types must match exactly.
 
 ## Core Auxiliary Functions
 
@@ -50,6 +50,8 @@ tradingDays(dates, holidays = NULL)
 
 Can be used to inspect the informational attributes of R objects.
 
+Takes an object as an optional argument. Called without an argument, `.Last.value` will be used instead.
+
 For objects created by the ichimoku package, a list of attributes specific to that data type is returned.
 
 For other objects, a list of attributes that are non-standard for matrix / data.frame / xts objects is returned, or else invisible NULL if none are present.
@@ -58,20 +60,11 @@ For other objects, a list of attributes that are non-standard for matrix / data.
 cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
 look(cloud)
 
+strat <- strat(cloud)
+look(strat)
+
 grid <- mlgrid(cloud)
 look(grid)
-```
-
-Can also be used to extract ichimoku objects from lists returned by `autostrat()`. Specify the argument 'which', to return the corresponding element of the list created by `autostrat()`.
-
-```{r look2}
-stratlist <- autostrat(cloud, n = 3)
-
-# Extract the ichimoku object which is the second element of 'stratlist':
-strat <- look(stratlist, which = 2)
-
-# Inspect ichimoku object:
-look(strat)
 ```
 
 ## Dataframe Constructors
@@ -80,7 +73,7 @@ look(strat)
 
 Convert an 'xts' object to 'data.frame'. This function can be an order of magnitude faster than `as.data.frame()` for an 'xts' object.
 
-Note that for ichimoku objects, a marginally faster, more specific version has been implemented as the S3 method for `as.data.frame()`. Hence using this utility on an ichimoku object is not necessary.
+Note that for ichimoku objects, a slightly faster, more specific version has been implemented as the S3 method for `as.data.frame()`. Hence using this utility on an ichimoku object is not necessary.
 
 Takes the following arguments:
 
@@ -154,8 +147,8 @@ Update a 'data.frame' object with new data. Can be used to append new updated ti
 
 Takes 4 arguments:
 
-- `new`  data.frame object containing new data.
 - `old`  data.frame object containing existing data.
+- `new`  data.frame object containing new data.
 - `key`  [default 'time'] column name used as key provided as a character string.
 - `keep.attr`  [default 'timestamp'] name of an attribute in 'new' to retain if it is present, provided as a character string.
 
@@ -168,11 +161,11 @@ data1 <- sample_ohlc_data[1:8, ]
 data1
 data2 <- sample_ohlc_data[7:10, ]
 data2
-df_append(data2, data1)
+df_append(data1, data2)
 ```
 
 ## References
 
-Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.4, <https://CRAN.R-project.org/package=ichimoku>.
+Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.5, <https://CRAN.R-project.org/package=ichimoku>.
 
 ---

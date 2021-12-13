@@ -51,9 +51,9 @@ It is outside the scope of this vignette to provide a full tutorial on the use o
 
 ### Context
 
-Ichimoku analysis is the latest refinement in candlestick charting techniques, which also originated from Japan. Developed by 一目山人 *Ichimoku, Sanjin*, the pen name of 細田吾一 *Hosoda, Goichi*, his work was published in 1969 as the seminal *「一目均衡表」 [ichimoku kinkou hyou]*. It gained popularity in Japan especially after the publication of Sasaki's *「一目均衡表の研究」 [ichimoku kinkouhyou no kenkyuu]* in 1996, and is now widely-used in technical analysis worldwide.
+Ichimoku analysis is the latest refinement in candlestick charting techniques, which also originated from Japan. Developed by 一目山人 *Ichimoku, Sanjin*, the pen name of 細田吾一 *Hosoda, Goichi*, the work was published in 1969 as the seminal *「一目均衡表」 [ichimoku kinkou hyou]*. It gained popularity in Japan especially after the publication of Sasaki's *「一目均衡表の研究」 [ichimoku kinkouhyou no kenkyuu]* in 1996, and is now widely-used in technical analysis worldwide.
 
-The ichimoku time periods have traditionally been calculated as 9, 26 and 52 based on manual data analysis performed in Japan in a pre-computer age where there was a 6-day working week resulting in 26 average trading days in a month. Although this bears little relevance to the current day, the use of these time periods has persisted as an 'industry norm' or 'accepted practice'. To use other periods would be meaningless in a sense as everyone uses these parameters and 'market psychology' can and often does create its own realities, independent of any fundamentals.
+The ichimoku time periods have traditionally been calculated as 9, 26 and 52 based on manual data analysis performed in Japan in a pre-computer age where there was a 6-day working week resulting in 26 average trading days in a month. Although this bears little relevance to the current day, the use of these time periods has persisted as an 'industry norm' or 'accepted practice'. To use other periods would be meaningless in a sense as 'market psychology' can and often does create its own realities, independent of any fundamentals.
 
 However, there is no reason for the technique not to evolve, and to reflect changing trading realities perhaps other parameters will become more relevant in the collective psychology. For this reason, the length of these periods can be freely set in the 'ichimoku' package. However please do so only with caution and note that using other periods invalidates the traditional interpretations of Ichimoku Kinko Hyo.
 
@@ -66,7 +66,7 @@ library(ichimoku)
 
 ### Data
 
-ichimoku works with data frames and tabular data. The `ichimoku()` function handles as input xts, data.frame, data.table, tibble, tsibble, matrix, and other data.frame compatible objects.
+ichimoku works with data frames and tabular data. The `ichimoku()` function handles as input xts, data.frame, data.table, tibble, matrix, and other data.frame compatible objects.
 
 ichimoku incorporates an interface with the OANDA fxTrade API to return data for major currencies, metals, commodities, government bonds and stock indices. Please refer to the [OANDA vignette](xoanda.html).
 
@@ -130,10 +130,10 @@ Optional arguments:
 ```{r ichimoku}
 cloud <- ichimoku(TKR)
 
-print(cloud[100:110, ], plot = FALSE, digits = 4)
+print(cloud, plot = FALSE)
 ```
 
-A section (rows 100 to 110) of the ichimoku object is shown above. Note that print is called setting 'plot = FALSE' to return just the data to the console. The default print method for ichimoku objects also plots the cloud chart to the graphical device.
+The returned output is designed to fit the screen; call `more()` to display up to 100 more rows. Note that above, print is called setting 'plot = FALSE' to return just the data to the console. The default print method for ichimoku objects also plots the cloud chart to the graphical device. 
 
 Use `str()` for a compact display of the object structure:
 
@@ -162,7 +162,7 @@ The input object may contain additional data not required for ichimoku analysis,
 ```{r ichimokupreserve}
 kumo <- ichimoku(TKR, keep.data = TRUE)
 
-print(kumo[100, ], plot = FALSE, digits = 4)
+print(kumo[, "volume"], plot = FALSE)
 ```
 
 This consolidates all relevant data into a single object. The additional data can now also be plotted as a sub-plot beneath the main ichimoku cloud chart (see [custom sub-plots](#custom-sub-plots)).
@@ -195,10 +195,9 @@ ichimoku(TKR, holidays = NULL)
 The following generic functions have optimised S3 methods for ichimoku objects:
 
 - `as.data.frame()` for converting an ichimoku object to a dataframe. Set the argument `keep.attrs = TRUE` to retain the attributes of the original ichimoku object
+- `as_tibble()` for converting an ichimoku object to a 'tibble'. Set the argument `keep.attrs = TRUE` to retain the attributes of the original ichimoku object
 - `index()` to extract the index of an ichimoku object as a vector of POSIXct values
 - `coredata()` to extract the columns of an ichimoku object as a numeric matrix
-
-As the resulting objects are simple base types, they can easily be modified as required.
 
 The below shows how to faithfully re-create an ichimoku object from its components:
 
@@ -237,7 +236,7 @@ The following arguments for customisation are shared across `plot()` and `iplot(
 - `window` (optional) indispensable in a proper workflow. `ichimoku()` is run on a larger dataset than that of interest and at the visualization stage the data is subset to the window of interest. Supply as an ISO-8601 compatible range string in the format used for 'xts' objects, for example the range '2020-02-15/2020-08-15' or '2020-02-15/' (from 15 Feb 2020) or '/2020-08' (until end-Aug 2020) or simply '2020' to select all of the year 2020
 - `ticker` (optional) used to supply a different ticker to that stored in the ichimoku object, or alternatively a longer-form name or other text that will appear in the chart heading
 - `subtitle` (optional) used to specify a subtitle to display under the chart title
-- `theme` [default 'original'] the following themes are also available: 'dark', 'solarized' and 'mono'
+- `theme` [default 'original'] with alternative choices of 'conceptual', 'dark', 'fresh', 'mono', or 'solarized'
 - `strat` [default TRUE] if true, the periods for which a strategy results in a market position will be shaded (if the ichimoku object contains a strategy) with the strategy printed as the chart sustitle (if not otherwise specified). See the [strategies vignette](strategies.html) for more information on working with strategies.
 - `type` [default 'none'] type of sub-plot to display beneath the ichimoku cloud chart, with a choice of 'none', 'r' or 's' for the corresponding oscillator type, and 'bar' or 'line' for custom plots.
 - `custom` (optional) character string (containing a regular expression) matching the column name of the variable to be displayed as sub-plot. Specify `type = 'bar'` or `type = 'line'`, otherwise other type settings will take precedence.
@@ -329,11 +328,25 @@ Archive files created by this function are stored in the native RData format for
 
 #### Writing
 
-`archive()` for write operations will take 2 arguments: the object to be written, and the file path/name of the file to be stored. A confirmation is printed to the console that the file has been written.
+`archive()` for write operations will take 2 arguments: the object to be written, and the file path/name of the file to be stored. If the second argument is left empty, a system dialog will be opened allowing the file save location to be set interactively. A confirmation is printed to the console that the file has been written.
+
+```{r archivew, eval=FALSE}
+# Write object to file:
+archive(object, "path/filename")
+# Leave second argument empty to choose file save location from a system dialog:
+archive(object, )
+```
 
 #### Reading
 
 `archive()` for read operations takes a single argument: the file path/name of the file to be read. Alternatively, if no arguments are specified, a system dialog will be opened allowing a file to be chosen interactively. The return value of the function can be assigned to an object. A confirmation is printed to the console once the file has been read.
+
+```{r archiver, eval=FALSE}
+# Read from file to object:
+object <- archive("path/filename")
+# Choose a file from an interactive system dialog:
+object <- archive()
+```
 
 #### Data Integrity Verification
 
@@ -411,16 +424,14 @@ There may however still be other issues with the input data that prevent cloud v
 
 ichimoku currently has the following external package dependencies:
 
-- curl - for interfacing with external APIs
-- ggplot2 - the R graphics system for visualization
-- gtable - for arranging grid graphics objects
-- jsonlite - for parsing JSON data retrieved from external APIs
-- xts - ichimoku objects are based on the 'xts' format for time series
-- zoo - 'xts' is built on 'zoo' technology
+- ggplot2, gtable - for graphics and visualization
+- tibble - for enhanced printing of ichimoku objects
+- xts, zoo - for enhanced time series methods
+- curl, jsonlite - for interfacing with external APIs
 
 Compile time:
 
-- cpp11 - provides the C++ headers for various ichimoku internal functions
+- cpp11 - provides the C++ headers for various internal calculation functions
 
 Optional (enables additional features):
 
@@ -432,6 +443,6 @@ Optional (enables additional features):
 
 Sasaki, H. 佐々木 英信 (1996), *一目均衡表の研究 [ichimoku kinkouhyou no kenkyuu]*. Tokyo, Japan: Toushi Radar.
 
-Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.4, <https://CRAN.R-project.org/package=ichimoku>.
+Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies*. R package version 1.2.5, <https://CRAN.R-project.org/package=ichimoku>.
 
 ---

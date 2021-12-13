@@ -170,10 +170,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2>Introduction</h2>
 <p>There are multiple ways to work with Ichimoku Kinko Hyo strategies using the ichimoku R package.</p>
 <p>First and foremost is visually, and the functions for visualization are described in the <a href="reference.html">reference vignette</a>.</p>
-<p>However, it is often necessary to perform analysis on the data directly, for instance to test hypotheses about the price action of a particular security under certain scenarios. Here, complications of the ichimoku system can become apparent. The Chikou span in particular poses a challenge as the position of this indicator needs to be mapped in relation to the chart elements 26 periods previously, however this then affects trading decisions at the present point in time.</p>
+<p>However, for performing analysis on the data directly, complications of the ichimoku system can quickly become apparent. The Chikou span in particular poses a challenge as the position of this indicator needs to be mapped in relation to the chart elements 26 periods previously, however this then affects trading decisions at the present point in time.</p>
 <p>The ‘strategy layer’ of the ichimoku package aims to prepare the data in a standardized format for easy further analysis. Short strategy summaries are generated automatically, but are designed to serve as a quick reference rather than a replacement for a full backtest using a package such as ‘PerformanceAnalytics’.</p>
 <p>The <code>autostrat()</code> function is used to further facilitate idea generation, and leverages the computational capability of R to simultaneously test all valid indicator combinations.</p>
-<p>Past results do not imply future performance, and should always be used in conjunction with a full backtest and risk analysis.</p>
+<p>Past results do not imply future performance, and should always be considered in conjunction with a full backtest and risk analysis.</p>
 </div>
 <div id="working-with-strategies" class="section level2">
 <h2>Working with Strategies</h2>
@@ -190,25 +190,33 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Here ‘c1’ and ‘c2’ are the quoted column names of the ichimoku object representing either candlestick values e.g. ‘close’ or cloud values e.g. ‘tenkan’.</p>
 <p>Note: the indicator condition remains of the form c1 &gt; c2 even for short trades. Hence please take care when inverting, for example, ‘long while close &gt; tenkan’ to ‘short while close &lt; tenkan’, this should be formulated as ‘short while tenkan &gt; close’.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>strat <span class="ot">&lt;-</span> <span class="fu">strat</span>(cloud, <span class="at">c1 =</span> <span class="st">&quot;cloudB&quot;</span>, <span class="at">c2 =</span> <span class="st">&quot;kijun&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(strat[<span class="dv">96</span><span class="sc">:</span><span class="dv">100</span>, ], <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             open  high   low close cd tenkan  kijun senkouA senkouB chikou</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-14 119.7 121.5 119.2 121.3  1 122.10 124.55 123.275  123.20  132.1</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-15 121.3 122.1 120.2 121.9  1 122.05 124.55 124.575  124.35  133.1</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-18 122.6 122.6 122.2 122.4 -1 122.05 124.55 125.200  124.85  132.4</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-19 122.4 123.0 122.3 122.7  1 121.55 123.90 125.625  124.85  132.6</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20 122.7 122.7 121.8 122.4 -1 121.05 123.90 125.675  124.85  135.1</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             cloudT cloudB cond posn txn       logret      slogret          ret</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-14 123.275 123.20    0    0   0  0.013278203  0.000000000  0.013366750</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-15 124.575 124.35    0    0   0  0.010660208  0.000000000  0.010717230</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-18 125.200 124.85    1    0   0 -0.001632653  0.000000000 -0.001631321</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-19 125.625 124.85    1    1   1  0.002447982  0.002447982  0.002450980</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20 125.675 124.85    1    1   0 -0.002447982 -0.002447982 -0.002444988</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                    sret</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-14  0.000000000</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-15  0.000000000</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-18  0.000000000</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-19  0.002450980</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20 -0.002444988</span></span></code></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(strat[<span class="dv">100</span><span class="sc">:</span><span class="dv">105</span>, ], <span class="at">plot =</span> <span class="cn">FALSE</span>, <span class="at">width =</span> <span class="dv">180</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ichimoku object: use more() to display more rows, look() to inspect</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   attributes</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   index                open  high   low close    cd tenkan  kijun senkouA</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;dttm&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 2020-05-20 00:00:00 122.7 122.7 121.8 122.4    -1 121.05 123.9   125.68</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 2020-05-21 00:00:00 122.4 122.6 121.1 121.9    -1 121.05 123.9   125.68</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 2020-05-22 00:00:00 121.9 123.7 121.7 123.3     1 121.4  123.8   125.68</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 2020-05-25 00:00:00 123.3 124   123   124       1 121.55 123.8   125.68</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 2020-05-26 00:00:00 124.2 124.3 124   124.1    -1 121.75 123.65  125.98</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 2020-05-27 00:00:00 124.1 124.1 123.4 123.9    -1 122.25 123.65  126.48</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   senkouB chikou cloudT cloudB  cond  posn   txn      logret     slogret</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1  124.85  135.1 125.68 124.85     1     1     0 -0.0024480  -0.0024480 </span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2  124.85  135.6 125.68 124.85     1     1     0 -0.0040933  -0.0040933 </span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3  124.85  134.5 125.68 124.85     1     1     0  0.011419    0.011419  </span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4  124.85  134.3 125.68 124.85     1     1     0  0.0072728   0.0072728 </span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5  124.85  135.9 125.98 124.85     1     1     0 -0.00080548 -0.00080548</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6  124.85  135.2 126.48 124.85     1     1     0 -0.0016129  -0.0016129 </span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;           ret        sret</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;       &lt;dbl&gt;</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 -0.0024450  -0.0024450 </span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 -0.0040850  -0.0040850 </span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3  0.011485    0.011485  </span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4  0.0072993   0.0072993 </span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 -0.00080515 -0.00080515</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 -0.0016116  -0.0016116</span></span></code></pre></div>
 <p>The use of <code>strat()</code> returns an augmented ichimoku object. The printout above of a slice of the object (rows 96 to 100) shows that the following columns are appended:</p>
 <ul>
 <li><code>$cond</code>: ‘1’ if the indicator condition is met at the close of the the time period (note: if the indicator condition involves chikou span, the comparison will be of past periods)</li>
@@ -266,7 +274,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Ticker                 &quot;TKR&quot;</span></span></code></pre></div>
 <p>The summary is designed to provide a quick overview of whether a strategy is effective / desirable:</p>
 <ul>
-<li>Strategy returns are compared with the benchmark, which is simply being in the market the entire time</li>
+<li>Strategy returns are compared with the benchmark, which is simply holidng a position the entire time</li>
 <li>Comparing returns combined with total periods in the market can help determine if the strategy is substantially different from just taking market risk</li>
 <li>Total trades along with average trade length can be used to filter out undesirable strategies that over-trade</li>
 <li>Trade success % helps to characterise the consistency of the strategy or whether it relies on a small percentage of outsize returns</li>
@@ -352,7 +360,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Start                  2020-04-20         2020-04-20        2020-04-20       </span></span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; End                    2020-12-23         2020-12-23        2020-12-23       </span></span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Ticker                 &quot;TKR&quot;              &quot;TKR&quot;             &quot;TKR&quot;</span></span></code></pre></div>
-<p>The output of <code>autostrat()</code> is a list of ichimoku objects. Each object can be accessed by its position in the list e.g. <code>[[1]]</code> for the first object, or by using <code>look()</code> specifying the parameter ‘which’.</p>
+<p>The output of <code>autostrat()</code> is a list of ichimoku objects. Each object can be accessed by its position in the list e.g. <code>[[1]]</code> for the first object.</p>
 <p>The metadata is also saved as attributes to the list and can be accessed by the function <code>look()</code>:</p>
 <ul>
 <li><p><strong>logret</strong>: the log returns of all combinations computed by autostrat</p></li>
@@ -486,10 +494,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="mlgrid" class="section level3">
 <h3><code>mlgrid()</code></h3>
 <p>The ML layer provides tools for further developing quantitative ichimoku solutions.</p>
-<p><code>mlgrid()</code> generates a numeric representation of the relationship between ichimoku cloud chart elements. Its purpose is to provide a base grid which can then be manipulated as required before being fed into machine learning workflows.</p>
+<p><code>mlgrid()</code> generates a numeric representation of the relationship between ichimoku cloud chart elements, which represent a set of stationary price features. Its purpose is to provide a base grid for machine learning workflows.</p>
+<p>The returned object is a data.frame or matrix in a ‘tidy’ format with one observation per row and one feature per column with the target ‘y’ as the first column.</p>
 <p><code>mlgrid()</code> is used to power the <code>autostrat()</code> and <code>relative()</code> functions.</p>
-<p>The object returned by the function is a data.frame in a ‘tidy’ format with one observation per row and one feature per column with the target ‘y’ as the first column. This is a format that is compatible with many machine learning packages.</p>
-<p>Below are shown the 2 basic types of grid: ‘boolean’ and ‘numeric’, where ‘boolean’ produces a ‘1’ or ‘0’ depending on whether the condition c1_c2 (read c1 &gt; c2) is met, whereas ‘numeric’ will produce the numeric difference of c1 - c2.</p>
+<p>The 3 basic types of grid are shown below.</p>
+<p>‘boolean’ produces a ‘1’ or ‘0’ depending on whether the condition c1_c2 (read c1 &gt; c2) is met:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mlgrid</span>(cloud, <span class="at">y =</span> <span class="st">&quot;logret&quot;</span>, <span class="at">dir =</span> <span class="st">&quot;long&quot;</span>, <span class="at">type =</span> <span class="st">&quot;boolean&quot;</span>, <span class="at">unique =</span> <span class="cn">TRUE</span>)[<span class="dv">100</span><span class="sc">:</span><span class="dv">105</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                        y chikou_close chikou_high chikou_low</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-08  0.0083050685            1           1          1</span></span>
@@ -498,6 +507,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-13 -0.0014992507            1           1          1</span></span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-14 -0.0007504691            1           1          1</span></span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-15  0.0037467260            1           1          1</span></span></code></pre></div>
+<p>‘numeric’ produces the numeric difference of c1 - c2:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mlgrid</span>(cloud, <span class="at">y =</span> <span class="st">&quot;ret&quot;</span>, <span class="at">dir =</span> <span class="st">&quot;short&quot;</span>, <span class="at">type =</span> <span class="st">&quot;numeric&quot;</span>, <span class="at">unique =</span> <span class="cn">FALSE</span>)[<span class="dv">100</span><span class="sc">:</span><span class="dv">105</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                        y chikou_close chikou_high chikou_low</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-08 -0.0082706767          3.9         3.8        4.4</span></span>
@@ -506,6 +516,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-13  0.0015003751          5.0         3.7        6.4</span></span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-14  0.0007507508          5.1         4.0        6.0</span></span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-15 -0.0037397158          6.7         5.0        7.1</span></span></code></pre></div>
+<p>‘z-score’ produces the standard score of a ‘numeric’ type grid:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mlgrid</span>(cloud, <span class="at">y =</span> <span class="st">&quot;ret&quot;</span>, <span class="at">dir =</span> <span class="st">&quot;short&quot;</span>, <span class="at">type =</span> <span class="st">&quot;z-score&quot;</span>, <span class="at">unique =</span> <span class="cn">FALSE</span>)[<span class="dv">100</span><span class="sc">:</span><span class="dv">105</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                        y chikou_close chikou_high chikou_low</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-08 -0.0082706767    0.4046813   0.5057896  0.3499295</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-09 -0.0015015015    0.6349143   0.6370076  0.6106195</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-12 -0.0022471910    0.3389004   0.3581693  0.5454470</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-13  0.0015003751    0.5855786   0.4893873  0.6757920</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-14  0.0007507508    0.6020238   0.5385941  0.6106195</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-10-15 -0.0037397158    0.8651473   0.7026165  0.7898439</span></span></code></pre></div>
 <p>Note: only valid combinations are included within the grid. Any combination involving ‘open’ is excluded as it is in effect a lagged indicator and not contemporaneous. The following trivial or highly-collinear pairs are also excluded: {high, close} ,{low, close}, {low, high}, {cloudT, senkouA}, {cloudB, senkouA}, {cloudT, senkouB}, {cloudB, senkouB}, {cloudB, cloudT}.</p>
 <p>The parameter ‘unique’ defaults to TRUE to return only unique combinations of c1 and c2, but can also be set to FALSE to return both c1 &gt; c2 and c2 &gt; c1 where the situation merits.</p>
 <p>The ‘y’ column can be switched between log and discrete returns. The date-time index corresponds to when the condition is met at the close for that period. The return is the single-period return achieved by transacting at the immediately following opening price until the next opening price. In this sense, the time periods do not strictly match, but are nevertheless correctly paired.</p>
@@ -520,26 +539,25 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><code>signif</code> [default 0.2] set a significance threshold for which if ‘p’ is equal or lower, the element will be starred with a ’*’. Note: this value may be freely set and the default of 0.2 is arbitrary with no special significance</li>
 <li><code>quietly</code> if set to TRUE, will suppress printing of additional output to the console and return quietly</li>
 </ul>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">relative</span>(cloud, <span class="at">signif =</span> <span class="fl">0.4</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, ]</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Latest: 2020-08-05 | n: 155</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                mean(X) sd(X) X[n]   res r value p &gt;= |r| p* E(|res|)|p</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_close      1.51  6.07 7.00  5.49    0.91     0.39  *       8.53</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_high       0.79  6.09 6.60  5.81    0.95     0.36  *       8.91</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_low        2.31  6.12 7.80  5.49    0.90     0.41          8.40</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_tenkan     1.73  6.15 6.90  5.17    0.84     0.41          8.70</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_kijun      2.28  5.96 4.90  2.62    0.44     0.63          6.84</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_senkouA    3.44  6.46 4.75  1.31    0.20     0.89          6.26</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_senkouB    4.26  5.40 4.35  0.09    0.02     1.00          4.76</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_cloudT     2.67  6.44 4.35  1.68    0.26     0.84          6.59</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_cloudB     5.03  5.20 4.75 -0.28   -0.05     0.99          4.60</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; close_tenkan      0.52  1.77 1.70  1.18    0.67     0.52          2.19</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">relative</span>(cloud, <span class="at">signif =</span> <span class="fl">0.4</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, ]</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Latest: 2020-12-24 | n: 155</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                mean(X) sd(X) X[n]   res z-score p &gt;= |z| p* E(|res|)|p</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_close      1.51  6.07 7.00  5.49    0.91     0.39  *       8.53</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_high       0.79  6.09 6.60  5.81    0.95     0.36  *       8.91</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_low        2.31  6.12 7.80  5.49    0.90     0.41          8.40</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_tenkan     1.73  6.15 6.90  5.17    0.84     0.41          8.70</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_kijun      2.28  5.96 4.90  2.62    0.44     0.63          6.84</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_senkouA    3.44  6.46 4.75  1.31    0.20     0.89          6.26</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_senkouB    4.26  5.40 4.35  0.09    0.02     1.00          4.76</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_cloudT     2.67  6.44 4.35  1.68    0.26     0.84          6.59</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chikou_cloudB     5.03  5.20 4.75 -0.28   -0.05     0.99          4.60</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; close_tenkan      0.52  1.77 1.70  1.18    0.67     0.52          2.19</span></span></code></pre></div>
 <p>‘mean(X)’ is the mean value for each element X, ‘sd(X)’ the standard deviation, and ‘X[n]’ the nth or latest observed values.</p>
 <p>‘res’ is the residual X[n] - mean(X) and represents a centred measure of deviation for the latest observed value.</p>
 <p>The ‘relative’ or ‘r value’ is calculated as res / sd(X) and represents a standardised (centred and scaled) measure of deviation for the latest observed value.</p>
 <p>‘p &gt;= |r|’ represents the empirical probability of the latest observed absolute ‘r value’ or greater.</p>
 <p>’p*’ will display a star if ‘p &gt;= |r|’ is less than or equal to the value of the argument ‘signif’.</p>
 <p>‘E(|res|)|p’ represents the mean or expected absolute value of ‘res’, conditional upon the absolute ‘r value’ being greater than equal to the latest observed absolute ‘r value’. This provides an indication by how much ‘res’ might increase in more extreme cases.</p>
-<p>Note: All calculations are performed on the full values, but are rounded to 2 decimal places for final presentation.</p>
 </div>
 </div>
 <div id="strategy-summary-specification" class="section level2">
@@ -564,7 +582,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="references" class="section level2">
 <h2>References</h2>
 <p>Sasaki, H. 佐々木 英信 (1996), <em>一目均衡表の研究 [ichimoku kinkouhyou no kenkyuu]</em>. Tokyo, Japan: Toushi Radar.</p>
-<p>Gao, C. (2021), <em>ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies</em>. R package version 1.2.4, <a href="https://CRAN.R-project.org/package=ichimoku" class="uri">https://CRAN.R-project.org/package=ichimoku</a>.</p>
+<p>Gao, C. (2021), <em>ichimoku: Visualization and Tools for Ichimoku Kinko Hyo Strategies</em>. R package version 1.2.5, <a href="https://CRAN.R-project.org/package=ichimoku" class="uri">https://CRAN.R-project.org/package=ichimoku</a>.</p>
 <hr />
 </div>
 

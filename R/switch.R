@@ -25,19 +25,19 @@
 #'
 oanda_switch <- function() {
 
-  do_oanda$switchServer()
+  do_$switchServer()
 
 }
 
-#' OANDA Internal Functions
+#' ichimoku Internal Functions
 #'
-#' Encapsulates internal OANDA functions in a common environment.
+#' Encapsulates package internal functions in a common environment.
 #'
 #' @return A list of closures.
 #'
 #' @noRd
 #'
-do_oanda <- function() {
+do_ <- function() {
 
   server_type <- "practice"
   livestore <- keystore <- instruments <- account <- NULL
@@ -94,15 +94,15 @@ do_oanda <- function() {
     getAccount = function(server, apikey) {
       if (is.null(account)) {
         server <- if (missing(server)) server_type else match.arg(server, c("practice", "live"))
-        if (missing(apikey)) apikey <- do_oanda$getKey(server = server)
+        if (missing(apikey)) apikey <- do_$getKey(server = server)
         url <- switch(server,
                       practice = "https://api-fxpractice.oanda.com/v3/accounts",
                       live = "https://api-fxtrade.oanda.com/v3/accounts")
-        h <- new_handle()
-        handle_setheaders(handle = h,
+        handle <- new_handle()
+        handle_setheaders(handle = handle,
                           "Authorization" = paste0("Bearer ", apikey),
-                          "User-Agent" = x_user_agent)
-        resp <- curl_fetch_memory(url = url, handle = h)
+                          "User-Agent" = .user_agent)
+        resp <- curl_fetch_memory(url = url, handle = handle)
         resp$status_code == 200L || stop("server code ", resp$status_code, " - ",
                                          parse_json(rawToChar(resp$content)), call. = FALSE)
         account <<- parse_json(rawToChar(resp$content))[["accounts"]][[1L]][["id"]]
@@ -112,21 +112,21 @@ do_oanda <- function() {
     getInstruments = function(server, apikey) {
       if (is.null(instruments)) {
         server <- if (missing(server)) server_type else match.arg(server, c("practice", "live"))
-        if (missing(apikey)) apikey <- do_oanda$getKey(server = server)
+        if (missing(apikey)) apikey <- do_$getKey(server = server)
         url <- paste0("https://api-fx", switch(server, practice = "practice", live = "trade"),
-                      ".oanda.com/v3/accounts/", do_oanda$getAccount(server = server, apikey = apikey),
+                      ".oanda.com/v3/accounts/", do_$getAccount(server = server, apikey = apikey),
                       "/instruments")
-        h <- new_handle()
-        handle_setheaders(handle = h,
+        handle <- new_handle()
+        handle_setheaders(handle = handle,
                           "Authorization" = paste0("Bearer ", apikey),
-                          "User-Agent" = x_user_agent)
-        resp <- curl_fetch_memory(url = url, handle = h)
+                          "User-Agent" = .user_agent)
+        resp <- curl_fetch_memory(url = url, handle = handle)
         resp$status_code == 200L || {
           warning("Server code ", resp$status_code, " - ",
                   parse_json(rawToChar(resp$content)),
                   "\nInstruments list could not be retrieved - falling back to internal data",
                   "\nCached instruments list will be used for the rest of the session", call. = FALSE)
-          instruments <<- x_oanda_instruments
+          instruments <<- .oanda_instruments
           return(instruments)
         }
         vec <- unlist(parse_json(rawToChar(resp$content))[["instruments"]])
@@ -136,10 +136,11 @@ do_oanda <- function() {
         dispName <- vec[cnames == "displayName"]
         type <- vec[cnames == "type"]
         reorder <- order(name)
-        df <- list(name[reorder], dispName[reorder], type[reorder])
-        attributes(df) <- list(names = c("name", "displayName", "type"),
-                               class = "data.frame",
-                               row.names = .set_row_names(length(reorder)))
+        df <- `attributes<-`(list(name[reorder], dispName[reorder], type[reorder]),
+                             list(names = c("name", "displayName", "type"),
+                                  class = "data.frame",
+                                  row.names = .set_row_names(length(reorder)))
+        )
         instruments <<- df
       }
       instruments

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ichimoku <img src="man/figures/logo.png" alt="ichimoku logo" style="float:right" />
+# ichimoku <img src="man/figures/logo.png" alt="ichimoku logo" align="right" />
 
 <!-- badges: start -->
 
@@ -122,8 +122,7 @@ autostrat(cloud, n = 3)
     to automatically evaluate and rank top-performing strategies.
 
 -   [`mlgrid()`](https://shikokuchuo.net/ichimoku/reference/mlgrid.html) -
-    to generate a numeric representation of the relationship between
-    ichimoku cloud chart elements.
+    to generate a numeric representation of the ichimoku cloud chart.
 
 -   [`relative()`](https://shikokuchuo.net/ichimoku/reference/relative.html) -
     to produce a statistical summary of the latest ichimoku numeric
@@ -147,6 +146,11 @@ autostrat(cloud, n = 3)
 -   [`oanda_view()`](https://shikokuchuo.net/ichimoku/reference/oanda_view.html) -
     for a market overview showing the relative performance of
     constituents.
+
+-   [`oanda_orders()`](https://shikokuchuo.net/ichimoku/reference/oanda_orders.html)
+    /
+    [`oanda_positions()`](https://shikokuchuo.net/ichimoku/reference/oanda_positions.html) -
+    to retrieve the aggregate OANDA fxTrade order / position book.
 
 ## Vignettes
 
@@ -173,7 +177,7 @@ no kenkyuu]*. Tokyo, Japan: Toushi Radar.
 entity unaffiliated with the ichimoku package.
 
 Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko
-Hyo Strategies*. R package version 1.2.4,
+Hyo Strategies*. R package version 1.2.5,
 <https://CRAN.R-project.org/package=ichimoku>.
 
 –

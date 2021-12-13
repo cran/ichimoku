@@ -12,8 +12,8 @@
 #'     chart heading. If not set, the ticker saved within the ichimoku object
 #'     will be used.
 #' @param subtitle (optional) specify a subtitle to display under the chart title.
-#' @param theme [default 'original'] with alternative choices of 'dark',
-#'     'solarized' or 'mono'.
+#' @param theme [default 'original'] with alternative choices of 'conceptual',
+#'     'dark', 'fresh', 'mono', or 'solarized'.
 #' @param strat [default TRUE] if the ichimoku object contains a strategy, the
 #'     periods for which the strategy results in a position will be shaded, and
 #'     the strategy printed as the chart subtitle (if not otherwise specified).
@@ -40,16 +40,14 @@
 #'
 #' @examples
 #' cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
-#'
 #' plot(cloud)
 #' plot(cloud, window = "2020-05-01/2020-12-01", theme = "dark")
-#' plot(cloud, window = "2020-05/", ticker = "TKR Co.", theme = "solarized", type = "s")
+#' plot(cloud, window = "2020-05/", ticker = "TKR Co.", theme = "conceptual", type = "s")
 #' plot(cloud, window = "/2020-11-02", subtitle = "Sample Price Data", theme = "mono", type = "r")
 #'
 #' kumo <- ichimoku(sample_ohlc_data, ticker = "TKR", keep.data = TRUE)
-#'
-#' plot(kumo, theme = "solarized", type = "bar", custom = "volume")
-#' plot(kumo, theme = "original", type = "line", custom = "volume")
+#' plot(kumo, window = "2020-05/", theme = "solarized", type = "bar", custom = "volume")
+#' plot(kumo, window = "2020-05/", theme = "fresh", type = "line", custom = "volume")
 #'
 #' @method plot ichimoku
 #' @export
@@ -58,7 +56,7 @@ plot.ichimoku <- function(x,
                           window,
                           ticker,
                           subtitle,
-                          theme = c("original", "dark", "solarized", "mono"),
+                          theme = c("original", "conceptual", "dark", "fresh", "mono", "solarized"),
                           strat = TRUE,
                           type = c("none", "r", "s", "bar", "line"),
                           custom,
@@ -68,10 +66,10 @@ plot.ichimoku <- function(x,
   switch(type,
          none = print(autoplot.ichimoku(x, window = window, ticker = ticker, subtitle = subtitle,
                                         theme = theme, strat = strat), ...),
-         r =,
-         s = extraplot(x, window = window, ticker = ticker, subtitle = subtitle, theme = theme,
-                       strat = strat, type = type),
-         bar =,
+         r = ,
+         s = extraplot(x, window = window, ticker = ticker, subtitle = subtitle,
+                       theme = theme, strat = strat, type = type),
+         bar = ,
          line = extraplot(x, window = window, ticker = ticker, subtitle = subtitle,
                           theme = theme, strat = strat, type = type, custom = custom))
 
@@ -107,13 +105,13 @@ autoplot.ichimoku <- function(object,
                               window,
                               ticker,
                               subtitle,
-                              theme = c("original", "dark", "solarized", "mono"),
+                              theme = c("original", "conceptual", "dark", "fresh", "mono", "solarized"),
                               strat = TRUE,
                               ...) {
 
   theme <- match.arg(theme)
-  pal <- ichimoku_themes[[theme]]
-  showstrat <- hasStrat(object) && isTRUE(strat)
+  pal <- .ichimoku_themes[[theme]]
+  showstrat <- hasStrat(object) && (missing(strat) || isTRUE(strat))
   if (missing(ticker)) ticker <- attr(object, "ticker")
   if (missing(subtitle)) {
     subtitle <- if (showstrat) paste0("Strategy: ", attr(object, "strat")["Strategy", ][[1L]])
@@ -180,7 +178,7 @@ extraplot <- function(object,
                       window,
                       ticker,
                       subtitle,
-                      theme = c("original", "dark", "solarized", "mono"),
+                      theme = c("original", "conceptual", "dark", "fresh", "mono", "solarized"),
                       strat = TRUE,
                       type = c("none", "r", "s", "bar", "line"),
                       custom,
@@ -188,7 +186,7 @@ extraplot <- function(object,
 
   type <- match.arg(type)
   theme <- match.arg(theme)
-  pal <- ichimoku_themes[[theme]]
+  pal <- .ichimoku_themes[[theme]]
   aplot <- autoplot.ichimoku(object = object, window = window, ticker = ticker,
                              subtitle = subtitle, theme = theme, strat = strat)
 
@@ -210,14 +208,19 @@ extraplot <- function(object,
 
   } else if (type == "r") {
     p2 <- attr(object, "periods")[2L]
-    object$osc_typ_slw <- 100 - 100 / (1 + meanOver((object[, "cd"] == 1) * (object[, "close"] - object[, "open"]), p2) / meanOver((object[, "cd"] == -1) * (object[, "open"] - object[, "close"]), p2))
+    core <- coredata.ichimoku(object)
+    object$osc_typ_slw <- 100 - 100 /
+      (1 + meanOver(((cd <- core[, "cd"]) == 1) * ((close <- core[, "close"]) - (open <- core[, "open"])), p2) /
+         meanOver((cd == -1) * (open - close), p2))
 
   } else {
     periods <- attr(object, "periods")
     p1 <- periods[1L]
     p2 <- periods[2L]
-    object$osc_typ_fst <- 100 * (object[, "close"] - minOver(object[, "low"], p1)) / (maxOver(object[, "high"], p1) - minOver(object[, "low"], p1))
-    object$osc_typ_slw <- 100 * (object[, "close"] - minOver(object[, "low"], p2)) / (maxOver(object[, "high"], p2) - minOver(object[, "low"], p2))
+    core <- coredata.ichimoku(object)
+    object$osc_typ_fst <- 100 * ((close <- core[, "close"]) - minOver((low <- core[, "low"]), p1)) /
+      (maxOver((high <- core[, "high"]), p1) - minOver(low, p1))
+    object$osc_typ_slw <- 100 * (close - minOver(low, p2)) / (maxOver(high, p2) - minOver(low, p2))
   }
 
   if (!missing(window)) object <- object[window]
@@ -326,11 +329,11 @@ breaks_ichimoku <- function(data, object) {
 labels_ichimoku <- function(data, object) {
 
   function(x) {
-    labels <- .subset2(data, "index")[x]
+    labels <- .POSIXct(.subset(.subset2(data, "index"), x))
     if (attr(object, "periodicity") > 80000) {
-      format(labels, paste("%d-%b", "%Y", sep = "\n"))
+      format.POSIXct(labels, format = paste("%d-%b", "%Y", sep = "\n"))
     } else {
-      format(labels, paste("%H:%M", "%d-%b", "%Y", sep = "\n"))
+      format.POSIXct(labels, format = paste("%H:%M", "%d-%b", "%Y", sep = "\n"))
     }
   }
 }

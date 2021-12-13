@@ -60,14 +60,19 @@ test_that("ichimoku error handling ok", {
 
 test_that("print method ok", {
   expect_output(expect_s3_class(print(cloud), "ichimoku"))
-  expect_output(expect_s3_class(print(cloud, plot = FALSE), "ichimoku"))
+  expect_output(expect_s3_class(print(cloud, plot = FALSE, n = 20), "ichimoku"))
   expect_output(print(cloud[0]))
   expect_output(print(cloud[, 1L, drop = TRUE]))
 })
 
+test_that("more ok", {
+  expect_null(expect_invisible(more()))
+  expect_null(expect_invisible(more(20)))
+})
+
 test_that("str method ok", {
-  expect_output(expect_null(expect_invisible(str(cloud))), "dimnames")
-  expect_output(str(cloud[0]), "dimnames")
+  expect_output(expect_null(expect_invisible(str(cloud))), "(281, 12)")
+  expect_output(str(cloud[0]), "(0, 12)")
   expect_output(str(cloud[, 1L, drop = TRUE]), "no dimensions")
 })
 
@@ -88,12 +93,19 @@ test_that("as.data.frame method ok", {
   expect_identical(attr(as.data.frame(structure(cloud, special = "set"), keep.attrs = TRUE), "special"), "set")
 })
 
+test_that("as_tibble method ok", {
+  expect_s3_class(tbl <- as_tibble.ichimoku(cloud), "tbl_df")
+  expect_identical(tbl, as_tibble(cloud))
+  expect_identical(dim(tbl), c(281L, 13L))
+  expect_identical(attr(as_tibble(structure(cloud, special = "set"), keep.attrs = TRUE), "special"), "set")
+})
+
 test_that("coredata method ok", {
   expect_length(core <- coredata.ichimoku(cloud), 3372L)
   expect_length(attrs <- attributes(core), 2L)
   expect_identical(attrs$dim, c(281L, 12L))
   expect_null(attrs$dimnames[[1L]])
-  expect_length(attrs <- attributes(coredata.ichimoku(cloud, fmt = TRUE)), 2L)
+  expect_length(attrs <- attributes(coredata(cloud, fmt = TRUE)), 2L)
   expect_vector(attrs$dimnames[[1L]], ptype = "character", size = 281)
 })
 
@@ -101,6 +113,7 @@ test_that("index method ok", {
   expect_vector(expect_s3_class(idx <- index.ichimoku(cloud), "POSIXct"), size = 281)
   expect_length(attrs <- attributes(idx), 3L)
   expect_identical(names(attrs), c("tzone", "tclass", "class"))
+  expect_vector(expect_s3_class(index(cloud, 101:110), "POSIXct"), size = 10)
 })
 
 test_that("is.ichimoku ok", {

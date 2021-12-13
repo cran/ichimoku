@@ -1,3 +1,32 @@
+# ichimoku 1.2.5
+
+#### New features:
+
+* Enhancement to the printing of ichimoku objects by utilising the 'tibble' print method (adds dependency on 'tibble' package), paired with `more()` for quick printing of further rows.
+* Optimised `as_tibble()` method implemented for ichimoku objects.
+* `mlgrid()` now appends attributes 'k' and 'type' to returned objects, and gains the following arguments:
+  - `k` to specify the k-period time horizon over which to calculate target variable 'y'.
+  - `type = 'z-score'` to produce the standard score of a 'numeric' type grid.
+  - `format` to choose between returning a dataframe or matrix.
+* New `oanda_orders()` function provides the OANDA fxTrade order book for certain major currency pairs.
+* Major revamp of `oanda_stream()` which has a much improved interface and now renders the stream as a structured dataframe.
+* `oanda_chart()` and `oanda_stream()` gain the argument 'limit' which imposes a time limit for the session after which data is returned automatically.
+* `oanda_positions()` gains the parameter 'time' for retrieving the position book at a particular time.
+* `archive()` gains the ability to save files interactively using a system dialog - call the function with an object, leaving the second argument empty e.g. `archive(object, )`.
+* `index()` gains the parameter 'subset' for fast subsetting of ichimoku cloud indexes.
+* New plot themes 'conceptual' and 'fresh'.
+
+#### Updates:
+
+* Simplification of `look()` by removing the 'which' argument. To extract ichimoku objects in autostrat lists, subset the list directly. The object argument is now optional, accessing .Last.value otherwise.
+* Minor enhancements to the `str()` method.
+* `df_append()` argument order for 'old' and 'new' swapped to allow for chaining with the pipe operator.
+* `archive()` now safe for use in non-interactive settings, where it no longer prompts to confirm overwriting of existing files.
+* `oanda_view()` updated for new instruments and now returns correct data types in the dataframe.
+* Fixes cases of `relative()` showing the incorrect date for 'latest', along with other cosmetic changes.
+* General performance improvements to date handling and dataframe conversions.
+* Documentation refresh.
+
 # ichimoku 1.2.4
 
 #### New features:

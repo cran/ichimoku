@@ -26,7 +26,7 @@ head(TKR)
 ## ----ichimoku-----------------------------------------------------------------
 cloud <- ichimoku(TKR)
 
-print(cloud[100:110, ], plot = FALSE, digits = 4)
+print(cloud, plot = FALSE)
 
 ## ----ichimokustr--------------------------------------------------------------
 str(cloud)
@@ -37,7 +37,7 @@ summary(cloud)
 ## ----ichimokupreserve---------------------------------------------------------
 kumo <- ichimoku(TKR, keep.data = TRUE)
 
-print(kumo[100, ], plot = FALSE, digits = 4)
+print(kumo[, "volume"], plot = FALSE)
 
 ## ----holidays, eval = FALSE---------------------------------------------------
 #  # Holidays can be specified directly via a vector of dates:
@@ -74,4 +74,16 @@ plot(kumo, window = "2020-04/2020-11", theme = "mono", type = "bar", custom = "v
 ## ----iplot, eval=FALSE--------------------------------------------------------
 #  # For an interactive plot:
 #  iplot(cloud)
+
+## ----archivew, eval=FALSE-----------------------------------------------------
+#  # Write object to file:
+#  archive(object, "path/filename")
+#  # Leave second argument empty to choose file save location from a system dialog:
+#  archive(object, )
+
+## ----archiver, eval=FALSE-----------------------------------------------------
+#  # Read from file to object:
+#  object <- archive("path/filename")
+#  # Choose a file from an interactive system dialog:
+#  object <- archive()
 
