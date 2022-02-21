@@ -214,7 +214,7 @@ getPrices <- function(instrument, granularity, count, from, to, price, server,
                         H6 = 21600, H4 = 14400, H3 = 10800, H2 = 7200, H1 = 3600,
                         M30 = 1800, M15 = 900, M10 = 600, M5 = 300, M4 = 240,
                         M2 = 120, M1 = 60, S30 = 30, S15 = 15, S10 = 10, S5 = 5)
-  time <- .POSIXct(time + periodicity)
+  time <- .Call(ichimoku_psxct, time + periodicity)
   ohlc <- unlist(data[, ptype, drop = FALSE])
   cnames <- names(ohlc)
 
@@ -231,7 +231,7 @@ getPrices <- function(instrument, granularity, count, from, to, price, server,
          row.names = .set_row_names(length(time)),
          instrument = instrument,
          price = price,
-         timestamp = .POSIXct(timestamp),
+         timestamp = .Call(ichimoku_psxct, timestamp),
          oanda = TRUE)
   )
 
@@ -248,7 +248,7 @@ getPrices <- function(instrument, granularity, count, from, to, price, server,
 #' @inheritParams oanda
 #' @param display [default 7L] integer rows of data to display in the console
 #'     at any one time.
-#' @param limit (optional) specify a time in minutes by which to limit the
+#' @param limit (optional) specify a time in seconds by which to limit the
 #'     streaming session. The session will end with data returned automatically
 #'     after the specified time has elapsed.
 #'
@@ -258,9 +258,6 @@ getPrices <- function(instrument, granularity, count, from, to, price, server,
 #'
 #' @details This function connects to the OANDA fxTrade Streaming API. Use the
 #'     'Esc' key to stop the stream and return the session data.
-#'
-#'     All returned times are in UTC. 'b' and 'a' used in column headings are
-#'     abbreviations to denote 'bid' and 'ask' respectively.
 #'
 #'     Note: only messages of type 'PRICE' are processed. Messages of type
 #'     'HEARTBEAT' consisting of only a timestamp are discarded.
@@ -309,34 +306,36 @@ oanda_stream <- function(instrument, display = 7L, limit, server, apikey) {
   handle <- new_handle()
   handle_setheaders(handle = handle,
                     "Authorization" = paste0("Bearer ", apikey),
-                    "Accept-Datetime-Format" = "RFC3339",
+                    "Accept-Datetime-Format" = "UNIX",
                     "User-Agent" = .user_agent)
 
-  dattrs <- list(names = c("type", "time", "bid.price", "b.liquidity",
-                           "ask.price", "a.liquidity", "closeout.b", "closeout.a",
-                           "status", "tradable", "instrument"),
-                 row.names = 1L,
-                 class = "data.frame")
-  data <- `attributes<-`(vector(mode = "list", length = 11L), dattrs)
-
+  data <- NULL
   on.exit(expr = {
-    data[["bid.price"]] <- as.numeric(.subset2(data, "bid.price"))
-    data[["ask.price"]] <- as.numeric(.subset2(data, "ask.price"))
-    data[["closeout.b"]] <- as.numeric(.subset2(data, "closeout.b"))
-    data[["closeout.a"]] <- as.numeric(.subset2(data, "closeout.a"))
-    data[["b.liquidity"]] <- as.integer(.subset2(data, "b.liquidity"))
-    data[["a.liquidity"]] <- as.integer(.subset2(data, "a.liquidity"))
-    data[["tradable"]] <- as.logical(.subset2(data, "tradable"))
+    xlen <- dim(data)[1L]
+    bids <- unlist(.subset2(data, "bids"))
+    ncol <- length(bids) / xlen
+    data[["bids"]] <- matrix(as.numeric(bids), nrow = xlen, ncol = ncol, byrow = TRUE,
+                             dimnames = list(NULL, names(bids)[1:ncol]))
+    asks <- unlist(.subset2(data, "asks"))
+    ncol <- length(asks) / xlen
+    data[["asks"]] <- matrix(as.numeric(asks), nrow = xlen, ncol = ncol, byrow = TRUE,
+                             dimnames = list(NULL, names(asks)[1:ncol]))
+    data[["closeoutBid"]] <- as.numeric(.subset2(data, "closeoutBid"))
+    data[["closeoutAsk"]] <- as.numeric(.subset2(data, "closeoutAsk"))
     return(invisible(data))
   })
 
-  if (!missing(limit) && is.numeric(limit)) setTimeLimit(elapsed = limit * 60, transient = TRUE)
+  if (!missing(limit) && is.numeric(limit)) setTimeLimit(elapsed = limit, transient = TRUE)
 
   con <- curl(url = url, handle = handle)
-  stream_in(con = con, pagesize = 1, verbose = FALSE, handler = function(x) {
-    .subset2(x, 1L) == "PRICE" || return()
-    x <- `attributes<-`(unlist(x), dattrs)
-    data <<- df_append(old = data, new = x)
+  stream_in(con = con, pagesize = 1L, verbose = FALSE, handler = function(x) {
+    .subset2(x, "type") == "PRICE" || return()
+    x[["time"]] <- .POSIXct(as.numeric(.subset2(x, "time")))
+    if (is.null(data)) {
+      data <<- x
+    } else {
+      data <<- df_append(old = data, new = x)
+    }
     end <- dim(data)[1L]
     start <- max(1L, end - display + 1L)
     cat("\014")
@@ -360,7 +359,10 @@ oanda_stream <- function(instrument, display = 7L, limit, server, apikey) {
 #' @param count [default 250] the number of periods to return. The API supports
 #'     a maximum of 5000. Note that fewer periods are actually shown on the
 #'     chart to ensure a full cloud is always displayed.
-#' @param limit (optional) specify a time in minutes by which to limit the
+#' @param type [default 'none'] type of sub-plot to display beneath the ichimoku
+#'     cloud chart, with a choice of 'none', 'r' or 's' for the corresponding
+#'     oscillator type.
+#' @param limit (optional) specify a time in seconds by which to limit the
 #'     session. The session will end with data returned automatically after the
 #'     specified time has elapsed.
 #' @param ... additional arguments passed along to \code{\link{ichimoku}} for
@@ -403,6 +405,7 @@ oanda_chart <- function(instrument,
                         count = 250,
                         price = c("M", "B", "A"),
                         theme = c("original", "conceptual", "dark", "fresh", "mono", "solarized"),
+                        type = c("none", "r", "s"),
                         limit,
                         server,
                         apikey,
@@ -414,6 +417,7 @@ oanda_chart <- function(instrument,
   granularity <- match.arg(granularity)
   price <- match.arg(price)
   theme <- match.arg(theme)
+  type <- match.arg(type)
   server <- if (missing(server)) do_$getServer() else match.arg(server, c("practice", "live"))
   if (missing(apikey)) apikey <- do_$getKey(server = server)
   if (!is.numeric(refresh) || refresh < 1) {
@@ -454,14 +458,13 @@ oanda_chart <- function(instrument,
 
   message("Chart updating every ", refresh, " secs in graphical device... Press 'Esc' to return")
   on.exit(expr = return(invisible(pdata)))
-  if (!missing(limit) && is.numeric(limit)) setTimeLimit(elapsed = limit * 60, transient = TRUE)
+  if (!missing(limit) && is.numeric(limit)) setTimeLimit(elapsed = limit, transient = TRUE)
   while (TRUE) {
-    pdata <- ichimoku.data.frame(data, periods = periods, ...)[minlen:(xlen + p2 - 1L), ]
-    subtitle <- paste(instrument, ptype, "price [", data$close[xlen],
+    pdata <- create_data(.ichimoku(data, periods = periods, ...), type = type)[minlen:(xlen + p2 - 1L), ]
+    subtitle <- paste(instrument, ptype, "price [", .subset2(data, "close")[xlen],
                       "] at", attr(data, "timestamp"), "| Chart:", ctype,
                       "| Cmplt:", .subset2(data, "complete")[xlen])
-    plot.ichimoku(pdata, ticker = ticker, subtitle = subtitle, theme = theme,
-                  newpage = FALSE, ...)
+    print(plot_ichimoku(pdata, ticker = ticker, subtitle = subtitle, theme = theme, type = type), newpage = FALSE, ...)
     Sys.sleep(refresh)
     newdata <- getPrices(instrument = instrument, granularity = granularity,
                          count = ceiling(refresh / periodicity) + 1,
@@ -527,6 +530,7 @@ oanda_studio <- function(instrument = "USD_JPY",
                          count = 300,
                          price = c("M", "B", "A"),
                          theme = c("original", "conceptual", "dark", "fresh", "mono", "solarized"),
+                         type = c("none", "r", "s"),
                          server,
                          apikey,
                          new.process = FALSE,
@@ -539,13 +543,17 @@ oanda_studio <- function(instrument = "USD_JPY",
     isTRUE(new.process) && {
       mc <- match.call()
       mc[["new.process"]] <- NULL
-      return(system2(command = "R", args = c("-e", paste0("'ichimoku::", deparse(mc), "'")),
-                     stdout = NULL, stderr = "", wait = FALSE))
+      cmd <- switch(.subset2(.Platform, "OS.type"),
+                    unix = paste0(R.home("bin"), "/Rscript"),
+                    windows = paste0(R.home("bin"), "/Rscript.exe"))
+      return(system2(command = cmd, args = c("-e", shQuote(paste0("ichimoku::", deparse(mc)))),
+                     stdout = NULL, stderr = NULL, wait = FALSE))
     }
     if (!missing(instrument)) instrument <- sub("-", "_", toupper(force(instrument)), fixed = TRUE)
     granularity <- match.arg(granularity)
     price <- match.arg(price)
     theme <- match.arg(theme)
+    type <- match.arg(type)
     srvr <- if (missing(server)) do_$getServer() else match.arg(server, c("practice", "live"))
     if (missing(apikey)) apikey <- do_$getKey(server = srvr)
     if (!is.numeric(refresh) || refresh < 1) {
@@ -577,7 +585,7 @@ oanda_studio <- function(instrument = "USD_JPY",
       shiny::fillPage(
         padding = 20,
         shiny::plotOutput("chart", width = "100%",
-                          hover = shiny::hoverOpts(id = "plot_hover", delay = 80, delayType = "throttle")),
+                          hover = shiny::hoverOpts(id = "plot_hover", delay = 100, delayType = "throttle")),
         shiny::uiOutput("hover_x"), shiny::uiOutput("hover_y"), shiny::uiOutput("infotip")
       ),
       shiny::fluidRow(
@@ -585,10 +593,14 @@ oanda_studio <- function(instrument = "USD_JPY",
         )
       ),
       shiny::fluidRow(
-        shiny::column(width = 2,
+        shiny::column(width = 1,
                       shiny::selectInput("theme", label = "Theme",
                                          choices = c("original", "conceptual", "dark", "fresh", "mono", "solarized"),
                                          selected = theme, selectize = FALSE)),
+        shiny::column(width = 1,
+                      shiny::selectInput("type", label = "Indicator",
+                                         choices = c("none", "r", "s"),
+                                         selected = type, selectize = FALSE)),
         shiny::column(width = 2,
                       shiny::selectInput("instrument", label = "Instrument",
                                          choices = ins$name,
@@ -690,16 +702,17 @@ oanda_studio <- function(instrument = "USD_JPY",
         }
       })
       xlen <- shiny::reactive(dim(data())[1L])
-      pdata <- shiny::reactive(ichimoku.data.frame(data(), ticker = input$instrument,
-                                                   periods = periods, ...)[minlen:(xlen() + p2 - 1L), ])
+      pdata <- shiny::reactive(
+        create_data(.ichimoku(data(), ticker = input$instrument, periods = periods, ...),
+                    type = input$type)[minlen:(xlen() + p2 - 1L), ])
       plen <- shiny::reactive(xlen() + p2 - minlen)
       ticker <- shiny::reactive(paste(dispname(), "  |", input$instrument, ptype(), "price [",
-                                      data()$close[xlen()], "] at", attr(data(), "timestamp"),
+                                      .subset2(data(), "close")[xlen()], "] at", attr(data(), "timestamp"),
                                       "| Chart:", ctype(), "| Cmplt:",
                                       .subset2(data(), "complete")[xlen()]))
 
       output$chart <- shiny::renderPlot(
-        autoplot.ichimoku(pdata(), ticker = ticker(), theme = input$theme, ...)
+        plot_ichimoku(pdata(), ticker = ticker(), theme = input$theme, type = input$type, ...)
       )
       output$hover_x <- shiny::renderUI({
         shiny::req(input$plot_hover, posi_x() > 0, posi_x() <= plen())
@@ -713,7 +726,8 @@ oanda_studio <- function(instrument = "USD_JPY",
         shiny::req(input$infotip, input$plot_hover, posi_x() > 0, posi_x() <= plen())
         drawInfotip(sidx = index.ichimoku(pdata(), posi_x()),
                     sdata = coredata.ichimoku(pdata())[posi_x(), ],
-                    left_px = left_px(), top_px = top_px())
+                    left = left_px(), top = top_px(),
+                    type = input$type)
       })
 
       output$savedata <- shiny::downloadHandler(filename = function() paste0(input$instrument, "_", input$granularity, "_", input$price, ".rda"),
@@ -872,7 +886,7 @@ oanda_view <- function(market = c("allfx", "bonds", "commodities", "fx", "metals
                            server = server, apikey = apikey, .validate = FALSE)
   }
   data <- do.call(rbind, data)
-  time <- .POSIXct(data[1L, "t", drop = FALSE])
+  time <- .Call(ichimoku_psxct, data[1L, "t", drop = FALSE])
   open <- data[, "o", drop = FALSE]
   high <- data[, "h", drop = FALSE]
   low <- data[, "l", drop = FALSE]
@@ -926,7 +940,7 @@ oanda_quote <- function(instrument, price = c("M", "B", "A"), server, apikey) {
   data <- getPrices(instrument = instrument, granularity = "D", count = 1, price = price,
                     server = server, apikey = apikey, .validate = FALSE)
   pctchg <- round(100 * (data[["c"]] / data[["o"]] - 1), digits = 4L)
-  cat(instrument, format.POSIXct(.POSIXct(data[["t"]])),
+  cat(instrument, format.POSIXct(.Call(ichimoku_psxct, data[["t"]])),
       "open:", data[["o"]], " high:", data[["h"]], " low:", data[["l"]],
       " last:\u001b[7m", data[["c"]], "\u001b[27m %chg:", pctchg, price)
 
@@ -982,7 +996,7 @@ oanda_positions <- function(instrument, time, server, apikey) {
 
   data <- parse_json(rawToChar(resp$content))[["positionBook"]]
   currentprice <- as.numeric(data[["price"]])
-  timestamp <- .POSIXct(data[["unixTime"]])
+  timestamp <- .Call(ichimoku_psxct, data[["unixTime"]])
   bucketwidth <- as.numeric(data[["bucketWidth"]])
 
   buckets <- `storage.mode<-`(do.call(rbind, data[["buckets"]]), "double")
@@ -998,11 +1012,18 @@ oanda_positions <- function(instrument, time, server, apikey) {
                             bucketwidth = bucketwidth))
 
   layers <- list(
-    geom_col(aes(x = .data$price, y = .data$long),
-             position = "identity", color = "#1aa1a6", fill = "#1aa1a6"),
-    geom_col(aes(x = .data$price, y = -.data$short),
-             position = "identity", color = "#586e75", fill = "#586e75"),
-    geom_vline(aes(xintercept = currentprice), color = "#db4525", alpha = 0.5),
+    layer(geom = GeomCol, mapping = aes(x = .data$price, y = .data$long),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = FALSE, colour = "#1aa1a6", fill = "#1aa1a6"),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomCol, mapping = aes(x = .data$price, y = -.data$short),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = FALSE, colour = "#586e75", fill = "#586e75"),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomVline, data = NULL, mapping = aes(xintercept = currentprice),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = FALSE, colour = "#db4525", alpha = 0.5),
+          inherit.aes = FALSE, check.aes = FALSE, check.param = FALSE),
     scale_x_continuous(breaks = function(x) pretty.default(x, n = 40L)),
     scale_y_continuous(),
     labs(x = "Price", y = "% short / % long",
@@ -1071,7 +1092,7 @@ oanda_orders <- function(instrument, time, server, apikey) {
 
   data <- parse_json(rawToChar(resp$content))[["orderBook"]]
   currentprice <- as.numeric(data[["price"]])
-  timestamp <- .POSIXct(data[["unixTime"]])
+  timestamp <- .Call(ichimoku_psxct, data[["unixTime"]])
   bucketwidth <- as.numeric(data[["bucketWidth"]])
 
   buckets <- `storage.mode<-`(do.call(rbind, data[["buckets"]]), "double")
@@ -1090,11 +1111,18 @@ oanda_orders <- function(instrument, time, server, apikey) {
   pdata <- df[trunc(xlen * 0.25):trunc(xlen * 0.75), ]
 
   layers <- list(
-    geom_col(aes(x = .data$price, y = .data$long),
-             position = "identity", color = "#1aa1a6", fill = "#1aa1a6"),
-    geom_col(aes(x = .data$price, y = -.data$short),
-             position = "identity", color = "#586e75", fill = "#586e75"),
-    geom_vline(aes(xintercept = currentprice), color = "#db4525", alpha = 0.5),
+    layer(geom = GeomCol, mapping = aes(x = .data$price, y = .data$long),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = FALSE, colour = "#1aa1a6", fill = "#1aa1a6"),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomCol, mapping = aes(x = .data$price, y = -.data$short),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = FALSE, colour = "#586e75", fill = "#586e75"),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomVline, data = NULL, mapping = aes(xintercept = currentprice),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = FALSE, colour = "#db4525", alpha = 0.5),
+          inherit.aes = FALSE, check.aes = FALSE, check.param = FALSE),
     scale_x_continuous(breaks = function(x) pretty.default(x, n = 40L)),
     scale_y_continuous(),
     labs(x = "Price", y = "% short / % long",

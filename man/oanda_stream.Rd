@@ -15,7 +15,7 @@ instruments.}
 \item{display}{[default 7L] integer rows of data to display in the console
 at any one time.}
 
-\item{limit}{(optional) specify a time in minutes by which to limit the
+\item{limit}{(optional) specify a time in seconds by which to limit the
 streaming session. The session will end with data returned automatically
 after the specified time has elapsed.}
 
@@ -41,9 +41,6 @@ Stream live price and liquidity data for major currencies, metals,
 \details{
 This function connects to the OANDA fxTrade Streaming API. Use the
     'Esc' key to stop the stream and return the session data.
-
-    All returned times are in UTC. 'b' and 'a' used in column headings are
-    abbreviations to denote 'bid' and 'ask' respectively.
 
     Note: only messages of type 'PRICE' are processed. Messages of type
     'HEARTBEAT' consisting of only a timestamp are discarded.

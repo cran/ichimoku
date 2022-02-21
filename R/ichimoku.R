@@ -73,6 +73,10 @@
 #'     If only single series price data is supplied, a \emph{pseudo} OHLC series
 #'     is generated and a \emph{pseudo} cloud chart is returned.
 #'
+#'     A faster technical utility version of this function is available in
+#'     \code{\link{.ichimoku}} for use when the data is already in the required
+#'     format.
+#'
 #'     Please refer to the reference vignette by calling:
 #'     \code{vignette("reference", package = "ichimoku")}
 #'
@@ -153,7 +157,8 @@ ichimoku.data.frame <- function(x, ticker, periods = c(9L, 26L, 52L), keep.data,
   } else {
     index <- tryCatch(unclass(as.POSIXct(.subset2(x, coli))), error = function(e) {
       if (is.numeric(idxcol <- .subset2(x, coli))) {
-        warning("Converted numeric values in column '", cnames[coli], "' as POSIX times - please check validity", call. = FALSE)
+        warning("Converted numeric values in column '", cnames[coli],
+                "' as POSIX times - please check validity", call. = FALSE)
         idxcol
       } else {
         stop("column '", cnames[coli], "' is not convertible to a POSIXct date-time format", call. = FALSE)
@@ -198,61 +203,54 @@ ichimoku.data.frame <- function(x, ticker, periods = c(9L, 26L, 52L), keep.data,
   p2 <- periods[2L]
   p3 <- periods[3L]
   xlen > p2 || stop("dataset must be longer than the medium cloud period '", p2, "'", call. = FALSE)
+  clen <- xlen + p2 - 1L
 
   cd <- numeric(xlen)
   cd[open < close] <- 1
   cd[open > close] <- -1
-  tenkan <- (maxOver(high, p1) + minOver(low, p1)) / 2
-  kijun <- (maxOver(high, p2) + minOver(low, p2)) / 2
+  tenkan <- (.Call(ichimoku_wmax, high, p1) + .Call(ichimoku_wmin, low, p1)) / 2
+  kijun <- (.Call(ichimoku_wmax, high, p2) + .Call(ichimoku_wmin, low, p2)) / 2
   senkouA <- (tenkan + kijun) / 2
-  senkouB <- (maxOver(high, p3) + minOver(low, p3)) / 2
-  chikou <- `length<-`(close[p2:xlen], xlen)
+  senkouB <- (.Call(ichimoku_wmax, high, p3) + .Call(ichimoku_wmin, low, p3)) / 2
   cloudT <- pmax.int(senkouA, senkouB)
   cloudB <- pmin.int(senkouA, senkouB)
 
-  periodicity <- min(index[2:4] - index[1:3])
+  periodicity <- min(index[2:4] - `length<-`(index, 3L))
   if (periodicity == 86400) {
-    future <- `length<-`(
-      (future <- seq.int(from = index[xlen], by = periodicity,
-                         length.out = p2 + p2)[-1L])[tradingDays(.POSIXct(future), ...)],
-      p2 - 1L)
+    future <- seq.int(from = index[xlen] + periodicity, by = periodicity, length.out = p2 + p2)
+    future <- `length<-`(future[tradingDays(future, ...)], p2 - 1L)
   } else {
-    future <- seq.int(from = index[xlen], by = periodicity, length.out = p2)[-1L]
+    future <- seq.int(from = index[xlen] + periodicity, by = periodicity, length.out = p2 - 1L)
   }
-  xtsindex <- `attributes<-`(c(index, future), list(tzone = "", tclass = c("POSIXct", "POSIXt")))
+  xtsindex <- c(index, future)
 
-  lk <- kmatrix <- NULL
-  if (!missing(keep.data) && isTRUE(keep.data)) {
-    used <- (used <- unlist(lapply(c("coli", "colo", "colh", "coll", "colc", "colp"), function(x) {
-      if (exists(x, where = parent.frame(2L), inherits = FALSE)) get(x, pos = parent.frame(2L), inherits = FALSE)
-    })))[!is.na(used)]
+  if (missing(keep.data) || !isTRUE(keep.data)) {
+    x <- kmatrix <- NULL
+  } else {
+    used <- unlist(lapply(c("coli", "colo", "colh", "coll", "colc", "colp"), function(x) {
+      get0(x, envir = parent.frame(2L), inherits = FALSE)
+    }))
+    used <- used[!is.na(used)]
     keep <- if (!is.null(used)) cnames[-used]
-    kmatrix <- do.call(cbind, lapply(.subset(x, keep), function(x) c(as.numeric(x), rep(NA, p2 - 1L))))
-    lk <- look(x)
-    lk$periods <- lk$periodicity <- lk$ticker <- NULL
+    kmatrix <- do.call(cbind, lapply(.subset(x, keep),
+                                     function(x) `length<-`(as.numeric(x), clen)))
   }
 
-  kumo <- cbind(open = `length<-`(open, xlen + p2 - 1L),
-                high = `length<-`(high, xlen + p2 - 1L),
-                low = `length<-`(low, xlen + p2 - 1L),
-                close = `length<-`(close, xlen + p2 - 1L),
-                cd = `length<-`(cd, xlen + p2 - 1L),
-                tenkan = `length<-`(tenkan, xlen + p2 - 1L),
-                kijun = `length<-`(kijun, xlen + p2 - 1L),
+  kumo <- cbind(open = `length<-`(open, clen),
+                high = `length<-`(high, clen),
+                low = `length<-`(low, clen),
+                close = `length<-`(close, clen),
+                cd = `length<-`(cd, clen),
+                tenkan = `length<-`(tenkan, clen),
+                kijun = `length<-`(kijun, clen),
                 senkouA = c(rep(NA, p2 - 1L), senkouA),
                 senkouB = c(rep(NA, p2 - 1L), senkouB),
-                chikou = `length<-`(chikou, xlen + p2 - 1L),
+                chikou = `length<-`(close[p2:xlen], clen),
                 cloudT = c(rep(NA, p2 - 1L), cloudT),
                 cloudB = c(rep(NA, p2 - 1L), cloudB),
                 kmatrix)
-  attributes(kumo) <- c(attributes(kumo),
-                        list(index = xtsindex,
-                             class = c("ichimoku", "xts", "zoo"),
-                             periods = periods,
-                             periodicity = periodicity,
-                             ticker = ticker),
-                        lk)
-  kumo
+
+  .Call(ichimoku_create, kumo, xtsindex, periods, periodicity, ticker, x)
 
 }
 
@@ -289,6 +287,86 @@ ichimoku.default <- function(x, ticker, periods = c(9L, 26L, 52L), keep.data, ..
   } else {
     ichimoku(object, ticker = ticker, periods = periods, keep.data = keep.data, ...)
   }
+
+}
+
+#' ichimoku Technical Utility Version
+#'
+#' Create an ichimoku object containing values for all components of the
+#'     Ichimoku Kinko Hyo cloud chart. The object encapsulates a date-time
+#'     index, OHLC pricing data, candle direction, the cloud lines Tenkan-sen,
+#'     Kijun-sen, Senkou span A, Senkou span B and Chikou span, as well as
+#'     values for the cloud top and cloud base.
+#'
+#' @param x a data.frame object with a POSIXct date-time index as the first
+#'     column and numeric OHLC pricing data as the second through fifth columns.
+#' @inheritParams ichimoku
+#'
+#' @details A faster version of \code{\link{ichimoku}} which can be used when
+#'     the data is a dataframe in the prescribed format. Does not support the
+#'     argument 'keep.data'.
+#'
+#' @return An ichimoku object with S3 classes of 'ichimoku', 'xts' and 'zoo'.
+#'
+#' @keywords internal
+#' @export
+#'
+.ichimoku <- function(x, ticker, periods = c(9L, 26L, 52L), ...) {
+
+  if (missing(ticker)) ticker <- deparse(substitute(x))
+  xlen <- dim(x)[1L]
+  cnames <- attr(x, "names")
+  if (is.numeric(periods) && length(periods) == 3L && all(periods >= 1)) {
+    periods <- as.integer(periods)
+  } else {
+    warning("Specified cloud periods invalid - reverting to defaults c(9L, 26L, 52L)", call. = FALSE)
+    periods <- c(9L, 26L, 52L)
+  }
+  p1 <- periods[1L]
+  p2 <- periods[2L]
+  p3 <- periods[3L]
+  xlen > p2 || stop("dataset must be longer than the medium cloud period '", p2, "'", call. = FALSE)
+  clen <- xlen + p2 - 1L
+
+  index <- unclass(.subset2(x, 1L))
+  open <- .subset2(x, 2L)
+  high <- .subset2(x, 3L)
+  low <- .subset2(x, 4L)
+  close <- .subset2(x, 5L)
+  cd <- numeric(xlen)
+  cd[open < close] <- 1
+  cd[open > close] <- -1
+  tenkan <- (.Call(ichimoku_wmax, high, p1) + .Call(ichimoku_wmin, low, p1)) / 2
+  kijun <- (.Call(ichimoku_wmax, high, p2) + .Call(ichimoku_wmin, low, p2)) / 2
+  senkouA <- (tenkan + kijun) / 2
+  senkouB <- (.Call(ichimoku_wmax, high, p3) + .Call(ichimoku_wmin, low, p3)) / 2
+  cloudT <- pmax.int(senkouA, senkouB)
+  cloudB <- pmin.int(senkouA, senkouB)
+
+  periodicity <- min(index[2:4] - `length<-`(index, 3L))
+  if (periodicity == 86400) {
+    future <- seq.int(from = index[xlen] + periodicity, by = periodicity, length.out = p2 + p2)
+    future <- `length<-`(future[tradingDays(future, ...)], p2 - 1L)
+  } else {
+    future <- seq.int(from = index[xlen] + periodicity, by = periodicity, length.out = p2 - 1L)
+  }
+  xtsindex <- c(index, future)
+  x <- NULL
+
+  kumo <- cbind(open = `length<-`(open, clen),
+                high = `length<-`(high, clen),
+                low = `length<-`(low, clen),
+                close = `length<-`(close, clen),
+                cd = `length<-`(cd, clen),
+                tenkan = `length<-`(tenkan, clen),
+                kijun = `length<-`(kijun, clen),
+                senkouA = c(rep(NA, p2 - 1L), senkouA),
+                senkouB = c(rep(NA, p2 - 1L), senkouB),
+                chikou = `length<-`(close[p2:xlen], clen),
+                cloudT = c(rep(NA, p2 - 1L), cloudT),
+                cloudB = c(rep(NA, p2 - 1L), cloudB))
+
+  .Call(ichimoku_create, kumo, xtsindex, periods, periodicity, ticker, x)
 
 }
 

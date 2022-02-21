@@ -41,11 +41,6 @@ df <- matrix_df(mcloud)
 str(df)
 str(row.names(df))
 
-## ----dftrim-------------------------------------------------------------------
-data <- data.frame(c(1:4, NA), c(NA, 2:5))
-data
-df_trim(data)
-
 ## ----dfmerge------------------------------------------------------------------
 data1 <- sample_ohlc_data[1:6, ]
 data1

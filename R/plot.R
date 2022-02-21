@@ -26,7 +26,7 @@
 #'     Specify \code{type = 'bar'} or \code{type = 'line'}, otherwise other type
 #'     settings will take precedence.
 #' @param ... additional arguments passed along to the print method for 'ggplot'
-#'     objects when \code{type = 'none'}.
+#'     objects.
 #'
 #' @return The ichimoku object supplied (invisibly). The requested plot is output
 #'     to the graphical device.
@@ -62,17 +62,8 @@ plot.ichimoku <- function(x,
                           custom,
                           ...) {
 
-  type <- match.arg(type)
-  switch(type,
-         none = print(autoplot.ichimoku(x, window = window, ticker = ticker, subtitle = subtitle,
-                                        theme = theme, strat = strat), ...),
-         r = ,
-         s = extraplot(x, window = window, ticker = ticker, subtitle = subtitle,
-                       theme = theme, strat = strat, type = type),
-         bar = ,
-         line = extraplot(x, window = window, ticker = ticker, subtitle = subtitle,
-                          theme = theme, strat = strat, type = type, custom = custom))
-
+  print(autoplot.ichimoku(x, window = window, ticker = ticker, subtitle = subtitle,
+                          theme = theme, strat = strat, type = type, custom = custom), ...)
   invisible(x)
 
 }
@@ -107,42 +98,162 @@ autoplot.ichimoku <- function(object,
                               subtitle,
                               theme = c("original", "conceptual", "dark", "fresh", "mono", "solarized"),
                               strat = TRUE,
+                              type = c("none", "r", "s", "bar", "line"),
+                              custom,
                               ...) {
 
   theme <- match.arg(theme)
+  type <- match.arg(type)
+  object <- create_data(object = object, window = window, type = type)
+  plot_ichimoku(object = object, ticker = ticker, subtitle = subtitle, theme = theme,
+                strat = strat, type = type, custom = custom, ...)
+
+}
+
+#' Create Data from an ichimoku Object
+#'
+#' Internal function used to create a dataframe for ggplot2.
+#'
+#' @inheritParams plot.ichimoku
+#'
+#' @return A dataframe.
+#'
+#' @noRd
+#'
+create_data <- function(object, window, type) {
+
+  if (type == "r") {
+    core <- coredata.ichimoku(object)
+    p2 <- attr(object, "periods")[2L]
+    cd <- core[, "cd"]
+    close <- core[, "close"]
+    open <- core[, "open"]
+    object$osc_typ_slw <- 1 - 1 /
+      (1 + .Call(ichimoku_wmean, (cd == 1) * (close - open), p2) /
+         .Call(ichimoku_wmean, (cd == -1) * (open - close), p2))
+
+  } else if (type == "s") {
+    core <- coredata.ichimoku(object)
+    p1 <- attr(object, "periods")[1L]
+    p2 <- attr(object, "periods")[2L]
+    close <- core[, "close"]
+    low <- core[, "low"]
+    high <- core[, "high"]
+    object$osc_typ_fst <- (close - .Call(ichimoku_wmin, low, p1)) /
+      (.Call(ichimoku_wmax, high, p1) - .Call(ichimoku_wmin, low, p1))
+    object$osc_typ_slw <- (close - .Call(ichimoku_wmin, low, p2)) /
+      (.Call(ichimoku_wmax, high, p2) - .Call(ichimoku_wmin, low, p2))
+  }
+
+  if (!missing(window)) object <- object[window]
+  object
+
+}
+
+#' Create ggplot Plot from an ichimoku Object
+#'
+#' Internal function used to create a ggplot2 object.
+#'
+#' @inheritParams plot.ichimoku
+#'
+#' @return A ggplot2 object with S3 classes 'gg' and 'ggplot'.
+#'
+#' @noRd
+#'
+plot_ichimoku <- function(object, ticker, subtitle, theme, strat, type, custom, ...) {
+
+  data <- .Call(ichimoku_df, object)
+  missing(data) && stop("attempt to plot incomplete (partial or subset) ichimoku object", call. = FALSE)
   pal <- .ichimoku_themes[[theme]]
-  showstrat <- hasStrat(object) && (missing(strat) || isTRUE(strat))
+  showstrat <- hasStrat(object) && isTRUE(strat)
   if (missing(ticker)) ticker <- attr(object, "ticker")
   if (missing(subtitle)) {
     subtitle <- if (showstrat) paste0("Strategy: ", attr(object, "strat")["Strategy", ][[1L]])
   }
 
-  if (!missing(window)) object <- object[window]
-  data <- as.data.frame.ichimoku(object)
-  data$idx <- attr(data, "row.names")
-  data$cd <- as.character(.subset2(data, "cd"))
+  if (type == "line" || type == "bar") {
+    if(missing(custom)) {
+      warning("For type = 'bar' or 'line': required argument 'custom' not specified", call. = FALSE)
+      type <- "none"
+    } else {
+      cnames <- attr(data, "names")
+      sel <- grep(custom, cnames, ignore.case = TRUE, perl = TRUE)[1L]
+      if (is.na(sel)) {
+        warning("Specified value '", custom, "' for 'custom' does not match any columns", call. = FALSE)
+        type <- "none"
+      } else {
+        cols <- cnames[sel]
+      }
+    }
+  }
 
   layers <- list(
-    if (showstrat) {
-      geom_rect(aes(xmin = .data$posn * (.data$idx - 0.5), xmax = .data$posn * (.data$idx + 0.5),
-                    ymin = -Inf, ymax = Inf), fill = pal[1L], alpha = 0.2, na.rm = TRUE)
-    },
-    if (!all(is.na(.subset2(data, "senkouB")))) {
-      geom_ribbon(aes(ymax = .data$senkouA, ymin = .data$senkouB),
-                  fill = pal[1L], alpha = 0.6, na.rm = TRUE)
-    },
-    geom_line(aes(y = .data$senkouB), color = pal[2L], alpha = 0.6, na.rm = TRUE),
-    geom_line(aes(y = .data$senkouA), color = pal[3L], alpha = 0.6, na.rm = TRUE),
-    geom_line(aes(y = .data$kijun), color = pal[5L], na.rm = TRUE),
-    geom_line(aes(y = .data$tenkan), color = pal[4L], na.rm = TRUE),
-    geom_segment(aes(xend = .data$idx, y = .data$high, yend = .data$low, color = .data$cd),
-                 size = 0.3, na.rm = TRUE),
-    geom_rect(aes(xmin = .data$idx - 0.4, xmax = .data$idx + 0.4, ymin = .data$open,
-                  ymax = .data$close, color = .data$cd, fill = .data$cd),
-              size = 0.3, na.rm = TRUE),
-    geom_line(aes(y = .data$chikou), color = pal[6L], na.rm = TRUE),
-    scale_x_continuous(breaks = breaks_ichimoku(data = data, object = object),
-                       labels = labels_ichimoku(data = data, object = object)),
+    if (showstrat)
+      layer(geom = GeomRect, mapping = aes(xmin = .data$posn * (.data$idx - 0.5),
+                                           xmax = .data$posn * (.data$idx + 0.5),
+                                           ymin = -Inf, ymax = Inf),
+            stat = StatIdentity, position = PositionIdentity,
+            params = list(na.rm = TRUE, fill = pal[1L], alpha = 0.2),
+            inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    if (!all(is.na(.subset2(data, "senkouB"))))
+      layer(geom = GeomRibbon, mapping = aes(ymax = .data$senkouA, ymin = .data$senkouB),
+            stat = StatIdentity, position = PositionIdentity,
+            params = list(na.rm = TRUE, outline.type = "both", fill = pal[1L], alpha = 0.6),
+            inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomLine, mapping = aes(y = .data$senkouB),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = TRUE, colour = pal[2L], alpha = 0.6),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomLine, mapping = aes(y = .data$senkouA),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = TRUE, colour = pal[3L], alpha = 0.6),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomLine, mapping = aes(y = .data$kijun),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = TRUE, colour = pal[5L]),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomLine, mapping = aes(y = .data$tenkan),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = TRUE, colour = pal[4L]),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomSegment, mapping = aes(xend = .data$idx, y = .data$high,
+                                            yend = .data$low, colour = .data$cd),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = TRUE, size = 0.3),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomRect, mapping = aes(xmin = .data$idx - 0.4, xmax = .data$idx + 0.4,
+                                         ymin = .data$open, ymax = .data$close,
+                                         colour = .data$cd, fill = .data$cd),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = TRUE, size = 0.3),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    layer(geom = GeomLine, mapping = aes(y = .data$chikou),
+          stat = StatIdentity, position = PositionIdentity,
+          params = list(na.rm = TRUE, colour = pal[6L]),
+          inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    if (type == "r" || type == "s")
+      layer(geom = GeomLine, mapping = aes(y = .data$osc_typ_slw, ext = .data$low),
+            stat = StatIndicator, position = PositionIdentity,
+            params = list(na.rm = TRUE, colour = pal[5L], alpha = 0.8),
+            inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    if (type == "s")
+      layer(geom = GeomLine, mapping = aes(y = .data$osc_typ_fst, ext = .data$low),
+            stat = StatIndicator, position = PositionIdentity,
+            params = list(na.rm = TRUE, colour = pal[4L], alpha = 0.8),
+            inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    if (type == "line")
+      layer(geom = GeomLine, mapping = aes(y = .data[[cols]], ext = .data$low),
+            stat = StatLine, position = PositionIdentity,
+            params = list(na.rm = TRUE, colour = pal[7L], alpha = 0.8),
+            inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    if (type == "bar")
+      layer(geom = GeomRect,
+            mapping = aes(xmin = .data$idx - 0.4, xmax = .data$idx + 0.4,
+                          ymin = 0, ymax = .data[[cols]], ext = .data$low),
+            stat = StatBar, position = PositionIdentity,
+            params = list(na.rm = TRUE, colour = pal[7L], fill = pal[10L], size = 0.3, alpha = 0.8),
+            inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
+    scale_x_continuous(breaks = breaks_ichimoku(object), labels = labels_ichimoku(object)),
     scale_y_continuous(breaks = function(x) pretty.default(x, n = 9L)),
     scale_color_manual(values = c("1" = pal[7L], "-1" = pal[8L], "0" = pal[9L])),
     scale_fill_manual(values = c("1" = pal[10L], "-1" = pal[11L], "0" = pal[12L])),
@@ -150,129 +261,7 @@ autoplot.ichimoku <- function(object,
     switch(theme, dark = theme_ichimoku_dark(), theme_ichimoku_light())
   )
 
-  ggplot(data = data, aes(x = .data$idx)) + layers
-
-}
-
-#' Plot Ichimoku Objects with ggplot2 and gtable
-#'
-#' Plot Ichimoku Kinko Hyo cloud charts from ichimoku objects with a sub-plot for
-#'     oscillators or a custom specified variable.
-#'
-#' @inheritParams autoplot.ichimoku
-#' @inheritParams plot.ichimoku
-#'
-#' @return A gtable object with S3 classes 'gtable', 'gTree', 'grob' and 'gDesc',
-#'     or else a ggplot2 object with S3 classes 'gg' and 'ggplot' when falling
-#'     back to a standard plot.
-#'
-#' @details The oscillator choices are between 'R-type', which is a modified form
-#'     of a relative strength index (RSI), and 'S-type', which is a modified form
-#'     of a stochastic oscillator. The oscillator look-back parameters are based
-#'     on the fast and medium cloud periods of the ichimoku object.
-#'
-#' @keywords internal
-#' @export
-#'
-extraplot <- function(object,
-                      window,
-                      ticker,
-                      subtitle,
-                      theme = c("original", "conceptual", "dark", "fresh", "mono", "solarized"),
-                      strat = TRUE,
-                      type = c("none", "r", "s", "bar", "line"),
-                      custom,
-                      ...) {
-
-  type <- match.arg(type)
-  theme <- match.arg(theme)
-  pal <- .ichimoku_themes[[theme]]
-  aplot <- autoplot.ichimoku(object = object, window = window, ticker = ticker,
-                             subtitle = subtitle, theme = theme, strat = strat)
-
-  type == "none" && {
-    warning("Required argument 'type' not specified or set to 'none'", call. = FALSE)
-    return(print(aplot))
-  }
-  if (type == "bar" || type == "line") {
-    missing(custom) && {
-      warning("For type = 'bar' or 'line': required argument 'custom' not specified", call. = FALSE)
-      return(print(aplot))
-    }
-    cnames <- dimnames(object)[[2L]]
-    sel <- grep(custom, cnames, ignore.case = TRUE, perl = TRUE)[1L]
-    is.na(sel) && {
-      warning("Specified value '", custom, "' for 'custom' does not match any columns", call. = FALSE)
-      return(print(aplot))
-    }
-
-  } else if (type == "r") {
-    p2 <- attr(object, "periods")[2L]
-    core <- coredata.ichimoku(object)
-    object$osc_typ_slw <- 100 - 100 /
-      (1 + meanOver(((cd <- core[, "cd"]) == 1) * ((close <- core[, "close"]) - (open <- core[, "open"])), p2) /
-         meanOver((cd == -1) * (open - close), p2))
-
-  } else {
-    periods <- attr(object, "periods")
-    p1 <- periods[1L]
-    p2 <- periods[2L]
-    core <- coredata.ichimoku(object)
-    object$osc_typ_fst <- 100 * ((close <- core[, "close"]) - minOver((low <- core[, "low"]), p1)) /
-      (maxOver((high <- core[, "high"]), p1) - minOver(low, p1))
-    object$osc_typ_slw <- 100 * (close - minOver(low, p2)) / (maxOver(high, p2) - minOver(low, p2))
-  }
-
-  if (!missing(window)) object <- object[window]
-  data <- as.data.frame.ichimoku(object)
-  data$idx <- attr(data, "row.names")
-
-  if (type == "r" || type == "s") {
-    layers <- list(
-      geom_line(aes(y = .data$osc_typ_slw), color = pal[5L], alpha = 0.8, na.rm = TRUE),
-      if (type == "s") geom_line(aes(y = .data$osc_typ_fst), color = pal[4L], alpha = 0.7, na.rm = TRUE),
-      scale_x_continuous(breaks = breaks_ichimoku(data = data, object = object), labels = NULL),
-      scale_y_continuous(breaks = c(0, 25, 50, 75, 100), limits = c(0, 100), expand = c(0,0)),
-      labs(x = NULL, y = switch(type, r = "R-type", s = "S-type")),
-      switch(theme, dark = theme_ichimoku_dark(), theme_ichimoku_light()),
-      theme(axis.ticks.x = element_blank())
-    )
-
-  } else {
-
-    cols <- cnames[sel]
-    llen <- nchar(as.character(trunc(max(.subset2(data, cols), na.rm = TRUE))))
-    data$cd <- as.character(.subset2(data, "cd"))
-
-    layers <- list(
-      if (type == "line") {
-        geom_line(aes(y = .data[[cols]]), color = pal[7L], alpha = 0.8, na.rm = TRUE)
-      } else {
-        geom_rect(aes(xmin = .data$idx - 0.4, xmax = .data$idx + 0.4, ymin = 0,
-                      ymax = .data[[cols]], color = .data$cd, fill = .data$cd),
-                  size = 0.3, alpha = 0.8, na.rm = TRUE)
-      },
-      scale_x_continuous(breaks = breaks_ichimoku(data = data, object = object), labels = NULL),
-      scale_y_continuous(),
-      scale_color_manual(values = c("1" = pal[7L], "-1" = pal[8L], "0" = pal[9L])),
-      scale_fill_manual(values = c("1" = pal[10L], "-1" = pal[11L], "0" = pal[12L])),
-      labs(x = NULL, y = cols),
-      switch(theme, dark = theme_ichimoku_dark(), theme_ichimoku_light()),
-      theme(axis.ticks.x = element_blank(),
-            axis.text.y = element_text(size = rel(min(3 / llen, 1))))
-    )
-  }
-
-  subplot <- ggplot(data = data, aes(x = .data$idx)) + layers
-
-  gp <- ggplotGrob(aplot + labs(x = NULL))
-  gs <- ggplotGrob(subplot)
-  gs$widths[1:4] <- gp$widths[1:4]
-  gt <- gtable(widths = unit(1, "null"), heights = unit(c(0.75, 0.25), "null"))
-  gt <- gtable_add_grob(gt, list(gp, gs), t = c(1, 2), l = c(1, 1), clip = "off")
-  grid.newpage()
-  grid.draw(gt)
-  invisible(gt)
+  ggplot(data = data, mapping = aes(x = .data$idx)) + layers
 
 }
 
@@ -280,15 +269,15 @@ extraplot <- function(object,
 #'
 #' Internal function used to create custom pretty breaks for ggplot2.
 #'
-#' @param data the data frame used by ggplot2.
-#' @param object the original ichimoku object.
+#' @param object an ichimoku object.
 #'
 #' @return A vector of integer values representing the break locations.
 #'
 #' @noRd
 #'
-breaks_ichimoku <- function(data, object) {
+breaks_ichimoku <- function(object) {
 
+  xlen = attr(object, "dim")[1L]
   if (attr(object, "periodicity") > 80000) {
     len <- length(endpoints(object, on = "months"))
     if (len < 100L) {
@@ -304,11 +293,11 @@ breaks_ichimoku <- function(data, object) {
       if (cond) breaks <- breaks[-length(breaks)]
       if (cond2) breaks <- breaks[-1L]
     }
-    if (breaks[length(breaks)] > dim(object)[1L]) breaks[length(breaks)] <- breaks[length(breaks)] - 1L
+    if (breaks[length(breaks)] > xlen) breaks[length(breaks)] <- breaks[length(breaks)] - 1L
 
   } else {
-    breaks <- pretty.default(.subset2(data, "idx"), n = 9L) + 1
-    if (breaks[length(breaks)] > dim(object)[1L]) breaks <- breaks[-length(breaks)]
+    breaks <- pretty.default(seq_len(xlen), n = 9L) + 1
+    if (breaks[length(breaks)] > xlen) breaks <- breaks[-length(breaks)]
   }
 
   breaks
@@ -319,17 +308,16 @@ breaks_ichimoku <- function(data, object) {
 #'
 #' Internal function used to create custom break labels for ggplot2.
 #'
-#' @param data the data frame used by ggplot2.
-#' @param object the original ichimoku object.
+#' @param object an ichimoku object.
 #'
 #' @return A vector of character labels corresponding to the breaks.
 #'
 #' @noRd
 #'
-labels_ichimoku <- function(data, object) {
+labels_ichimoku <- function(object) {
 
   function(x) {
-    labels <- .POSIXct(.subset(.subset2(data, "index"), x))
+    labels <- .Call(ichimoku_psxct, .subset(attr(object, "index"), x))
     if (attr(object, "periodicity") > 80000) {
       format.POSIXct(labels, format = paste("%d-%b", "%Y", sep = "\n"))
     } else {
@@ -379,4 +367,67 @@ theme_ichimoku_dark <- function() {
           axis.text = element_text(colour = "#eee8d5"),
           axis.ticks = element_line(colour = "#eee8d5", size = rel(0.5)))
 }
+
+#' StatIndicator
+#'
+#' A Stat for plotting indicators in ggplot2.
+#'
+#' @return A ggplot2 'Stat' (an environment).
+#'
+#' @noRd
+#'
+StatIndicator <- ggproto(
+  "StatIndicator", Stat,
+  compute_group = function(data, scales) {
+    ext <- .subset2(data, "ext")
+    data$y = min(ext) + 0.2 * (max(ext) - min(ext)) * (.subset2(data, "y") - 1)
+    data
+  },
+  required_aes = c("x", "y", "ext")
+)
+
+#' StatLine
+#'
+#' A Stat for plotting 'line' type subplots in ggplot2.
+#'
+#' @return A ggplot2 'Stat' (an environment).
+#'
+#' @noRd
+#'
+StatLine <- ggproto(
+  "StatLine", Stat,
+  compute_group = function(data, scales) {
+    y <- .subset2(data, "y")
+    ynorm <- (y - min(y)) / (max(y) - min(y))
+    ext <- .subset2(data, "ext")
+    data$y = min(ext) + 0.2 * (max(ext) - min(ext)) * (ynorm - 1)
+    data
+  },
+  required_aes = c("x", "y", "ext")
+)
+
+#' StatBar
+#'
+#' A Stat for plotting 'bar' type subplots in ggplot2.
+#'
+#' @return A ggplot2 'Stat' (an environment).
+#'
+#' @noRd
+#'
+StatBar <- ggproto(
+  "StatBar", Stat,
+  compute_group = function(data, scales) {
+    y <- .subset2(data, "ymax")
+    ymin <- min(y[!is.na(y)])
+    ymax <- max(y[!is.na(y)])
+    ynorm <- (y - ymin) / (ymax - ymin)
+    ext <- .subset2(data, "ext")
+    extmin <- min(ext[!is.na(ext)])
+    extmax <- max(ext[!is.na(ext)])
+    data$ymax = extmin + 0.2 * (extmax - extmin) * (ynorm - 1)
+    data$ymin = rep(extmin - 0.2 * (extmax - extmin), length(y))
+    data
+  },
+  required_aes = c("xmin", "xmax", "ymin", "ymax", "ext")
+)
 

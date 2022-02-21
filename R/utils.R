@@ -84,33 +84,6 @@ grid_dup <- function(n, omit.id) {
   vec
 }
 
-#' Trim Dataframe Rows with NA Values
-#'
-#' Trim rows containing NA values from a 'data.frame' object. An efficient
-#'     version of \code{stats::na.omit()} with no data validation or checking.
-#'
-#' @param x the data.frame to trim.
-#'
-#' @return The data.frame 'x' with rows containing NA values removed.
-#'
-#' @details Works only where the columns contain atomic (e.g. numeric) and not
-#'     recursive types (e.g. lists).
-#'
-#' @examples
-#' data <- data.frame(c(1:4, NA), c(NA, 2:5))
-#' data
-#' df_trim(data)
-#'
-#' @export
-#'
-df_trim <- function(x) {
-  omit <- logical(dim(x)[1L])
-  for (i in seq_len(length(x))) {
-    omit <- omit | is.na(x[[i]])
-  }
-  x[!omit, , drop = FALSE]
-}
-
 #' Convert xts to data.frame
 #'
 #' An optimised 'xts' to 'data.frame' constructor.
@@ -138,18 +111,21 @@ df_trim <- function(x) {
 #'
 xts_df <- function(x, keep.attrs) {
   core <- coredata(x)
-  dims <- dim(core)
-  len <- dims[2L]
+  dn2 <- dimnames(core)[[2L]]
+  xlen <- dim(core)[1L]
+  len <- dim(core)[2L]
+  start <- 0:(len - 1) * xlen + 1L
+  end <- 1:len * xlen
+  attributes(core) <- NULL
   df <- vector(mode = "list", length = len + 1L)
   df[[1L]] <- index(x)
   for (i in seq_len(len)) {
-    df[[i + 1L]] <- core[, i]
+    df[[i + 1L]] <- core[start[i]:end[i]]
   }
-  attributes(df) <- c(list(names = c("index", dimnames(core)[[2L]]),
-                           class = "data.frame",
-                           row.names = .set_row_names(dims[1L])),
-                      if (!missing(keep.attrs) && isTRUE(keep.attrs)) look(x))
-  df
+  `attributes<-`(df, c(list(names = c("index", dn2),
+                            class = "data.frame",
+                            row.names = .set_row_names(xlen)),
+                       if (!missing(keep.attrs) && isTRUE(keep.attrs)) .Call(ichimoku_look, x)))
 }
 
 #' Convert matrix to data.frame
@@ -177,18 +153,21 @@ xts_df <- function(x, keep.attrs) {
 #' @export
 #'
 matrix_df <- function(x, keep.attrs) {
-  dnames <- dimnames(x)
-  mat <- unname(x)
-  dims <- dim(mat)
-  df <- vector(mode = "list", length = dims[2L])
+  lk <- if (!missing(keep.attrs) && isTRUE(keep.attrs)) .Call(ichimoku_look, x)
+  dn <- dimnames(x)
+  xlen <- dim(x)[1L]
+  len <- dim(x)[2L]
+  start <- 0:(len - 1) * xlen + 1L
+  end <- 1:len * xlen
+  attributes(x) <- NULL
+  df <- vector(mode = "list", length = len)
   for (i in seq_along(df)) {
-    df[[i]] <- mat[, i]
+    df[[i]] <- x[start[i]:end[i]]
   }
-  attributes(df) <- c(list(names = dnames[[2L]],
-                           class = "data.frame",
-                           row.names = if (is.null(dnames[[1L]])) .set_row_names(dims[1L]) else dnames[[1L]]),
-                      if (!missing(keep.attrs) && isTRUE(keep.attrs)) look(x))
-  df
+  `attributes<-`(df, c(list(names = dn[[2L]],
+                            class = "data.frame",
+                            row.names = if (is.null(dn[[1L]])) .set_row_names(xlen) else dn[[1L]]),
+                       lk))
 }
 
 #' Merge Dataframes
@@ -227,7 +206,7 @@ df_merge <- function(...) {
     attributes(merge) <- c(attributes(merge),
                            list(instrument = attr(dots[[1L]], "instrument"),
                                 price = attr(dots[[1L]], "price"),
-                                timestamp = .POSIXct(max(unlist(lapply(dots, attr, "timestamp")))),
+                                timestamp = .Call(ichimoku_psxct, max(unlist(lapply(dots, attr, "timestamp")))),
                                 oanda = TRUE))
     if (FALSE %in% .subset2(merge, "complete")) warning("Incomplete periods in merged dataframe - please check for possible duplicates", call. = FALSE)
   }
@@ -244,8 +223,8 @@ df_merge <- function(...) {
 #' @param new data.frame object containing new data.
 #' @param key [default 'time'] column name used as key, provided as a character
 #'     string.
-#' @param keep.attr [default 'timestamp'] name of an attribute in 'new' to retain
-#'     if it is present, provided as a character string.
+#' @param keep.attr [default 'timestamp'] name of an attribute in 'new' to
+#'     retain, if present, provided as a character string.
 #'
 #' @return A data.frame of the existing data appended with the new data. If the
 #'     data in 'new' contains data with the same value for the key column as 'old',
@@ -275,10 +254,52 @@ df_append <- function(old, new, key = "time", keep.attr = "timestamp") {
   for (i in seq_along(df)) {
     df[[i]] <- c(.subset2(old, i)[keep], .subset2(new, i))
   }
-  df <- `attributes<-`(df, `names<-`(
+  `attributes<-`(df, `names<-`(
     list(cnames, "data.frame", .set_row_names(length(df[[1L]])), attr(new, keep.attr)),
     c("names", "class", "row.names", keep.attr)))
-  df
+}
+
+#' Look at Informational Attributes
+#'
+#' Inspect the informational attributes of objects.
+#'
+#' @param x an object (optional). If 'x' is not supplied, \code{\link{.Last.value}}
+#'     will be used instead.
+#'
+#' @return For objects created by the ichimoku package, a pairlist of attributes
+#'     specific to that data type.
+#'
+#'     For other objects, a pairlist of non-standard attributes for matrix /
+#'     data.frame / xts classes, or else invisible NULL if none are present.
+#'
+#' @details Note: autostrat list attributes may be accessed directly using
+#'     \code{look(x)$logret} and \code{look(x)$summary}.
+#'
+#' @examples
+#' cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
+#' look(cloud)
+#'
+#' stratlist <- autostrat(cloud, n = 3)
+#' look(stratlist)
+#'
+#' strat <- stratlist[[1]]
+#' look(strat)
+#'
+#' grid <- mlgrid(cloud)
+#' look(grid)
+#'
+#' \dontrun{
+#' # OANDA API key required to run this example
+#' prices <- oanda("USD_JPY")
+#' look(prices)
+#' }
+#'
+#' @export
+#'
+look <- function(x) {
+  if (missing(x)) x <- .Last.value
+  lk <- .Call(ichimoku_look, x)
+  if (length(lk)) lk else invisible()
 }
 
 #' Print More Rows of Ichimoku Objects
@@ -308,51 +329,6 @@ more <- function(n) {
 
   is.ichimoku(lv <- .Last.value) || return(invisible())
   print(lv, plot = FALSE, n = if (missing(n)) 100 else n)
-
-}
-
-#' Look at Informational Attributes
-#'
-#' Inspect the informational attributes of objects.
-#'
-#' @param x an object (optional). If 'x' is not supplied, \code{\link{.Last.value}}
-#'     will be used instead.
-#'
-#' @return For objects created by the ichimoku package, a list of attributes
-#'     specific to that data type.
-#'
-#'     For other objects, a list of non-standard attributes for matrix /
-#'     data.frame / xts classes, or else invisible NULL if none are present.
-#'
-#' @details Note: autostrat list attributes may be accessed directly using
-#'     \code{look(x)$logret} and \code{look(x)$summary}.
-#'
-#' @examples
-#' cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
-#' look(cloud)
-#'
-#' stratlist <- autostrat(cloud, n = 3)
-#' look(stratlist)
-#'
-#' strat <- stratlist[[1]]
-#' look(strat)
-#'
-#' grid <- mlgrid(cloud)
-#' look(grid)
-#'
-#' \dontrun{
-#' # OANDA API key required to run this example
-#' prices <- oanda("USD_JPY")
-#' look(prices)
-#' }
-#'
-#' @export
-#'
-look <- function(x) {
-
-  lk <- attributes(if (missing(x)) .Last.value else x)
-  lk <- lk[!names(lk) %in% c("dim", "dimnames", "names", "row.names", "index", "class", "oanda")]
-  if (length(lk)) lk else invisible()
 
 }
 

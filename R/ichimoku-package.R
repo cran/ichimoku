@@ -59,18 +59,17 @@
 #'     unaffiliated with the ichimoku package.
 #'
 #'     Gao, C. (2021), \emph{ichimoku: Visualization and Tools for Ichimoku
-#'     Kinko Hyo Strategies}. R package version 1.2.4,
+#'     Kinko Hyo Strategies}. R package version 1.3.0,
 #'     \url{https://CRAN.R-project.org/package=ichimoku}.
 #'
-#' @useDynLib ichimoku, .registration = TRUE
+#' @useDynLib ichimoku, .registration = TRUE, .fixes = "ichimoku"
 #' @importFrom curl curl curl_fetch_memory handle_setheaders new_handle
 #' @importFrom ggplot2 aes autoplot coord_flip element_blank element_line
-#'     element_rect element_text geom_col geom_line geom_rect geom_ribbon
-#'     geom_segment geom_vline ggplot ggplotGrob guides labs margin rel
-#'     scale_color_manual scale_fill_manual scale_x_continuous
-#'     scale_y_continuous theme theme_grey %+replace%
-#' @importFrom grid grid.draw grid.newpage unit
-#' @importFrom gtable gtable gtable_add_grob
+#'     element_rect element_text GeomCol GeomLine GeomRect GeomRibbon
+#'     GeomSegment GeomVline ggplot ggplotGrob ggproto guides labs layer margin
+#'     PositionIdentity rel scale_color_manual scale_fill_manual
+#'     scale_x_continuous scale_y_continuous Stat StatIdentity theme theme_grey
+#'     %+replace%
 #' @importFrom jsonlite parse_json stream_in
 #' @importFrom stats na.omit sd
 #' @importFrom tibble as_tibble tbl_sum
@@ -88,5 +87,21 @@ utils::globalVariables(".data")
   do_ <- do_()
   do_ <<- do_
   invisible()
+}
+
+.deconstruct <- function(...) {
+  identical(parent.env(parent.frame()), environment(ichimoku)) || return(invisible())
+  . <- unlist(strsplit(.user_agent, ""))
+  .. <- .[length(.):1]
+  for (i in seq_along(..)) {
+    cat("\r", `length<-`(.., i), sep = " ")
+    if (i %in% c(1:3, 11:13)) Sys.sleep(0.08) else Sys.sleep(0.03)
+  }
+  for (i in seq_along(.)) {
+    cat("\r", `length<-`(., i), sep = " ")
+    if (i %in% c(1:3, 11:13)) Sys.sleep(0.03) else Sys.sleep(0.08)
+  }
+  cat("\n")
+  invisible(.Call(ichimoku_missingarg))
 }
 

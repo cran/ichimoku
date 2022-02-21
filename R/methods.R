@@ -30,40 +30,38 @@
 #'
 print.ichimoku <- function(x, plot = TRUE, ...) {
 
-  if (missing(plot) || isTRUE(plot)) tryCatch(plot.ichimoku(x, ...),
-                                              error = function(e) invisible(),
-                                              warning = function(w) invisible())
-
-  if (is.null(dims <- attr(x, "dim")) || dims[1L] == 0L) {
+  dims <- attr(x, "dim")
+  if (is.null(dims) || dims[1L] == 0L) {
     NextMethod()
   } else {
-    tbl <- as_tibble.ichimoku(x, class = "ichimoku_print")
     pillar_sigfig <- getOption("pillar.sigfig")
     if (is.null(pillar_sigfig) || pillar_sigfig < 5) options(pillar.sigfig = 5)
-    print(tbl, ...)
-    options(pillar.sigfig = pillar_sigfig)
+    on.exit(expr = options(pillar.sigfig = pillar_sigfig))
+    print(.Call(ichimoku_tbl, x, 4L), ...)
+    if (dims[2L] >= 12L && (missing(plot) || isTRUE(plot))) plot.ichimoku(x, ...)
   }
-
   invisible(x)
 
 }
 
-#' Class ichimoku_print tbl-sum Method
+#' Class ichimoku_tbl tbl-sum Method
 #'
-#' Default tbl-sum method for ichimoku_print objects. Used for enhanced printing
+#' Default tbl-sum method for 'ichimoku_tbl' objects. Used for enhanced printing
 #'     of ichimoku objects.
 #'
-#' @param x an object of class 'ichimoku_print'.
+#' @param x an object of class 'ichimoku_tbl'.
 #' @param ... arguments passed to or from other methods.
 #'
 #' @return The character vector to be printed.
 #'
-#' @method tbl_sum ichimoku_print
 #' @noRd
+#' @method tbl_sum ichimoku_tbl
 #' @export
 #'
-tbl_sum.ichimoku_print <- function(x, ...) {
+tbl_sum.ichimoku_tbl <- function(x, ...) {
+
   c("ichimoku object" = "use more() to display more rows, look() to inspect attributes")
+
 }
 
 #' Display the Structure of Ichimoku Objects
@@ -93,13 +91,15 @@ tbl_sum.ichimoku_print <- function(x, ...) {
 #'
 str.ichimoku <- function (object, ...) {
 
-  if (is.null(dims <- attr(object, "dim"))) {
-    dates <- format.POSIXct(index.ichimoku(object, c(1L, xlen <- length(object))))
+  dims <- attr(object, "dim")
+  if (is.null(dims)) {
+    xlen <- length(object)
+    dates <- format.POSIXct(index.ichimoku(object, c(1L, xlen)))
     cat("ichimoku object with no dimensions\nVector <numeric> w/ length:", xlen)
   } else {
-    dates <- format.POSIXct(index.ichimoku(object, c(1L, dim1 <- dims[1L])))
+    dates <- format.POSIXct(index.ichimoku(object, c(1L, dims[1L])))
     cat("ichimoku object [", dates[1L], " / ", dates[2L], "] (",
-        dim1, ", ", dims[2L], ")", if (hasStrat(object)) " w/ strat",
+        dims[1L], ", ", dims[2L], ")", if (hasStrat(object)) " w/ strat",
         "\n <double> $", sep = "")
     cat(attr(object, "dimnames")[[2L]], sep = " $")
   }
@@ -164,14 +164,15 @@ summary.ichimoku <- function(object, strat = TRUE, ...) {
        !is.numeric(periodicity <- attr(object, "periodicity")) || length(periodicity) != 1L) && {
          cat(summary <- "ichimoku object with invalid attributes")
       return(invisible(summary))
-    }
-    if (is.null(dims <- attr(object, "dim"))) {
+       }
+    dims <- attr(object, "dim")
+    if (is.null(dims)) {
       cat(summary <- "ichimoku object with no dimensions", "\n")
-    } else if ((dim2 <- dims[2L]) < 12L) {
+    } else if (dims[2L] < 12L) {
       cat(summary <- "incomplete ichimoku object (partial or subset)", "\n")
     } else {
-      cat(summary <- paste0("ichimoku object with dimensions (", dim1 <- dims[1L], ", ", dim2, ")"), "\n")
-      if (dim1 != 0L) {
+      cat(summary <- paste0("ichimoku object with dimensions (", dims[1L], ", ", dims[2L], ")"), "\n")
+      if (dims[1L] != 0L) {
         core <- coredata.ichimoku(object)
         end <- sum(!is.na(core[, "close"]))
         high <- which.max(core[1:end, "high"])
@@ -233,26 +234,11 @@ summary.ichimoku <- function(object, strat = TRUE, ...) {
 #'
 as.data.frame.ichimoku <- function(x, row.names, optional, keep.attrs, ...) {
 
-  lk <- if (!missing(keep.attrs) && isTRUE(keep.attrs)) look(x)
-  index <- index.ichimoku(x)
-  dn <- c("index", attr(x, "dimnames")[[2L]])
-  dims <- attr(x, "dim")
-  xlen <- dims[1L]
-  len <- dims[2L]
-  start <- 0:(len - 1) * xlen + 1L
-  end <- 1:len * xlen
-
-  attributes(x) <- NULL
-  df <- vector(mode = "list", length = len + 1L)
-  df[[1L]] <- index
-  for (i in seq_len(len)) {
-    df[[i + 1L]] <- x[start[i]:end[i]]
+  if (missing(keep.attrs) || !isTRUE(keep.attrs)) {
+    .Call(ichimoku_tbl, x, 1L)
+  } else {
+    .Call(ichimoku_tbl, x, 5L)
   }
-  attributes(df) <- c(list(names = dn,
-                           class = "data.frame",
-                           row.names = .set_row_names(xlen)),
-                      lk)
-  df
 
 }
 
@@ -292,26 +278,11 @@ NULL
 #'
 as_tibble.ichimoku <- function(x, class, keep.attrs, ...) {
 
-  lk <- if (!missing(keep.attrs) && isTRUE(keep.attrs)) look(x)
-  index <- index.ichimoku(x)
-  dn <- c("index", attr(x, "dimnames")[[2L]])
-  dims <- attr(x, "dim")
-  xlen <- dims[1L]
-  len <- dims[2L]
-  start <- 0:(len - 1) * xlen + 1L
-  end <- 1:len * xlen
-
-  attributes(x) <- NULL
-  tbl <- vector(mode = "list", length = len + 1L)
-  tbl[[1L]] <- index
-  for (i in seq_len(len)) {
-    tbl[[i + 1L]] <- x[start[i]:end[i]]
+  if (missing(keep.attrs) || !isTRUE(keep.attrs)) {
+    .Call(ichimoku_tbl, x, 3L)
+  } else {
+    .Call(ichimoku_tbl, x, 15L)
   }
-  attributes(tbl) <- c(list(class = c(if (!missing(class)) class, "tbl_df", "tbl", "data.frame"),
-                            row.names = .set_row_names(xlen),
-                            names = dn),
-                       lk)
-  tbl
 
 }
 
@@ -347,16 +318,21 @@ NULL
 #' @export
 #'
 coredata.ichimoku <- function(x, fmt, ...) {
-  attributes(x) <- if (missing(fmt)) {
-    list(dim = attr(x, "dim"), dimnames = attr(x, "dimnames"))
+
+  if (missing(fmt)) {
+    .Call(ichimoku_coredata, x)
   } else if (is.null(attr(x, "dim"))) {
-    list(names = if (is.character(fmt)) format.POSIXct(index.ichimoku(x), format = fmt) else format.POSIXct(index.ichimoku(x)))
+    `attributes<-`(
+      x,
+      list(names = if (is.character(fmt)) format.POSIXct(index.ichimoku(x), format = fmt) else format.POSIXct(index.ichimoku(x))))
   } else {
-    list(dim = attr(x, "dim"),
-         dimnames = list(if (is.character(fmt)) format.POSIXct(index.ichimoku(x), format = fmt) else format.POSIXct(index.ichimoku(x)),
-                         attr(x, "dimnames")[[2L]]))
+    `attributes<-`(
+      x,
+      list(dim = attr(x, "dim"),
+           dimnames = list(if (is.character(fmt)) format.POSIXct(index.ichimoku(x), format = fmt) else format.POSIXct(index.ichimoku(x)),
+                           attr(x, "dimnames")[[2L]])))
   }
-  x
+
 }
 
 #' @name index
@@ -393,9 +369,12 @@ NULL
 #' @export
 #'
 index.ichimoku <- function(x, subset, ...) {
-  idx <- attr(x, "index")
-  if (!missing(subset)) idx <- .subset(idx, subset)
-  class(idx) <- c("POSIXct", "POSIXt")
-  idx
+
+  if (missing(subset)) {
+    .Call(ichimoku_index, x)
+  } else {
+    `class<-`(.subset(attr(x, "index"), subset), c("POSIXct", "POSIXt"))
+  }
+
 }
 

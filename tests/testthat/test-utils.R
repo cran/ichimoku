@@ -26,10 +26,6 @@ test_that("matrix_df ok", {
   expect_identical(attr(matrix_df(mat, keep.attrs = TRUE), "special"), "set")
 })
 
-test_that("df_trim ok", {
-  expect_identical(dim(df_trim(data.frame(c(1:4, NA), c(NA, 2:5)))), c(3L, 2L))
-})
-
 test_that("df_merge ok", {
   expect_identical(dim(merge <- df_merge(sample_ohlc_data[1:6, ], sample_ohlc_data[4:10, ])), c(10L, 6L))
   attr(merge, "oanda") <- TRUE
@@ -47,7 +43,7 @@ test_that("df_append ok", {
 })
 
 test_that("internal window functions ok", {
-  expect_identical(minOver(as.numeric(1:6), 3), c(NA, NA, 1, 2, 3, 4))
-  expect_identical(maxOver(as.numeric(1:6), 3), c(NA, NA, 3, 4, 5, 6))
-  expect_identical(meanOver(as.numeric(1:6), 3), c(NA, NA, 2, 3, 4, 5))
+  expect_identical(.Call(ichimoku_wmin, as.numeric(1:6), 3L), c(NA, NA, 1, 2, 3, 4))
+  expect_identical(.Call(ichimoku_wmax, as.numeric(1:6), 3L), c(NA, NA, 3, 4, 5, 6))
+  expect_identical(.Call(ichimoku_wmean, as.numeric(1:6), 3L), c(NA, NA, 2, 3, 4, 5))
 })

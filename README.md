@@ -1,13 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ichimoku <img src="man/figures/logo.png" alt="ichimoku logo" align="right" />
+# ichimoku <a href="https://shikokuchuo.net/ichimoku/" alt="ichimoku"><img src="man/figures/logo.png" alt="ichimoku logo" align="right" /></a>
 
 <!-- badges: start -->
 
 [![CRAN
-Status](https://www.r-pkg.org/badges/version/ichimoku?color=0b800e)](https://CRAN.R-project.org/package=ichimoku)
-[![r-universe](https://shikokuchuo.r-universe.dev/badges/ichimoku?color=6bd54f)](https://shikokuchuo.r-universe.dev/)
+Status](https://www.r-pkg.org/badges/version/ichimoku?color=00008b)](https://CRAN.R-project.org/package=ichimoku)
+[![r-universe](https://shikokuchuo.r-universe.dev/badges/ichimoku?color=a4d1eb)](https://shikokuchuo.r-universe.dev/)
 [![R-CMD-check](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/shikokuchuo/ichimoku/branch/main/graph/badge.svg)](https://app.codecov.io/gh/shikokuchuo/ichimoku)
@@ -42,25 +42,16 @@ Or the latest development version from rOpenSci R-universe:
 install.packages("ichimoku", repos = "https://shikokuchuo.r-universe.dev")
 ```
 
-Or the latest development version from the Github source:
-
-``` r
-remotes::install_github("shikokuchuo/ichimoku")
-```
-
 ## Example
-
-Load package and sample price data:
 
 ``` r
 library(ichimoku)
-TKR <- sample_ohlc_data
 ```
 
 Simply `ichimoku()` and `plot()`:
 
 ``` r
-cloud <- ichimoku(TKR)
+cloud <- ichimoku(sample_ohlc_data, ticker = "TKR")
 plot(cloud, window = "2020-05/")
 ```
 
@@ -177,7 +168,7 @@ no kenkyuu]*. Tokyo, Japan: Toushi Radar.
 entity unaffiliated with the ichimoku package.
 
 Gao, C. (2021), *ichimoku: Visualization and Tools for Ichimoku Kinko
-Hyo Strategies*. R package version 1.2.5,
+Hyo Strategies*. R package version 1.3.0,
 <https://CRAN.R-project.org/package=ichimoku>.
 
 –
