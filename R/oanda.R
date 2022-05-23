@@ -118,15 +118,16 @@ oanda <- function(instrument,
       output <- missing(quietly) || !isTRUE(quietly)
       list <- vector(mode = "list", length = requests)
       for (i in seq_len(requests)) {
-        if (output) cat("\rPerforming request [", rep(".", i), rep(" ", requests - i), "]", sep = "")
+        if (output) cat("\rPerforming request [", rep(".", i), rep(" ", requests - i), "]",
+                        file = stdout(), sep = "")
         list[[i]] <- getPrices(instrument = instrument, granularity = granularity,
                                from = strftime(bounds[i], format = "%Y-%m-%dT%H:%M:%S"),
                                to = strftime(bounds[i + 1L], format = "%Y-%m-%dT%H:%M:%S"),
                                price = price, server = server, apikey = apikey)
       }
-      if (output) cat("\nMerging data partitions... ")
+      if (output) cat("\nMerging data partitions... ", file = stdout())
       df <- do.call(df_merge, list)
-      if (output) cat("complete")
+      if (output) cat("complete\n", file = stdout())
       }
 
     } else {
@@ -178,19 +179,22 @@ getPrices <- function(instrument, granularity, count, from, to, price, server,
                     "User-Agent" = .user_agent)
   resp <- curl_fetch_memory(url = url, handle = handle)
 
-  resp$status_code == 200L || stop("server code ", resp$status_code, " - ",
-                                   parse_json(rawToChar(resp$content)), call. = FALSE)
+  .subset2(resp, "status_code") == 200L || stop("server code ",
+                                                .subset2(resp, "status_code"), " - ",
+                                                parse_json(rawToChar(.subset2(resp, "content"))),
+                                                call. = FALSE)
 
-  hdate <- strsplit(rawToChar(resp$headers), "date: | GMT", perl = TRUE)[[1L]][2L]
+  hdate <- strsplit(rawToChar(.subset2(resp, "headers")), "date: | GMT", perl = TRUE)[[1L]][2L]
   timestamp <- as.POSIXct.POSIXlt(strptime(hdate, format = "%a, %d %b %Y %H:%M:%S", tz = "UTC"))
   ptype <- switch(price, M = "mid", B = "bid", A = "ask")
 
   !missing(.validate) && .validate == FALSE && {
-    data <- `storage.mode<-`(unlist(parse_json(rawToChar(resp$content))[["candles"]][[1L]][[ptype]]), "double")
+    data <- .subset2(.subset2(.subset2(parse_json(rawToChar(.subset2(resp, "content"))), "candles"), 1L), ptype)
+    data <- `storage.mode<-`(unlist(data), "double")
     return(c(t = unclass(timestamp), data))
   }
 
-  data <- do.call(rbind, parse_json(rawToChar(resp$content))[["candles"]])
+  data <- do.call(rbind, .subset2(parse_json(rawToChar(.subset2(resp, "content"))), "candles"))
   time <- as.POSIXlt.POSIXct(unlist(data[, "time", drop = FALSE]))
   if (granularity == "D") {
     keep <- .subset2(time, "wday") %in% 0:4
@@ -338,8 +342,8 @@ oanda_stream <- function(instrument, display = 7L, limit, server, apikey) {
     }
     end <- dim(data)[1L]
     start <- max(1L, end - display + 1L)
-    cat("\014")
-    message("Streaming data... Press 'Esc' to return")
+    cat("\f", file = stdout())
+    message("Streaming data... 'Esc' or 'Ctrl+c' to return")
     print.data.frame(data[start:end, ])
   })
 
@@ -416,7 +420,7 @@ oanda_chart <- function(instrument,
   instrument <- sub("-", "_", toupper(force(instrument)), fixed = TRUE)
   granularity <- match.arg(granularity)
   price <- match.arg(price)
-  theme <- match.arg(theme)
+  if (length(theme) != 12L) theme <- match.arg(theme)
   type <- match.arg(type)
   server <- if (missing(server)) do_$getServer() else match.arg(server, c("practice", "live"))
   if (missing(apikey)) apikey <- do_$getKey(server = server)
@@ -456,10 +460,10 @@ oanda_chart <- function(instrument,
                     price = price, server = server, apikey = apikey, .validate = TRUE)
   xlen <- dim(data)[1L]
 
-  message("Chart updating every ", refresh, " secs in graphical device... Press 'Esc' to return")
+  message("Chart updating every ", refresh, " secs in graphical device... 'Esc' or 'Ctrl+c' to return")
   on.exit(expr = return(invisible(pdata)))
   if (!missing(limit) && is.numeric(limit)) setTimeLimit(elapsed = limit, transient = TRUE)
-  while (TRUE) {
+  repeat {
     pdata <- create_data(.ichimoku(data, periods = periods, ...), type = type)[minlen:(xlen + p2 - 1L), ]
     subtitle <- paste(instrument, ptype, "price [", .subset2(data, "close")[xlen],
                       "] at", attr(data, "timestamp"), "| Chart:", ctype,
@@ -491,6 +495,8 @@ oanda_chart <- function(instrument,
 #' @param count [default 300] the number of periods to return, from 100 to 800.
 #'     Note that fewer periods are actually shown on the chart to ensure a full
 #'     cloud is always displayed.
+#' @param theme [default 'original'] with alternative choices of 'conceptual',
+#'     'dark', 'fresh', 'mono', or 'solarized'.
 #' @param new.process [default FALSE] if TRUE, will start the shiny session in a
 #'     new R process, unblocking the current process and allowing continued use
 #'     of the R console.
@@ -544,8 +550,8 @@ oanda_studio <- function(instrument = "USD_JPY",
       mc <- match.call()
       mc[["new.process"]] <- NULL
       cmd <- switch(.subset2(.Platform, "OS.type"),
-                    unix = paste0(R.home("bin"), "/Rscript"),
-                    windows = paste0(R.home("bin"), "/Rscript.exe"))
+                    unix = file.path(R.home("bin"), "Rscript"),
+                    windows = file.path(R.home("bin"), "Rscript.exe"))
       return(system2(command = cmd, args = c("-e", shQuote(paste0("ichimoku::", deparse(mc)))),
                      stdout = NULL, stderr = NULL, wait = FALSE))
     }
@@ -881,7 +887,7 @@ oanda_view <- function(market = c("allfx", "bonds", "commodities", "fx", "metals
   xlen <- length(sel)
   data <- vector(mode = "list", length = xlen)
   for (i in seq_len(xlen)) {
-    cat("\rRetrieving ", market, " [", rep(".", i), rep(" ", xlen - i), "]", sep = "")
+    cat("\rRetrieving ", market, " [", rep(".", i), rep(" ", xlen - i), "]", file = stdout(), sep = "")
     data[[i]] <- getPrices(instrument = sel[i], granularity = "D", count = 1, price = price,
                            server = server, apikey = apikey, .validate = FALSE)
   }
@@ -902,7 +908,7 @@ oanda_view <- function(market = c("allfx", "bonds", "commodities", "fx", "metals
          timestamp = time)
   )
 
-  cat("\n", format.POSIXct(time), " / ", price, "\n", sep = "")
+  cat("\n", format.POSIXct(time), " / ", price, "\n", file = stdout(), sep = "")
   print(df)
 
 }
@@ -942,7 +948,7 @@ oanda_quote <- function(instrument, price = c("M", "B", "A"), server, apikey) {
   pctchg <- round(100 * (data[["c"]] / data[["o"]] - 1), digits = 4L)
   cat(instrument, format.POSIXct(.Call(ichimoku_psxct, data[["t"]])),
       "open:", data[["o"]], " high:", data[["h"]], " low:", data[["l"]],
-      " last:\u001b[7m", data[["c"]], "\u001b[27m %chg:", pctchg, price)
+      " last:\u001b[7m", data[["c"]], "\u001b[27m %chg:", pctchg, price, file = stdout())
 
 }
 
@@ -991,15 +997,17 @@ oanda_positions <- function(instrument, time, server, apikey) {
                     "User-Agent" = .user_agent)
   resp <- curl_fetch_memory(url = url, handle = handle)
 
-  resp$status_code == 200L || stop("server code ", resp$status_code, " - ",
-                                   parse_json(rawToChar(resp$content)), call. = FALSE)
+  .subset2(resp, "status_code") == 200L || stop("server code ",
+                                                .subset2(resp, "status_code"), " - ",
+                                                parse_json(rawToChar(.subset2(resp, "content"))),
+                                                call. = FALSE)
 
-  data <- parse_json(rawToChar(resp$content))[["positionBook"]]
-  currentprice <- as.numeric(data[["price"]])
-  timestamp <- .Call(ichimoku_psxct, data[["unixTime"]])
-  bucketwidth <- as.numeric(data[["bucketWidth"]])
+  data <- .subset2(parse_json(rawToChar(.subset2(resp, "content"))), "positionBook")
+  currentprice <- as.numeric(.subset2(data, "price"))
+  timestamp <- .Call(ichimoku_psxct, .subset2(data, "unixTime"))
+  bucketwidth <- as.numeric(.subset2(data, "bucketWidth"))
 
-  buckets <- `storage.mode<-`(do.call(rbind, data[["buckets"]]), "double")
+  buckets <- `storage.mode<-`(do.call(rbind, .subset2(data, "buckets")), "double")
   df <- `attributes<-`(list(buckets[, "price"],
                             buckets[, "longCountPercent"],
                             buckets[, "shortCountPercent"]),
@@ -1087,15 +1095,17 @@ oanda_orders <- function(instrument, time, server, apikey) {
                     "User-Agent" = .user_agent)
   resp <- curl_fetch_memory(url = url, handle = handle)
 
-  resp$status_code == 200L || stop("server code ", resp$status_code, " - ",
-                                   parse_json(rawToChar(resp$content)), call. = FALSE)
+  .subset2(resp, "status_code") == 200L || stop("server code ",
+                                                .subset2(resp, "status_code"), " - ",
+                                                parse_json(rawToChar(.subset2(resp, "content"))),
+                                                call. = FALSE)
 
-  data <- parse_json(rawToChar(resp$content))[["orderBook"]]
-  currentprice <- as.numeric(data[["price"]])
-  timestamp <- .Call(ichimoku_psxct, data[["unixTime"]])
-  bucketwidth <- as.numeric(data[["bucketWidth"]])
+  data <- .subset2(parse_json(rawToChar(.subset2(resp, "content"))), "orderBook")
+  currentprice <- as.numeric(.subset2(data, "price"))
+  timestamp <- .Call(ichimoku_psxct, .subset2(data, "unixTime"))
+  bucketwidth <- as.numeric(.subset2(data, "bucketWidth"))
 
-  buckets <- `storage.mode<-`(do.call(rbind, data[["buckets"]]), "double")
+  buckets <- `storage.mode<-`(do.call(rbind, .subset2(data, "buckets")), "double")
   xlen <- dim(buckets)[1L]
   df <- `attributes<-`(list(buckets[, "price"],
                             buckets[, "longCountPercent"],
