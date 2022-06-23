@@ -59,7 +59,7 @@ cloud2 <- ichimoku(ichimoku(cbind(index, core), ticker = attr(cloud, "ticker")))
 identical(cloud, cloud2)
 
 ## ----plot2--------------------------------------------------------------------
-plot(cloud, window = "2020-05/", ticker = "一目均衡表", subtitle = "Sample Data Series")
+plot(cloud, window = "2020-05/", ticker = "SYM (JSE)", subtitle = "Sample Data Series")
 
 ## ----usertheme, eval=FALSE----------------------------------------------------
 #  c("#d9d9d9", "#d7d7d7", "#d1d1d1", "#737373", "#1f1f1f", "#b8b8b8", "#1a1a1a", "#1a1a1a", "#1a1a1a", "#ffffff", "#333333", "#1a1a1a")
