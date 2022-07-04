@@ -1,3 +1,9 @@
+# ichimoku 1.3.2.9000
+
+#### Updates:
+
+* Fixed regression in 1.3.2 which caused `iplot()` to fail.
+
 # ichimoku 1.3.2
 
 #### Updates:
