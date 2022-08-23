@@ -120,13 +120,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -709,7 +716,7 @@ changing the periodicity of the data.</p>
 <div id="plot" class="section level3">
 <h3>plot()</h3>
 <p>ichimoku offers the choice of 2 visualization systems: static
-(default) and interactive (reactive charts using R Shiny).</p>
+(default) and interactive (reactive charts using Shiny).</p>
 <div id="static-plots" class="section level4">
 <h4>1. Static Plots</h4>
 <p>The default plot function produces static plots, which have the
@@ -825,9 +832,8 @@ original ichimoku object (invisibly).</p>
 </div>
 <div id="interactive-plots" class="section level4">
 <h4>2. Interactive Plots</h4>
-<p>Interactive plots require the ‘shiny’ package to be installed.</p>
 <p>To produce an interactive plot, use ichimoku’s <code>iplot()</code>
-function, which launches an R Shiny app.</p>
+function, which launches a Shiny app.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For an interactive plot:</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">iplot</span>(cloud)</span></code></pre></div>
 <p>Further arguments are optional as full customisation of the chart can
@@ -1036,6 +1042,7 @@ preserved)</li>
 dependencies:</p>
 <ul>
 <li>ggplot2 - for graphics and visualization</li>
+<li>shiny - for interactive and live visualizations</li>
 <li>tibble - for enhanced printing of ichimoku objects</li>
 <li>xts, zoo - for enhanced time series methods</li>
 <li>curl, jsonlite - for interfacing with external APIs</li>
@@ -1044,15 +1051,12 @@ dependencies:</p>
 <ul>
 <li>keyring - for saving API keys in the system credential store</li>
 <li>openssl - for verifying the data integrity of archived objects</li>
-<li>shiny - for interactive and live visualizations</li>
 </ul>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
 <p>Sasaki, H. 佐々木 英信 (1996), <em>一目均衡表の研究 [ichimoku
 kinkouhyou no kenkyuu]</em>. Tokyo, Japan: Toushi Radar.</p>
-<p>Gao, C. (2021), <em>ichimoku: Visualization and Tools for Ichimoku
-Kinko Hyo Strategies</em>. R package version 1.3.3, <a href="https://CRAN.R-project.org/package=ichimoku" class="uri">https://CRAN.R-project.org/package=ichimoku</a>.</p>
 <hr />
 </div>
 

@@ -74,10 +74,6 @@
 #'     OANDA' and 'fxTrade' are trademarks owned by OANDA Corporation, an entity
 #'     unaffiliated with the ichimoku package, its authors or copyright holders.
 #'
-#'     Gao, C. (2021), \emph{ichimoku: Visualization and Tools for Ichimoku
-#'     Kinko Hyo Strategies}. R package version 1.3.3,
-#'     \url{https://CRAN.R-project.org/package=ichimoku}.
-#'
 #' @useDynLib ichimoku, .registration = TRUE, .fixes = "ichimoku"
 #' @importFrom curl curl curl_fetch_memory handle_setheaders new_handle
 #' @importFrom ggplot2 aes autoplot coord_flip element_blank element_line
@@ -87,6 +83,11 @@
 #'     scale_x_continuous scale_y_continuous Stat StatIdentity theme theme_grey
 #'     %+replace%
 #' @importFrom jsonlite parse_json stream_in
+#' @importFrom shiny checkboxInput column downloadButton downloadHandler HTML
+#'     fillPage fluidPage fluidRow hoverOpts invalidateLater isolate
+#'     numericInput observeEvent plotOutput reactive reactiveVal renderPlot
+#'     renderUI req selectInput shinyApp sliderInput stopApp tags textInput
+#'     uiOutput wellPanel
 #' @importFrom stats na.omit sd
 #' @importFrom tibble as_tibble tbl_sum
 #' @importFrom utils str
@@ -98,6 +99,8 @@
 NULL
 
 utils::globalVariables(".data")
+
+.user_agent <- "r-ichimoku/1.3.4"
 
 .onLoad <- function(libname, pkgname) {
   do_ <- do_()

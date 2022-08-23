@@ -1,4 +1,11 @@
-# ichimoku 1.3.2.9000
+# ichimoku 1.3.4
+
+#### Updates:
+
+* Moves 'shiny' to 'imports' from 'suggests'.
+* Updates internal OANDA instruments list.
+
+# ichimoku 1.3.3
 
 #### Updates:
 

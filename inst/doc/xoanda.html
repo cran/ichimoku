@@ -120,13 +120,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -779,78 +786,77 @@ actually available for your account type and/or country/region.</p>
 #&gt; 52     GBP_ZAR         GBP/ZAR CURRENCY
 #&gt; 53    HK33_HKD    Hong Kong 33      CFD
 #&gt; 54     HKD_JPY         HKD/JPY CURRENCY
-#&gt; 55    IN50_USD        India 50      CFD
-#&gt; 56   JP225_USD       Japan 225      CFD
-#&gt; 57  JP225Y_JPY Japan 225 (JPY)      CFD
-#&gt; 58  NAS100_USD      US Nas 100      CFD
-#&gt; 59  NATGAS_USD     Natural Gas      CFD
-#&gt; 60    NL25_EUR  Netherlands 25      CFD
-#&gt; 61     NZD_CAD         NZD/CAD CURRENCY
-#&gt; 62     NZD_CHF         NZD/CHF CURRENCY
-#&gt; 63     NZD_HKD         NZD/HKD CURRENCY
-#&gt; 64     NZD_JPY         NZD/JPY CURRENCY
-#&gt; 65     NZD_SGD         NZD/SGD CURRENCY
-#&gt; 66     NZD_USD         NZD/USD CURRENCY
-#&gt; 67    SG30_SGD    Singapore 30      CFD
-#&gt; 68     SGD_CHF         SGD/CHF CURRENCY
-#&gt; 69     SGD_JPY         SGD/JPY CURRENCY
-#&gt; 70   SOYBN_USD        Soybeans      CFD
-#&gt; 71  SPX500_USD      US SPX 500      CFD
-#&gt; 72   SUGAR_USD           Sugar      CFD
-#&gt; 73     TRY_JPY         TRY/JPY CURRENCY
-#&gt; 74    TWIX_USD    Taiwan Index      CFD
-#&gt; 75   UK100_GBP          UK 100      CFD
-#&gt; 76  UK10YB_GBP     UK 10Y Gilt      CFD
-#&gt; 77  US2000_USD    US Russ 2000      CFD
-#&gt; 78    US30_USD   US Wall St 30      CFD
-#&gt; 79  USB02Y_USD    US 2Y T-Note      CFD
-#&gt; 80  USB05Y_USD    US 5Y T-Note      CFD
-#&gt; 81  USB10Y_USD   US 10Y T-Note      CFD
-#&gt; 82  USB30Y_USD       US T-Bond      CFD
-#&gt; 83     USD_CAD         USD/CAD CURRENCY
-#&gt; 84     USD_CHF         USD/CHF CURRENCY
-#&gt; 85     USD_CNH         USD/CNH CURRENCY
-#&gt; 86     USD_CZK         USD/CZK CURRENCY
-#&gt; 87     USD_DKK         USD/DKK CURRENCY
-#&gt; 88     USD_HKD         USD/HKD CURRENCY
-#&gt; 89     USD_HUF         USD/HUF CURRENCY
-#&gt; 90     USD_INR         USD/INR CURRENCY
-#&gt; 91     USD_JPY         USD/JPY CURRENCY
-#&gt; 92     USD_MXN         USD/MXN CURRENCY
-#&gt; 93     USD_NOK         USD/NOK CURRENCY
-#&gt; 94     USD_PLN         USD/PLN CURRENCY
-#&gt; 95     USD_SEK         USD/SEK CURRENCY
-#&gt; 96     USD_SGD         USD/SGD CURRENCY
-#&gt; 97     USD_THB         USD/THB CURRENCY
-#&gt; 98     USD_TRY         USD/TRY CURRENCY
-#&gt; 99     USD_ZAR         USD/ZAR CURRENCY
-#&gt; 100  WHEAT_USD           Wheat      CFD
-#&gt; 101  WTICO_USD  West Texas Oil      CFD
-#&gt; 102    XAG_AUD      Silver/AUD    METAL
-#&gt; 103    XAG_CAD      Silver/CAD    METAL
-#&gt; 104    XAG_CHF      Silver/CHF    METAL
-#&gt; 105    XAG_EUR      Silver/EUR    METAL
-#&gt; 106    XAG_GBP      Silver/GBP    METAL
-#&gt; 107    XAG_HKD      Silver/HKD    METAL
-#&gt; 108    XAG_JPY      Silver/JPY    METAL
-#&gt; 109    XAG_NZD      Silver/NZD    METAL
-#&gt; 110    XAG_SGD      Silver/SGD    METAL
-#&gt; 111    XAG_USD          Silver    METAL
-#&gt; 112    XAU_AUD        Gold/AUD    METAL
-#&gt; 113    XAU_CAD        Gold/CAD    METAL
-#&gt; 114    XAU_CHF        Gold/CHF    METAL
-#&gt; 115    XAU_EUR        Gold/EUR    METAL
-#&gt; 116    XAU_GBP        Gold/GBP    METAL
-#&gt; 117    XAU_HKD        Gold/HKD    METAL
-#&gt; 118    XAU_JPY        Gold/JPY    METAL
-#&gt; 119    XAU_NZD        Gold/NZD    METAL
-#&gt; 120    XAU_SGD        Gold/SGD    METAL
-#&gt; 121    XAU_USD            Gold    METAL
-#&gt; 122    XAU_XAG     Gold/Silver    METAL
-#&gt; 123    XCU_USD          Copper      CFD
-#&gt; 124    XPD_USD       Palladium      CFD
-#&gt; 125    XPT_USD        Platinum      CFD
-#&gt; 126    ZAR_JPY         ZAR/JPY CURRENCY</code></pre>
+#&gt; 55   JP225_USD       Japan 225      CFD
+#&gt; 56  JP225Y_JPY Japan 225 (JPY)      CFD
+#&gt; 57  NAS100_USD      US Nas 100      CFD
+#&gt; 58  NATGAS_USD     Natural Gas      CFD
+#&gt; 59    NL25_EUR  Netherlands 25      CFD
+#&gt; 60     NZD_CAD         NZD/CAD CURRENCY
+#&gt; 61     NZD_CHF         NZD/CHF CURRENCY
+#&gt; 62     NZD_HKD         NZD/HKD CURRENCY
+#&gt; 63     NZD_JPY         NZD/JPY CURRENCY
+#&gt; 64     NZD_SGD         NZD/SGD CURRENCY
+#&gt; 65     NZD_USD         NZD/USD CURRENCY
+#&gt; 66    SG30_SGD    Singapore 30      CFD
+#&gt; 67     SGD_CHF         SGD/CHF CURRENCY
+#&gt; 68     SGD_JPY         SGD/JPY CURRENCY
+#&gt; 69   SOYBN_USD        Soybeans      CFD
+#&gt; 70  SPX500_USD      US SPX 500      CFD
+#&gt; 71   SUGAR_USD           Sugar      CFD
+#&gt; 72     TRY_JPY         TRY/JPY CURRENCY
+#&gt; 73    TWIX_USD    Taiwan Index      CFD
+#&gt; 74   UK100_GBP          UK 100      CFD
+#&gt; 75  UK10YB_GBP     UK 10Y Gilt      CFD
+#&gt; 76  US2000_USD    US Russ 2000      CFD
+#&gt; 77    US30_USD   US Wall St 30      CFD
+#&gt; 78  USB02Y_USD    US 2Y T-Note      CFD
+#&gt; 79  USB05Y_USD    US 5Y T-Note      CFD
+#&gt; 80  USB10Y_USD   US 10Y T-Note      CFD
+#&gt; 81  USB30Y_USD       US T-Bond      CFD
+#&gt; 82     USD_CAD         USD/CAD CURRENCY
+#&gt; 83     USD_CHF         USD/CHF CURRENCY
+#&gt; 84     USD_CNH         USD/CNH CURRENCY
+#&gt; 85     USD_CZK         USD/CZK CURRENCY
+#&gt; 86     USD_DKK         USD/DKK CURRENCY
+#&gt; 87     USD_HKD         USD/HKD CURRENCY
+#&gt; 88     USD_HUF         USD/HUF CURRENCY
+#&gt; 89     USD_INR         USD/INR CURRENCY
+#&gt; 90     USD_JPY         USD/JPY CURRENCY
+#&gt; 91     USD_MXN         USD/MXN CURRENCY
+#&gt; 92     USD_NOK         USD/NOK CURRENCY
+#&gt; 93     USD_PLN         USD/PLN CURRENCY
+#&gt; 94     USD_SEK         USD/SEK CURRENCY
+#&gt; 95     USD_SGD         USD/SGD CURRENCY
+#&gt; 96     USD_THB         USD/THB CURRENCY
+#&gt; 97     USD_TRY         USD/TRY CURRENCY
+#&gt; 98     USD_ZAR         USD/ZAR CURRENCY
+#&gt; 99   WHEAT_USD           Wheat      CFD
+#&gt; 100  WTICO_USD  West Texas Oil      CFD
+#&gt; 101    XAG_AUD      Silver/AUD    METAL
+#&gt; 102    XAG_CAD      Silver/CAD    METAL
+#&gt; 103    XAG_CHF      Silver/CHF    METAL
+#&gt; 104    XAG_EUR      Silver/EUR    METAL
+#&gt; 105    XAG_GBP      Silver/GBP    METAL
+#&gt; 106    XAG_HKD      Silver/HKD    METAL
+#&gt; 107    XAG_JPY      Silver/JPY    METAL
+#&gt; 108    XAG_NZD      Silver/NZD    METAL
+#&gt; 109    XAG_SGD      Silver/SGD    METAL
+#&gt; 110    XAG_USD          Silver    METAL
+#&gt; 111    XAU_AUD        Gold/AUD    METAL
+#&gt; 112    XAU_CAD        Gold/CAD    METAL
+#&gt; 113    XAU_CHF        Gold/CHF    METAL
+#&gt; 114    XAU_EUR        Gold/EUR    METAL
+#&gt; 115    XAU_GBP        Gold/GBP    METAL
+#&gt; 116    XAU_HKD        Gold/HKD    METAL
+#&gt; 117    XAU_JPY        Gold/JPY    METAL
+#&gt; 118    XAU_NZD        Gold/NZD    METAL
+#&gt; 119    XAU_SGD        Gold/SGD    METAL
+#&gt; 120    XAU_USD            Gold    METAL
+#&gt; 121    XAU_XAG     Gold/Silver    METAL
+#&gt; 122    XCU_USD          Copper      CFD
+#&gt; 123    XPD_USD       Palladium      CFD
+#&gt; 124    XPT_USD        Platinum      CFD
+#&gt; 125    ZAR_JPY         ZAR/JPY CURRENCY</code></pre>
 <p>Note: the above table is saved as internal package data and used as a
 fallback if the instruments API call fails. In such a case, a warning is
 issued once per session as subsequent calls will return the cached
@@ -877,8 +883,6 @@ variables.</p>
 entity unaffiliated with the ichimoku package, its authors or copyright
 holders.</p>
 <p>OANDA fxTrade API developer website: <a href="https://developer.oanda.com/" class="uri">https://developer.oanda.com/</a>.</p>
-<p>Gao, C. (2021), <em>ichimoku: Visualization and Tools for Ichimoku
-Kinko Hyo Strategies</em>. R package version 1.3.3, <a href="https://CRAN.R-project.org/package=ichimoku" class="uri">https://CRAN.R-project.org/package=ichimoku</a>.</p>
 <hr />
 </div>
 
