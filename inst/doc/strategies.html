@@ -422,32 +422,30 @@ short trades. Hence please take care, for example, when inverting ‘long
 while close &gt; tenkan’ to ‘short while close &lt; tenkan’, this should
 actually be formulated as ‘short while tenkan &gt; close’.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>strat <span class="ot">&lt;-</span> <span class="fu">strat</span>(cloud, <span class="at">c1 =</span> <span class="st">&quot;cloudB&quot;</span>, <span class="at">c2 =</span> <span class="st">&quot;kijun&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(strat[<span class="dv">100</span><span class="sc">:</span><span class="dv">105</span>, ], <span class="at">plot =</span> <span class="cn">FALSE</span>, <span class="at">width =</span> <span class="dv">180</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ichimoku object: more() to display more rows, look() to inspect attributes</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   index                open  high   low close    cd tenkan  kijun senkouA</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;dttm&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 2020-05-20 00:00:00 122.7 122.7 121.8 122.4    -1 121.05 123.9   125.68</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 2020-05-21 00:00:00 122.4 122.6 121.1 121.9    -1 121.05 123.9   125.68</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 2020-05-22 00:00:00 121.9 123.7 121.7 123.3     1 121.4  123.8   125.68</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 2020-05-25 00:00:00 123.3 124   123   124       1 121.55 123.8   125.68</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 2020-05-26 00:00:00 124.2 124.3 124   124.1    -1 121.75 123.65  125.98</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 2020-05-27 00:00:00 124.1 124.1 123.4 123.9    -1 122.25 123.65  126.48</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   senkouB chikou cloudT cloudB  cond  posn   txn      logret     slogret</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1  124.85  135.1 125.68 124.85     1     1     0 -0.0024480  -0.0024480 </span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2  124.85  135.6 125.68 124.85     1     1     0 -0.0040933  -0.0040933 </span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3  124.85  134.5 125.68 124.85     1     1     0  0.011419    0.011419  </span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4  124.85  134.3 125.68 124.85     1     1     0  0.0072728   0.0072728 </span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5  124.85  135.9 125.98 124.85     1     1     0 -0.00080548 -0.00080548</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6  124.85  135.2 126.48 124.85     1     1     0 -0.0016129  -0.0016129 </span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;           ret        sret</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;       &lt;dbl&gt;</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 -0.0024450  -0.0024450 </span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 -0.0040850  -0.0040850 </span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3  0.011485    0.011485  </span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4  0.0072993   0.0072993 </span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 -0.00080515 -0.00080515</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 -0.0016116  -0.0016116</span></span></code></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(strat[<span class="dv">100</span><span class="sc">:</span><span class="dv">105</span>, ], <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  ichimoku   [ more() to display more rows | look() to inspect attributes ]</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   object</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             open  high   low close cd tenkan  kijun senkouA senkouB chikou</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20 122.7 122.7 121.8 122.4 -1 121.05 123.90 125.675  124.85  135.1</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-21 122.4 122.6 121.1 121.9 -1 121.05 123.90 125.675  124.85  135.6</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-22 121.9 123.7 121.7 123.3  1 121.40 123.80 125.675  124.85  134.5</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-25 123.3 124.0 123.0 124.0  1 121.55 123.80 125.675  124.85  134.3</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-26 124.2 124.3 124.0 124.1 -1 121.75 123.65 125.975  124.85  135.9</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-27 124.1 124.1 123.4 123.9 -1 122.25 123.65 126.475  124.85  135.2</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             cloudT cloudB cond posn txn        logret       slogret</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20 125.675 124.85    1    1   0 -0.0024479816 -0.0024479816</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-21 125.675 124.85    1    1   0 -0.0040933336 -0.0040933336</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-22 125.675 124.85    1    1   0  0.0114193737  0.0114193737</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-25 125.675 124.85    1    1   0  0.0072727593  0.0072727593</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-26 125.975 124.85    1    1   0 -0.0008054773 -0.0008054773</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-27 126.475 124.85    1    1   0 -0.0016129036 -0.0016129036</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                     ret         sret</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-20 -0.002444988 -0.002444988</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-21 -0.004084967 -0.004084967</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-22  0.011484824  0.011484824</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-25  0.007299270  0.007299270</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-26 -0.000805153 -0.000805153</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2020-05-27 -0.001611604 -0.001611604</span></span></code></pre></div>
 <p>The use of <code>strat()</code> returns an augmented ichimoku object.
 The printout above of a slice of the object (rows 100 to 105) shows that
 the following columns are appended:</p>

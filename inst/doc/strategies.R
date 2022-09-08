@@ -15,7 +15,7 @@ cloud <- ichimoku(TKR)
 
 ## ----strat--------------------------------------------------------------------
 strat <- strat(cloud, c1 = "cloudB", c2 = "kijun")
-print(strat[100:105, ], plot = FALSE, width = 180)
+print(strat[100:105, ], plot = FALSE)
 
 ## ----summary------------------------------------------------------------------
 summary(strat)

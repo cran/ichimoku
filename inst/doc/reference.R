@@ -26,7 +26,7 @@ head(TKR)
 ## ----ichimoku-----------------------------------------------------------------
 cloud <- ichimoku(TKR)
 
-print(cloud, plot = FALSE)
+print(cloud, plot = FALSE, width = 180)
 
 ## ----ichimokustr--------------------------------------------------------------
 str(cloud)
