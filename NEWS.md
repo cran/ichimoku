@@ -1,3 +1,9 @@
+# ichimoku 1.4.1
+
+#### Updates:
+
+* Internal performance enhancements.
+
 # ichimoku 1.4.0
 
 #### New features:
