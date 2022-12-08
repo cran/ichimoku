@@ -14,9 +14,9 @@ library(ichimoku)
 
 ## ----pipe, eval = FALSE-------------------------------------------------------
 #  # Using R 4.1's new pipe operator:
-#  quantmod::getSymbols("C") |> ichimoku() |> plot()
+#  oanda("USD_JPY") |> ichimoku() |> plot()
 #  # Or equally using the 'magrittr' pipe:
-#  quantmod::getSymbols("C") %>% ichimoku() %>% plot()
+#  oanda("USD_JPY") %>% ichimoku() %>% plot()
 
 ## ----viewdata-----------------------------------------------------------------
 # Sample OHLC price data is assigned to data frame 'TKR':

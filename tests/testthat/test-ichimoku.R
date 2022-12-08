@@ -1,9 +1,9 @@
 cloud <- ichimoku(sample_ohlc_data, ticker = "TKR", periods = c(9, 26, 52))
 strat <- strat(cloud)
-xtsobject <- xts::xts(sample_ohlc_data[, -1L], order.by = sample_ohlc_data[, 1L])
+xtsobject <- xts::xts(sample_ohlc_data[, -1L], order.by = sample_ohlc_data[, 1L], tzone = "")
 mobject <- as.matrix(xtsobject)
 charobject <- "sample_ohlc_data"
-data <- sample_ohlc_data
+sdata <- `attr<-`(sample_ohlc_data[, -6L], "source", "testsuite")
 
 test_that("ichimoku object specification correct", {
   expect_s3_class(expect_s3_class(expect_s3_class(cloud, "ichimoku"), "xts"), "zoo")
@@ -17,24 +17,25 @@ test_that("ichimoku object specification correct", {
 test_that("ichimoku methods correct", {
   expect_identical(cloud, ichimoku(cloud))
   expect_identical(cloud, ichimoku(xtsobject, ticker = "TKR"))
-#  expect_identical(cloud, ichimoku(mobject, ticker = "TKR"))
+  expect_identical(cloud[1:60, ], ichimoku(mobject, ticker = "TKR")[1:60, ])
   expect_identical(cloud, ichimoku(charobject, ticker = "TKR"))
   expect_identical(ichimoku(sample_ohlc_data), ichimoku(charobject))
 })
 
 test_that("ichimoku handles higher frequency data", {
-  data$time <- seq.POSIXt(from = .POSIXct(1), by = "1 hour", length.out = 256)
-  expect_s3_class(cloudhf <- ichimoku(data), "ichimoku")
+  sdata$time <- seq.POSIXt(from = .POSIXct(1), by = "1 hour", length.out = 256)
+  expect_s3_class(cloudhf <- ichimoku(sdata, keep.data = TRUE), "ichimoku")
   expect_s3_class(autoplot(cloudhf), "ggplot")
   expect_output(str(cloudhf))
   expect_output(summary(cloudhf))
+  expect_identical(cloudhf, `attr<-`(.ichimoku(sdata), "source", "testsuite"))
 })
 
 test_that("ichimoku keep.data ok", {
   expect_identical(dim(ichimoku(sample_ohlc_data, keep.data = TRUE)), c(281L, 13L))
   expect_identical(dim(ichimoku(xtsobject, keep.data = TRUE)), c(281L, 13L))
   expect_identical(dim(ichimoku(mobject, keep.data = TRUE)), c(281L, 13L))
-  expect_identical(cloud,ichimoku(cloud, keep.data = TRUE))
+  expect_identical(cloud, ichimoku(cloud, keep.data = TRUE))
   expect_identical(ichimoku(cloud, ticker = "ticker"), ichimoku(cloud, ticker = "ticker", keep.data = TRUE))
 })
 
@@ -45,14 +46,14 @@ test_that("ichimoku error handling ok", {
   expect_error(ichimoku(recursive, regexp = "character"))
   expect_error(ichimoku("recursive", regexp = "character"))
   expect_error(ichimoku(data.frame(date = letters)), regexp = "not convertible")
-#  expect_error(ichimoku(sample_ohlc_data[-1L]), regexp = "valid date-time")
+  expect_error(ichimoku(sample_ohlc_data[-1L]), regexp = "valid date-time")
   expect_error(ichimoku(sample_ohlc_data[1L, ]), regexp = "longer than")
   expect_error(ichimoku(sample_ohlc_data[, -5L]), regexp = "price data not found")
-  data$time <- 1:256
-#  expect_warning(ichimoku(data), regexp = "numeric values in column")
-  data$time <- NULL
-  attr(data, "row.names") <- 2:257
-#  expect_warning(ichimoku(data), regexp = "numeric row names")
+  sdata$time <- 1:256
+  expect_warning(ichimoku(sdata), regexp = "numeric values in column")
+  sdata$time <- NULL
+  attr(sdata, "row.names") <- 2:257
+  expect_warning(ichimoku(sdata), regexp = "numeric row names")
   expect_warning(ichimoku(sample_ohlc_data[, -3L]), regexp = "pseudo-OHLC data")
   expect_warning(ichimoku(sample_ohlc_data[, -2L]), regexp = "Opening prices")
   expect_warning(ichimoku(sample_ohlc_data, periods = c(8, 15)), regexp = "cloud periods invalid")
@@ -117,4 +118,5 @@ test_that("is.ichimoku ok", {
 test_that(".ichimoku ok", {
   expect_identical(.ichimoku(sample_ohlc_data, ticker = "TKR"), cloud)
   expect_identical(attr(.ichimoku(sample_ohlc_data), "ticker"), "sample_ohlc_data")
+  expect_warning(.ichimoku(sample_ohlc_data, periods = c(9L, 26L, -52L)), regexp = "cloud periods invalid")
 })

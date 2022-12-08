@@ -180,7 +180,8 @@ create_data <- function(object, window, type) {
 plot_ichimoku <- function(object, ticker, subtitle, theme, strat, type, custom, ...) {
 
   data <- .Call(ichimoku_df, object)
-  missing(data) && stop("attempt to plot incomplete (partial or subset) ichimoku object", call. = FALSE)
+  missing(data) &&
+    stop("attempt to plot incomplete (partial or subset) ichimoku object", call. = FALSE)
   if (length(theme) != 12L) {
     pal <- .ichimoku_themes[[theme]]
   } else if (is.atomic(theme)) {
@@ -190,10 +191,10 @@ plot_ichimoku <- function(object, ticker, subtitle, theme, strat, type, custom, 
     stop("user-defined 'theme' should be supplied as an atomic vector", call. = FALSE)
   }
   showstrat <- hasStrat(object) && isTRUE(strat)
-  if (missing(ticker)) ticker <- attr(object, "ticker")
-  if (missing(subtitle)) {
+  if (missing(ticker))
+    ticker <- attr(object, "ticker")
+  if (missing(subtitle))
     subtitle <- if (showstrat) paste0("Strategy: ", attr(object, "strat")["Strategy", ][[1L]])
-  }
 
   if (type == "line" || type == "bar") {
     if (missing(custom)) {
@@ -243,13 +244,13 @@ plot_ichimoku <- function(object, ticker, subtitle, theme, strat, type, custom, 
     layer(geom = GeomSegment, mapping = aes(xend = .data$idx, y = .data$high,
                                             yend = .data$low, colour = .data$cd),
           stat = StatIdentity, position = PositionIdentity,
-          params = list(na.rm = TRUE, size = 0.3),
+          params = list(na.rm = TRUE, linewidth = 0.3),
           inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
     layer(geom = GeomRect, mapping = aes(xmin = .data$idx - 0.4, xmax = .data$idx + 0.4,
                                          ymin = .data$open, ymax = .data$close,
                                          colour = .data$cd, fill = .data$cd),
           stat = StatIdentity, position = PositionIdentity,
-          params = list(na.rm = TRUE, size = 0.3),
+          params = list(na.rm = TRUE, linewidth = 0.3),
           inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
     layer(geom = GeomLine, mapping = aes(y = .data$chikou),
           stat = StatIdentity, position = PositionIdentity,
@@ -275,7 +276,7 @@ plot_ichimoku <- function(object, ticker, subtitle, theme, strat, type, custom, 
             mapping = aes(xmin = .data$idx - 0.4, xmax = .data$idx + 0.4,
                           ymin = 0, ymax = .data[[cols]], ext = .data$low),
             stat = StatBar, position = PositionIdentity,
-            params = list(na.rm = TRUE, colour = pal[7L], fill = pal[10L], size = 0.3, alpha = 0.8),
+            params = list(na.rm = TRUE, colour = pal[7L], fill = pal[10L], linewidth = 0.3, alpha = 0.8),
             inherit.aes = TRUE, check.aes = FALSE, check.param = FALSE),
     scale_x_continuous(breaks = breaks_ichimoku(object), labels = labels_ichimoku(object)),
     scale_y_continuous(breaks = function(x) pretty.default(x, n = 9L)),
@@ -361,11 +362,11 @@ labels_ichimoku <- function(object) {
 theme_ichimoku_light <- function() {
   theme_grey() %+replace%
     theme(panel.background = element_rect(fill = "white", colour = NA),
-          panel.border = element_rect(fill = NA, colour = "grey70", size = rel(1)),
+          panel.border = element_rect(fill = NA, colour = "grey70", linewidth = rel(1)),
           panel.grid = element_line(colour = "grey87"),
-          panel.grid.major = element_line(size = rel(0.5)),
-          panel.grid.minor = element_line(size = rel(0.25)),
-          axis.ticks = element_line(colour = "grey70", size = rel(0.5)),
+          panel.grid.major = element_line(linewidth = rel(0.5)),
+          panel.grid.minor = element_line(linewidth = rel(0.25)),
+          axis.ticks = element_line(colour = "grey70", linewidth = rel(0.5)),
           legend.position = "none",
           strip.background = element_rect(fill = "grey70", colour = NA),
           strip.text = element_text(colour = "white", size = rel(0.8), margin = margin(4.4, 4.4, 4.4, 4.4)),
@@ -389,7 +390,7 @@ theme_ichimoku_dark <- function() {
           panel.grid = element_line(colour = "#073642"),
           axis.title = element_text(colour = "#eee8d5"),
           axis.text = element_text(colour = "#eee8d5"),
-          axis.ticks = element_line(colour = "#eee8d5", size = rel(0.5)))
+          axis.ticks = element_line(colour = "#eee8d5", linewidth = rel(0.5)))
 }
 
 #' StatIndicator

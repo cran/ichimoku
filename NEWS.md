@@ -1,3 +1,19 @@
+# ichimoku 1.4.3
+
+#### New features:
+ 
+* `mlgrid()` gains the argument 'func' for supplying a named list of functions for custom calculations (for advanced use). Also, when choosing type z-score, now returns the 'means' and 'sdevs' used to standardise the grid as attributes.
+
+#### Updates:
+
+* Improved performance and reliability of `oanda_stream()`. Returned dataframe no longer contains the column 'type', which was always 'PRICE'.
+* Fixes to `ichimoku()` validation code for POSIXct handling changes in upcoming R 4.3.0.
+* No longer attempts to plot a single row (subset) ichimoku object.
+* API changes in 'ggplot2' require version >= 3.4.0; R version requirement consequently raised to 3.3.
+* Improved stability of OANDA functions requiring nanonext >= 0.7.0.
+* Switch from 'jsonlite' to 'RcppSimdJson' for JSON parsing.
+* Internal performance enhancements.
+
 # ichimoku 1.4.2
 
 #### Updates:

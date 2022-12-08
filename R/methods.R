@@ -48,9 +48,9 @@
 print.ichimoku <- function(x, plot = TRUE, rows = 26L, ...) {
 
   cat(" ichimoku   [ more() to display more rows | look() to inspect attributes ]\n  object\n", file = stdout())
-  dim2 <- attr(x, "dim")[2L]
-  NextMethod(max = if (length(dim2)) dim2 * rows, ...)
-  if (length(dim2) && dim2 >= 12L && (missing(plot) || isTRUE(plot))) plot.ichimoku(x, ...)
+  dim <- attr(x, "dim")
+  NextMethod(max = if (length(dim)) dim[2L] * rows, ...)
+  if ((missing(plot) || isTRUE(plot)) && length(dim) && dim[1L] > 1L && dim[2L] >= 12L) plot.ichimoku(x, ...)
   invisible(x)
 
 }
@@ -107,9 +107,10 @@ str.ichimoku <- function (object, ...) {
         paste0(periodicity, " secs")
       },
       "\n  ticker:", attr(object, "ticker"), "\n", file = stdout())
-  if (hasStrat(object)) cat("  strat: [strategy: ", attr(object, "strat")["Strategy", ][[1L]],
-                            " w/ direction: ", attr(object, "strat")["Direction", ][[1L]], "... ]\n",
-                            file = stdout(), sep = "")
+  if (hasStrat(object))
+    cat("  strat: [strategy: ", attr(object, "strat")["Strategy", ][[1L]],
+        " w/ direction: ", attr(object, "strat")["Direction", ][[1L]], "... ]\n",
+        file = stdout(), sep = "")
 
 }
 
@@ -147,15 +148,15 @@ summary.ichimoku <- function(object, strat = TRUE, ...) {
 
   if (hasStrat(object) && (missing(strat) || isTRUE(strat))) {
     summary <- NULL
-    tryCatch(attr(object, "strat")["Strategy", ],
-             error = function(e) cat(summary <<- "ichimoku object with invalid strategy"), file = stdout())
+    tryCatch(attr(object, "strat")["Strategy", ], error = function(e)
+      cat(summary <<- "ichimoku object with invalid strategy"), file = stdout())
     if (is.null(summary)) attr(object, "strat") else invisible(summary)
 
   } else {
     (!is.integer(periods <- attr(object, "periods")) || length(periods) != 3L ||
        !is.numeric(periodicity <- attr(object, "periodicity")) || length(periodicity) != 1L) && {
          cat(summary <- "ichimoku object with invalid attributes", file = stdout())
-      return(invisible(summary))
+         return(invisible(summary))
        }
     dims <- attr(object, "dim")
     if (is.null(dims)) {
@@ -226,15 +227,8 @@ summary.ichimoku <- function(object, strat = TRUE, ...) {
 #' @method as.data.frame ichimoku
 #' @export
 #'
-as.data.frame.ichimoku <- function(x, row.names, optional, keep.attrs, ...) {
-
-  if (missing(keep.attrs) || !isTRUE(keep.attrs)) {
-    .Call(ichimoku_tbl, x, 0L)
-  } else {
-    .Call(ichimoku_tbl, x, 1L)
-  }
-
-}
+as.data.frame.ichimoku <- function(x, row.names, optional, keep.attrs, ...)
+  .Call(ichimoku_tbl, x, !missing(keep.attrs) && isTRUE(keep.attrs))
 
 #' @name coredata
 #' @rdname coredata.ichimoku

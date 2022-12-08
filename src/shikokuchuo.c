@@ -115,7 +115,7 @@ SEXP _wmean(const SEXP x, const SEXP window) {
 SEXP _look(const SEXP x) {
 
   SEXP ax, y;
-  PROTECT(y = Rf_ScalarInteger(0));
+  PROTECT(y = Rf_allocVector(RAWSXP, 0));
 
   for (ax = ATTRIB(x); ax != R_NilValue; ax = CDR(ax)) {
     if (TAG(ax) != R_NamesSymbol && TAG(ax) != R_RowNamesSymbol &&
@@ -132,12 +132,7 @@ SEXP _look(const SEXP x) {
 // class object as POSIXct (in-place)
 SEXP _psxct(SEXP x) {
 
-  SEXP posix = PROTECT(Rf_allocVector(STRSXP, 2));
-  SET_STRING_ELT(posix, 0, Rf_mkChar("POSIXct"));
-  SET_STRING_ELT(posix, 1, Rf_mkChar("POSIXt"));
-  Rf_classgets(x, posix);
-
-  UNPROTECT(1);
+  Rf_classgets(x, ichimoku_tclass);
   return x;
 
 }
@@ -145,7 +140,7 @@ SEXP _psxct(SEXP x) {
 // ichimoku to data.frame converter
 SEXP _tbl(const SEXP x, const SEXP type) {
 
-  const int keepattrs = INTEGER(type)[0];
+  const int keepattrs = LOGICAL(type)[0];
 
   R_xlen_t xlen = 0, xwid = 0;
   const SEXP dims = Rf_getAttrib(x, R_DimSymbol);
@@ -164,10 +159,9 @@ SEXP _tbl(const SEXP x, const SEXP type) {
 
   PROTECT(tbl = Rf_allocVector(VECSXP, xwid + 1));
 
-  PROTECT(index = Rf_shallow_duplicate(Rf_getAttrib(x, xts_IndexSymbol)));
-  index = _psxct(index);
+  index = Rf_shallow_duplicate(Rf_getAttrib(x, xts_IndexSymbol));
+  Rf_classgets(index, ichimoku_tclass);
   SET_VECTOR_ELT(tbl, 0, index);
-  UNPROTECT(1);
 
   double *src = REAL(x);
   size_t vecsize = xlen * sizeof(double);
@@ -270,10 +264,9 @@ SEXP _df(const SEXP x) {
 
   PROTECT(df = Rf_allocVector(VECSXP, xwid + 2));
 
-  PROTECT(index = Rf_shallow_duplicate(Rf_getAttrib(x, xts_IndexSymbol)));
-  index = _psxct(index);
+  index = Rf_shallow_duplicate(Rf_getAttrib(x, xts_IndexSymbol));
+  Rf_classgets(index, ichimoku_tclass);
   SET_VECTOR_ELT(df, 0, index);
-  UNPROTECT(1);
 
   double *src = REAL(x);
   size_t vecsize = xlen * sizeof(double);
@@ -321,10 +314,8 @@ SEXP _df(const SEXP x) {
 // ichimoku index method
 SEXP _index(SEXP x) {
 
-  SEXP idx;
-  PROTECT(idx = Rf_shallow_duplicate(Rf_getAttrib(x, xts_IndexSymbol)));
-  idx = _psxct(idx);
-  UNPROTECT(1);
+  SEXP idx = Rf_shallow_duplicate(Rf_getAttrib(x, xts_IndexSymbol));
+  Rf_classgets(idx, ichimoku_tclass);
   return idx;
 
 }

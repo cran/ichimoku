@@ -111,7 +111,8 @@ autostrat <- function(x,
   } else {
     lgrid <- grid[, -1L]
     w <- length(lgrid)
-    pairs <- expand.grid(seq_len(w), seq_len(w), KEEP.OUT.ATTRS = FALSE)[-grid_dup(w, omit.id = TRUE), ]
+    pairs <- expand.grid(seq_len(w), seq_len(w),
+                         KEEP.OUT.ATTRS = FALSE)[-grid_dup(w, omit.id = TRUE), ]
     mgrid <- do.call(cbind,
                      mapply(function(a, b) {
                        xlen <- dim(lgrid)[1L]
@@ -178,13 +179,20 @@ autostrat <- function(x,
 #'     the format of returned object.
 #' @param unique [default TRUE] to return only unique combinations of c1 and c2.
 #'     Set to FALSE to return both c1 > c2 and c2 > c1.
+#' @param func [default list()] (for advanced use only) a named list of
+#'     functions which take 2 arguments: 'core' and 'xlen', the coredata matrix
+#'     of the ichimoku object and the number of observations, respectively. Each
+#'     function must return a vector of length 'xlen', and these are included in
+#'     the grid.
 #'
 #' @return A data.frame or matrix in a 'tidy' format with one observation per
 #'     row and one feature per column with the target 'y' as the first column
 #'     (unless set to 'none').
 #'
 #'     The 'y' and 'k' parameters, trade direction and grid type are set as
-#'     attributes. To view these, use \code{\link{look}} on the returned object.
+#'     attributes, with 'means' and 'sdevs' also populated for type 'z-score' to
+#'     return the mean and standard deviation for each column. To view these,
+#'     use \code{\link{look}} on the returned object.
 #'
 #' @details The date-time index corresponds to when the indicator condition is
 #'     met at the close for that period. The return is the k-period return
@@ -222,7 +230,8 @@ mlgrid <- function(x,
                    dir = c("long", "short"),
                    type = c("boolean", "numeric", "z-score"),
                    format = c("dataframe", "matrix"),
-                   unique = TRUE) {
+                   unique = TRUE,
+                   func = list()) {
 
   is.ichimoku(x) || stop("mlgrid() only works on ichimoku objects", call. = FALSE)
   y <- match.arg(y)
@@ -247,23 +256,14 @@ mlgrid <- function(x,
     if (y == "ret") target <- exp(target) - 1
   }
 
-  cols <- c("chikou", "close", "high", "low", "tenkan", "kijun", "senkouA", "senkouB", "cloudT", "cloudB")
-  pairs <- list(character(37L), character(37L))
-  ctr <- 0L
-  for (i in 1:7) {
-    colm <- cols[(i + 1L):10]
-    for (j in seq_along(colm)) {
-      colsi <- cols[i]
-      colmj <- colm[j]
-      if(colsi == "close" && (colmj == "high" || colmj == "low") ||
-         colsi == "high" && colmj == "low") next
-      ctr <- ctr + 1L
-      pairs[[1]][ctr] <- colsi
-      pairs[[2]][ctr] <- colmj
-      if (colsi == "senkouA" && colmj == "senkouB") break
-    }
-  }
+  pairs <- .mlgrid_pairs
   veclist <- writeVectors(x = core, pairs = pairs, p2 = p2, xlen = xlen, type = type)
+
+  if (length(func)) {
+    for (i in seq_along(func))
+      func[[i]] <- func[[i]](core, xlen)
+    veclist <- c(func, veclist)
+  }
 
   if (!missing(unique) && !isTRUE(unique)) {
     pairs <- list(pairs[[2L]], pairs[[1L]])
@@ -287,6 +287,8 @@ mlgrid <- function(x,
     sdevs <- unname(apply(grid, 2, sd))
     grid <- t((t(grid) - means) / sdevs)
     if (y != "none") grid <- cbind(idx, grid)
+  } else {
+    means <- sdevs <- NA
   }
 
   switch(format,
@@ -298,7 +300,9 @@ mlgrid <- function(x,
                              k = k,
                              direction = dir,
                              type = type,
-                             ticker = attr(x, "ticker"))),
+                             ticker = attr(x, "ticker"),
+                             means = means,
+                             sdevs = sdevs)),
          `attributes<-`(grid,
                         list(dim = attr(grid, "dim"),
                              dimnames = attr(grid, "dimnames"),
@@ -306,7 +310,9 @@ mlgrid <- function(x,
                              k = k,
                              direction = dir,
                              type = type,
-                             ticker = attr(x, "ticker")))
+                             ticker = attr(x, "ticker"),
+                             means = means,
+                             sdevs = sdevs))
   )
 
 }
@@ -429,7 +435,9 @@ relative <- function(x, order = FALSE, signif = 0.2, quietly) {
                          periodicity = attr(x, "periodicity"),
                          ticker = attr(x, "ticker"))
 
-  if (missing(quietly) || !isTRUE(quietly)) cat("Latest:", time, "| n:", xlen, "\n", file = stdout())
+  if (missing(quietly) || !isTRUE(quietly))
+    cat("Latest:", time, "| n:", xlen, "\n", file = stdout())
+
   df
 
 }

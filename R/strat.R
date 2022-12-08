@@ -126,14 +126,14 @@ strat <- function(x,
   offset <- (p2 - 1L) * (c1 == "chikou" || c2 == "chikou")
 
   if (missing(c3) || missing(c4) || (identical(c1, c3) && identical(c2, c4))) {
-    strategy <- paste0(c1, " > ", c2)
+    strategy <- sprintf("%s > %s", c1, c2)
     cond <- c(rep(NA, offset), (core[, c1] > core[, c2])[1:(xlen - offset)])
     posn <- c(NA, cond[1:(end - 1L)], rep(NA, p2))
 
   } else if (type == 2) {
     c3 <- match.arg(c3)
     c4 <- match.arg(c4)
-    strategy <- paste0(c1, " > ", c2, " & ", c3, " > ", c4)
+    strategy <- sprintf("%s > %s & %s > %s", c1, c2, c3, c4)
 
     s1cond <- c(rep(NA, offset), (core[, c1] > core[, c2])[1:(xlen - offset)])
     s1posn <- c(NA, s1cond[1:(end - 1L)], rep(NA, p2))
@@ -146,7 +146,7 @@ strat <- function(x,
   } else if (type == 3) {
     c3 <- match.arg(c3)
     c4 <- match.arg(c4)
-    strategy <- paste0(c1, " > ", c2, " x ", c3, " > ", c4)
+    strategy <- sprintf("%s > %s x %s > %s", c1, c2, c3, c4)
 
     cond <- c(rep(NA, offset), (core[, c1] > core[, c2])[1:(xlen - offset)])
     s1posn <- c(NA, cond[1:(end - 1L)], rep(NA, p2))
@@ -181,7 +181,8 @@ strat <- function(x,
   txn <- c(NA, diff(posn))
   txn[posn == 1 & is.na(txn)] <- 1
   if (posn[end] == 1) txn[end + 1L] <- -1
-  sum(txn, na.rm = TRUE) == 0 || stop("Calculation error - please check validity of data", call. = FALSE)
+  sum(txn, na.rm = TRUE) == 0 ||
+    stop("Calculation error - please check validity of data", call. = FALSE)
 
   logret <- c(diff(log(core[, "open"])), NA)
   if (dir == "short") logret <- -logret
@@ -316,7 +317,8 @@ stratcombine <- function(s1, s2) {
   txn <- c(NA, diff(posn))
   txn[posn == 1 & is.na(txn)] <- 1
   if (posn[end] == 1) txn[end + 1L] <- -1
-  sum(txn, na.rm = TRUE) == 0 || stop("Calculation error - please check validity of data", call. = FALSE)
+  sum(txn, na.rm = TRUE) == 0 ||
+    stop("Calculation error - please check validity of data", call. = FALSE)
   slogret <- s1[, "logret"] * posn
 
   s1$cond <- cond

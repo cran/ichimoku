@@ -466,12 +466,12 @@ vignette</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ichimoku can create clouds directly from OANDA data, for example:</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>cloud <span class="ot">&lt;-</span> <span class="fu">ichimoku</span>(<span class="fu">oanda</span>(<span class="st">&quot;USD_JPY&quot;</span>))</span></code></pre></div>
 <p>ichimoku has been designed to be fully pipeable and interfaces well
-with other R packages that return financial data. An example is shown
-below.</p>
+with other R packages that return financial data, or indeed the OANDA
+functions from the package itself:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using R 4.1&#39;s new pipe operator:</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>quantmod<span class="sc">::</span><span class="fu">getSymbols</span>(<span class="st">&quot;C&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">ichimoku</span>() <span class="sc">|&gt;</span> <span class="fu">plot</span>()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">oanda</span>(<span class="st">&quot;USD_JPY&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">ichimoku</span>() <span class="sc">|&gt;</span> <span class="fu">plot</span>()</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Or equally using the &#39;magrittr&#39; pipe:</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>quantmod<span class="sc">::</span><span class="fu">getSymbols</span>(<span class="st">&quot;C&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">ichimoku</span>() <span class="sc">%&gt;%</span> <span class="fu">plot</span>()</span></code></pre></div>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">oanda</span>(<span class="st">&quot;USD_JPY&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">ichimoku</span>() <span class="sc">%&gt;%</span> <span class="fu">plot</span>()</span></code></pre></div>
 <div id="input-data-requirements" class="section level4">
 <h4>Input data requirements</h4>
 <p>The requirement on the input data is minimal: a series of prices
@@ -1072,7 +1072,7 @@ dependencies:</p>
 <li>xts, zoo - for enhanced time series methods</li>
 <li>nanonext - for interfacing with external APIs and verifying the data
 integrity of archived objects</li>
-<li>jsonlite - for parsing data received from external APIs.</li>
+<li>RcppSimdJson - for parsing data received from external APIs</li>
 </ul>
 <p>Optional (enables additional features):</p>
 <ul>
