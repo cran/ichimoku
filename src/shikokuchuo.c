@@ -33,7 +33,7 @@ SEXP ichimoku_klass;
 SEXP ichimoku_tclass;
 SEXP ichimoku_tzone;
 
-typedef SEXP (*linked_fun) (SEXP x);
+typedef SEXP (*c_fun) (SEXP);
 
 // rolling max over a window
 SEXP _wmax(const SEXP x, const SEXP window) {
@@ -337,7 +337,7 @@ SEXP _coredata(const SEXP x) {
 
 // imports from the package 'xts'
 SEXP _naomit(SEXP x) {
-  linked_fun fun = (linked_fun) R_GetCCallable("xts", "na_omit_xts");
+  c_fun fun = (c_fun) R_GetCCallable("xts", "na_omit_xts");
   return fun(x);
 }
 

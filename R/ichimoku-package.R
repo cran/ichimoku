@@ -87,7 +87,7 @@
 #'     numericInput observeEvent plotOutput reactive reactiveVal renderPlot
 #'     renderUI req selectInput shinyApp sliderInput stopApp tags textInput
 #'     uiOutput wellPanel
-#' @importFrom RcppSimdJson fparse
+#' @importFrom RcppSimdJson is_valid_json
 #' @importFrom stats na.omit sd
 #' @importFrom utils packageVersion str
 #' @importFrom xts endpoints
@@ -101,6 +101,8 @@ NULL
   do_ <- do_()
   do_ <<- do_
 }
+
+deserialize_json <- RcppSimdJson:::.deserialize_json
 
 .deconstruct <- function(...) {
   identical(parent.env(parent.frame()), getNamespace("ichimoku")) || return(invisible())
