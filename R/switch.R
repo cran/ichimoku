@@ -41,6 +41,17 @@
 #'
 oanda_switch <- function() do_$switchServer()
 
+#' Deserialize JSON
+#'
+#' Deserialize JSON using RcppSimdJson with no simplification of the result.
+#'
+#' @return A list.
+#'
+#' @noRd
+#'
+deserialize_json <- function(x, query = NULL)
+  .Call(ichimoku_deserialize_json, x, query)
+
 #' ichimoku Internal Functions
 #'
 #' Encapsulates package internal functions in a common environment.
@@ -110,8 +121,8 @@ do_ <- function() {
         resp <- ncurl(url, convert = FALSE, follow = TRUE,
                       headers = c("Authorization" = paste0("Bearer ", apikey),
                                   "User-Agent" = .user_agent))
-        parsed <- deserialize_json(.subset2(resp, "raw"), simplify_to = 3L)
-        length(.subset2(parsed, "accounts")) || stop(parsed, call. = FALSE)
+        parsed <- deserialize_json(resp[["raw"]])
+        length(parsed[["accounts"]]) || stop(parsed, call. = FALSE)
         account <<- parsed[["accounts"]][[1L]][["id"]]
       }
       invisible(account)
@@ -126,20 +137,20 @@ do_ <- function() {
         resp <- ncurl(url, convert = FALSE, follow = TRUE,
                       headers = c("Authorization" = paste0("Bearer ", apikey),
                                   "User-Agent" = .user_agent))
-        if (.subset2(resp, "status") != 200L) {
+        if (resp[["status"]] != 200L) {
           resp <- ncurl(url, convert = FALSE, follow = TRUE,
                         headers = c("Authorization" = paste0("Bearer ", apikey),
                                     "User-Agent" = .user_agent))
         }
-        parsed <- deserialize_json(.subset2(resp, "raw"), simplify_to = 3L)
-        length(.subset2(parsed, "instruments")) || {
+        parsed <- deserialize_json(resp[["raw"]])
+        length(parsed[["instruments"]]) || {
           warning(parsed,
                   "\nInstruments list could not be retrieved - falling back to internal data",
                   "\nCached instruments list will be used for the rest of the session", call. = FALSE)
           instruments <<- .oanda_instruments
           return(instruments)
         }
-        vec <- unlist(.subset2(parsed, "instruments"))
+        vec <- unlist(parsed[["instruments"]])
         cnames <- attr(vec, "names")
         vec <- unname(vec)
         name <- vec[cnames == "name"]
@@ -158,4 +169,3 @@ do_ <- function() {
   )
 
 }
-

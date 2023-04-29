@@ -1,3 +1,10 @@
+# ichimoku 1.4.6
+
+#### Updates:
+
+* Switches to the C interface provided by 'RcppSimdJson' for JSON parsing.
+* Internal performance enhancements.
+
 # ichimoku 1.4.5
 
 #### Updates:

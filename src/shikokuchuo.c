@@ -32,8 +32,11 @@ SEXP ichimoku_TickerSymbol;
 SEXP ichimoku_klass;
 SEXP ichimoku_tclass;
 SEXP ichimoku_tzone;
+SEXP ichimoku_int_zero;
+SEXP ichimoku_int_three;
 
 typedef SEXP (*c_fun) (SEXP);
+typedef SEXP (*rcpp_fun) (SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 // rolling max over a window
 SEXP _wmax(const SEXP x, const SEXP window) {
@@ -116,17 +119,20 @@ SEXP _wmean(const SEXP x, const SEXP window) {
 SEXP _look(const SEXP x) {
 
   SEXP ax, y;
-  PROTECT(y = Rf_allocVector(RAWSXP, 0));
+  PROTECT_INDEX pxi;
+  PROTECT_WITH_INDEX(y = R_NilValue, &pxi);
 
   for (ax = ATTRIB(x); ax != R_NilValue; ax = CDR(ax)) {
     if (TAG(ax) != R_NamesSymbol && TAG(ax) != R_RowNamesSymbol &&
         TAG(ax) != R_DimSymbol && TAG(ax) != R_DimNamesSymbol &&
-        TAG(ax) != R_ClassSymbol && TAG(ax) != xts_IndexSymbol)
-      Rf_setAttrib(y, TAG(ax), CAR(ax));
+        TAG(ax) != R_ClassSymbol && TAG(ax) != xts_IndexSymbol) {
+      REPROTECT(y = Rf_cons(CAR(ax), y), pxi);
+      SET_TAG(y, TAG(ax));
+    }
   }
 
   UNPROTECT(1);
-  return ATTRIB(y);
+  return y;
 
 }
 
@@ -259,7 +265,7 @@ SEXP _df(const SEXP x) {
   }
 
   if (xwid < 12)
-    return(R_MissingArg);
+    return R_MissingArg;
 
   SEXP df, index, idchar, dn2, names, rownames;
 
@@ -341,6 +347,12 @@ SEXP _naomit(SEXP x) {
   return fun(x);
 }
 
+// imports from the package 'RcppSimdJson'
+SEXP _deserialize_json(SEXP json, SEXP query) {
+  rcpp_fun fun = (rcpp_fun) R_GetCCallable("RcppSimdJson", "_RcppSimdJson_.deserialize_json");
+  return fun(json, query, R_NilValue, R_NilValue, R_NilValue, Rf_ScalarLogical(0), R_NilValue, Rf_ScalarLogical(0), R_NilValue, ichimoku_int_three, ichimoku_int_zero, ichimoku_int_zero);
+}
+
 // package level registrations
 static void RegisterSymbols(void) {
   xts_IndexSymbol = Rf_install("index");
@@ -360,9 +372,13 @@ static void PreserveObjects(void) {
   SET_STRING_ELT(ichimoku_tclass, 0, Rf_mkChar("POSIXct"));
   SET_STRING_ELT(ichimoku_tclass, 1, Rf_mkChar("POSIXt"));
   R_PreserveObject(ichimoku_tzone = Rf_mkString(""));
+  R_PreserveObject(ichimoku_int_zero = Rf_ScalarInteger(0));
+  R_PreserveObject(ichimoku_int_three = Rf_ScalarInteger(3));
 }
 
 static void ReleaseObjects(void) {
+  R_ReleaseObject(ichimoku_int_three);
+  R_ReleaseObject(ichimoku_int_zero);
   R_ReleaseObject(ichimoku_tzone);
   R_ReleaseObject(ichimoku_tclass);
   R_ReleaseObject(ichimoku_klass);
@@ -372,6 +388,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"_coredata", (DL_FUNC) &_coredata, 1},
   {"_create", (DL_FUNC) &_create, 6},
   {"_df", (DL_FUNC) &_df, 1},
+  {"_deserialize_json", (DL_FUNC) &_deserialize_json, 2},
   {"_index", (DL_FUNC) &_index, 1},
   {"_look", (DL_FUNC) &_look, 1},
   {"_naomit", (DL_FUNC) &_naomit, 1},
@@ -394,4 +411,3 @@ void attribute_visible R_init_ichimoku(DllInfo* dll) {
 void attribute_visible R_unload_ichimoku(DllInfo *info) {
   ReleaseObjects();
 }
-
