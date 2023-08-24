@@ -1,3 +1,10 @@
+# ichimoku 1.4.8
+
+#### Updates:
+
+* Ensures compatibility with upcoming {nanonext} releases.
+* Internal performance enhancements.
+
 # ichimoku 1.4.7
 
 #### Updates:

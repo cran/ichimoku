@@ -1,7 +1,7 @@
 Package: ichimoku
 Type: Package
 Title: Visualization and Tools for Ichimoku Kinko Hyo Strategies
-Version: 1.4.7
+Version: 1.4.8
 Description: An implementation of 'Ichimoku Kinko Hyo', also commonly known as
     'cloud charts'. Static and interactive visualizations with tools for
     creating, backtesting and development of quantitative 'ichimoku' strategies.
@@ -36,9 +36,9 @@ VignetteBuilder: knitr
 RoxygenNote: 7.2.3
 Config/testthat/edition: 3
 NeedsCompilation: yes
-Packaged: 2023-08-07 11:36:35 UTC; cg334
+Packaged: 2023-08-24 22:01:17 UTC; cg334
 Author: Charlie Gao [aut, cre] (<https://orcid.org/0000-0002-0750-061X>),
   Hibiki AI Limited [cph]
 Maintainer: Charlie Gao <charlie.gao@shikokuchuo.net>
 Repository: CRAN
-Date/Publication: 2023-08-07 11:50:02 UTC
+Date/Publication: 2023-08-24 22:20:09 UTC

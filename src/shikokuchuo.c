@@ -45,7 +45,7 @@ twelve_fun jsofun;
 SEXP _wmax(const SEXP x, const SEXP window) {
 
   const double *px = REAL(x);
-  const R_xlen_t n = Rf_xlength(x);
+  const R_xlen_t n = XLENGTH(x);
   const int w = INTEGER(window)[0], w1 = w - 1;
 
   SEXP vec = Rf_allocVector(REALSXP, n);
@@ -71,7 +71,7 @@ SEXP _wmax(const SEXP x, const SEXP window) {
 SEXP _wmin(const SEXP x, const SEXP window) {
 
   const double *px = REAL(x);
-  const R_xlen_t n = Rf_xlength(x);
+  const R_xlen_t n = XLENGTH(x);
   const int w = INTEGER(window)[0], w1 = w - 1;
 
   SEXP vec = Rf_allocVector(REALSXP, n);
@@ -97,7 +97,7 @@ SEXP _wmin(const SEXP x, const SEXP window) {
 SEXP _wmean(const SEXP x, const SEXP window) {
 
   const double *px = REAL(x);
-  const R_xlen_t n = Rf_xlength(x);
+  const R_xlen_t n = XLENGTH(x);
   const int w = INTEGER(window)[0], w1 = w - 1;
 
   SEXP vec = Rf_allocVector(REALSXP, n);
@@ -178,19 +178,19 @@ SEXP _tbl(const SEXP x, const SEXP type) {
   for (R_xlen_t j = 1; j <= xwid; j++) {
     SEXP vec = Rf_allocVector(REALSXP, xlen);
     SET_VECTOR_ELT(tbl, j, vec);
-    memcpy(REAL(vec), src, vecsize);
+    memcpy(STDVEC_DATAPTR(vec), src, vecsize);
     src += xlen;
   }
 
   PROTECT(dn2 = VECTOR_ELT(Rf_getAttrib(x, R_DimNamesSymbol), 1));
-  R_xlen_t dlen = Rf_xlength(dn2);
-  PROTECT(names = Rf_allocVector(STRSXP, dlen + 1));
-  SET_STRING_ELT(names, 0, Rf_mkCharLenCE("index", 5, CE_NATIVE));
+  R_xlen_t dlen = XLENGTH(dn2);
+  names = Rf_allocVector(STRSXP, dlen + 1);
+  Rf_namesgets(tbl, names);
+  SET_STRING_ELT(names, 0, Rf_mkChar("index"));
   for (R_xlen_t i = 0; i < dlen; i++) {
     SET_STRING_ELT(names, i + 1, STRING_ELT(dn2, i));
   }
-  Rf_namesgets(tbl, names);
-  UNPROTECT(2);
+  UNPROTECT(1);
 
   Rf_classgets(tbl, ichimoku_dfclass);
 
@@ -283,7 +283,7 @@ SEXP _df(const SEXP x) {
   for (R_xlen_t j = 1; j <= xwid; j++) {
     SEXP vec = Rf_allocVector(REALSXP, xlen);
     SET_VECTOR_ELT(df, j, vec);
-    memcpy(REAL(vec), src, vecsize);
+    memcpy(STDVEC_DATAPTR(vec), src, vecsize);
     src += xlen;
   }
 
@@ -291,15 +291,15 @@ SEXP _df(const SEXP x) {
   SET_VECTOR_ELT(df, 5, idchar);
 
   PROTECT(dn2 = VECTOR_ELT(Rf_getAttrib(x, R_DimNamesSymbol), 1));
-  R_xlen_t dlen = Rf_xlength(dn2);
-  PROTECT(names = Rf_allocVector(STRSXP, dlen + 2));
-  SET_STRING_ELT(names, 0, Rf_mkCharLenCE("index", 5, CE_NATIVE));
+  R_xlen_t dlen = XLENGTH(dn2);
+  names = Rf_allocVector(STRSXP, dlen + 2);
+  Rf_namesgets(df, names);
+  SET_STRING_ELT(names, 0, Rf_mkChar("index"));
   for (R_xlen_t i = 0; i < dlen; i++) {
     SET_STRING_ELT(names, i + 1, STRING_ELT(dn2, i));
   }
-  SET_STRING_ELT(names, dlen + 1, Rf_mkCharLenCE("idx", 3, CE_NATIVE));
-  Rf_namesgets(df, names);
-  UNPROTECT(2);
+  SET_STRING_ELT(names, dlen + 1, Rf_mkChar("idx"));
+  UNPROTECT(1);
 
   Rf_classgets(df, ichimoku_dfclass);
 
@@ -342,6 +342,11 @@ SEXP _coredata(const SEXP x) {
   UNPROTECT(1);
   return core;
 
+}
+
+// is.ichimoku
+SEXP _isichimoku(const SEXP x) {
+  return Rf_ScalarLogical(Rf_inherits(x, "ichimoku"));
 }
 
 // imports from the package 'xts'
@@ -393,6 +398,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"_df", (DL_FUNC) &_df, 1},
   {"_deserialize_json", (DL_FUNC) &_deserialize_json, 2},
   {"_index", (DL_FUNC) &_index, 1},
+  {"_isichimoku", (DL_FUNC) &_isichimoku, 1},
   {"_look", (DL_FUNC) &_look, 1},
   {"_naomit", (DL_FUNC) &_naomit, 1},
   {"_psxct", (DL_FUNC) &_psxct, 1},
