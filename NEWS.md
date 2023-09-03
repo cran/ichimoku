@@ -1,3 +1,8 @@
+# ichimoku 1.4.9
+
+* Internal performance enhancements.
+* Requires nanonext >= 0.10.0 and R >= 3.5.
+
 # ichimoku 1.4.8
 
 #### Updates:
