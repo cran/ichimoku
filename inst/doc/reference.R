@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -37,7 +37,7 @@ summary(cloud)
 ## ----ichimokupreserve---------------------------------------------------------
 kumo <- ichimoku(TKR, keep.data = TRUE)
 
-print(kumo[, "volume"], plot = FALSE)
+kumo[, "volume"]
 
 ## ----holidays, eval = FALSE---------------------------------------------------
 #  # Holidays can be specified directly via a vector of dates:
