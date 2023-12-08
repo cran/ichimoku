@@ -25,8 +25,9 @@ this has been changed by \code{\link{oanda_switch}}.}
 
 \item{apikey}{(optional) string containing the OANDA fxTrade API key (personal
 access token), or function that returns this string. Does not need to be
-specified if already stored by oanda_set_key(). Can also be entered
-interactively if not specified.}
+specified if already stored as the environment variable
+\code{OANDA_API_KEY} or by \code{\link{oanda_set_key}}. Can also be
+entered interactively if not specified.}
 }
 \value{
 Returned invisibly, a dataframe containing the data for the streaming
@@ -39,8 +40,9 @@ Stream live price and liquidity data for major currencies, metals,
     Streaming API.
 }
 \details{
-This function connects to the OANDA fxTrade Streaming API. Use the
-    'Esc' key to stop the stream and return the session data.
+This function connects to the OANDA fxTrade Streaming API. Send an
+    interrupt using the 'Esc' key or 'Ctrl+c' to stop the stream and return
+    the session data.
 
     Note: only messages of type 'PRICE' are processed. Messages of type
     'HEARTBEAT' consisting of only a timestamp are discarded.

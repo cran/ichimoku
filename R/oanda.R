@@ -46,8 +46,9 @@
 #'     this has been changed by \code{\link{oanda_switch}}.
 #' @param apikey (optional) string containing the OANDA fxTrade API key (personal
 #'     access token), or function that returns this string. Does not need to be
-#'     specified if already stored by oanda_set_key(). Can also be entered
-#'     interactively if not specified.
+#'     specified if already stored as the environment variable
+#'     \code{OANDA_API_KEY} or by \code{\link{oanda_set_key}}. Can also be
+#'     entered interactively if not specified.
 #' @param quietly (optional) if set to TRUE, will suppress printing of auxiliary
 #'     output to the console and return quietly.
 #'
@@ -99,8 +100,11 @@ oanda <- function(instrument,
 
   if (missing(instrument) && interactive()) instrument <- readline("Enter instrument:")
   instrument <- sub("-", "_", toupper(force(instrument)), fixed = TRUE)
-  granularity <- match.arg(granularity)
-  price <- match.arg(price)
+  granularity <- match.arg(granularity, c("D", "W", "M",
+                                          "H12", "H8", "H6", "H4", "H3", "H2", "H1",
+                                          "M30", "M15", "M10", "M5", "M4", "M2", "M1",
+                                          "S30", "S15", "S10", "S5"))
+  price <- match.arg(price, c("M", "B", "A"))
   server <- if (missing(server)) do_$getServer() else match.arg(server, c("practice", "live"))
   if (missing(apikey)) apikey <- do_$getKey(server = server)
 
@@ -196,8 +200,7 @@ getPrices <- function(instrument, granularity, count = NULL, from = NULL,
                             `User-Agent` = .user_agent),
                 response = "date")
   resp[["status"]] == 200L ||
-    stop("status code ", resp[["status"]], " - ",
-         deserialize_json(resp[["data"]]), call. = FALSE)
+    stop("status code ", resp[["status"]], " - ", deserialize_json(resp[["data"]]), call. = FALSE)
   timestamp <- as.POSIXct.POSIXlt(strptime(resp[["headers"]][["date"]],
                                            format = "%a, %d %b %Y %H:%M:%S", tz = "UTC"))
   candles <- deserialize_json(resp[["data"]], query = "/candles")
@@ -274,8 +277,9 @@ getPrices <- function(instrument, granularity, count = NULL, from = NULL,
 #'     session on function exit. The latest rows of the dataframe are printed to
 #'     the console, as governed by the 'display' argument.
 #'
-#' @details This function connects to the OANDA fxTrade Streaming API. Use the
-#'     'Esc' key to stop the stream and return the session data.
+#' @details This function connects to the OANDA fxTrade Streaming API. Send an
+#'     interrupt using the 'Esc' key or 'Ctrl+c' to stop the stream and return
+#'     the session data.
 #'
 #'     Note: only messages of type 'PRICE' are processed. Messages of type
 #'     'HEARTBEAT' consisting of only a timestamp are discarded.
@@ -437,10 +441,13 @@ oanda_chart <- function(instrument,
 
   if (missing(instrument) && interactive()) instrument <- readline("Enter instrument:")
   instrument <- sub("-", "_", toupper(force(instrument)), fixed = TRUE)
-  granularity <- match.arg(granularity)
-  price <- match.arg(price)
-  if (length(theme) != 12L) theme <- match.arg(theme)
-  type <- match.arg(type)
+  granularity <- match.arg(granularity, c("D", "W", "M",
+                                          "H12", "H8", "H6", "H4", "H3", "H2", "H1",
+                                          "M30", "M15", "M10", "M5", "M4", "M2", "M1",
+                                          "S30", "S15", "S10", "S5"))
+  price <- match.arg(price, c("M", "B", "A"))
+  if (length(theme) != 12L) theme <- match.arg(theme, c("classic", "dark", "mono", "noguchi", "okabe-ito", "solarized"))
+  type <- match.arg(type, c("none", "r", "s"))
   server <- if (missing(server)) do_$getServer() else match.arg(server, c("practice", "live"))
   if (missing(apikey)) apikey <- do_$getKey(server = server)
   if (!is.numeric(refresh) || refresh < 1) {
@@ -576,10 +583,13 @@ oanda_studio <- function(instrument = "USD_JPY",
                    stdout = NULL, stderr = NULL, wait = FALSE))
   }
   if (!missing(instrument)) instrument <- sub("-", "_", toupper(force(instrument)), fixed = TRUE)
-  granularity <- match.arg(granularity)
-  price <- match.arg(price)
-  theme <- match.arg(theme)
-  type <- match.arg(type)
+  granularity <- match.arg(granularity, c("D", "W", "M",
+                                          "H12", "H8", "H6", "H4", "H3", "H2", "H1",
+                                          "M30", "M15", "M10", "M5", "M4", "M2", "M1",
+                                          "S30", "S15", "S10", "S5"))
+  price <- match.arg(price, c("M", "B", "A"))
+  theme <- match.arg(theme, c("classic", "dark", "mono", "noguchi", "okabe-ito", "solarized"))
+  type <- match.arg(type, c("none", "r", "s"))
   srvr <- if (missing(server)) do_$getServer() else match.arg(server, c("practice", "live"))
   if (missing(apikey)) apikey <- do_$getKey(server = srvr)
   if (!is.numeric(refresh) || refresh < 1) {
@@ -789,11 +799,8 @@ oanda_studio <- function(instrument = "USD_JPY",
 #'
 #' @export
 #'
-oanda_instruments <- function(server, apikey) {
-
+oanda_instruments <- function(server, apikey)
   do_$getInstruments(server = server, apikey = apikey)
-
-}
 
 #' Set OANDA fxTrade API Key
 #'
