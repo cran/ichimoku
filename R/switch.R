@@ -39,7 +39,7 @@
 #'
 #' @export
 #'
-oanda_switch <- function() do_$switchServer()
+oanda_switch <- function() do_[["switchServer"]]()
 
 #' Deserialize JSON
 #'
@@ -72,26 +72,27 @@ do_ <- function() {
       switch(server_type,
              practice = {
                server_type <<- "live"
-               livestore <<- keystore <<- instruments <<- account <<- NULL
+               livestore <<- keystore <<- ""
+               instruments <<- account <<- NULL
                message("Default OANDA server switched to 'live'")
              },
              live = {
                server_type <<- "practice"
-               livestore <<- keystore <<- instruments <<- account <<- NULL
+               livestore <<- keystore <<- ""
+               instruments <<- account <<- NULL
                message("Default OANDA server switched to 'practice'")
              }),
-    getKey = function(server) {
-      if (missing(server)) server <- server_type
+    getKey = function(server = server_type) {
       switch(server,
              practice = {
                if (!nzchar(keystore)) {
                  if (requireNamespace("keyring", quietly = TRUE)) {
                    apikey <- tryCatch(keyring::key_get(service = "OANDA_API_KEY"), error = function(e) {
                      message("No API key found for 'practice' account type\nPlease use oanda_set_key() to store your API key for automatic retrieval")
-                     if (interactive()) readline("Please enter OANDA API key: ")
+                     if (interactive()) readline("Please enter OANDA API key: ") else ""
                    })
                  } else {
-                   apikey <- if (interactive()) readline("Please enter OANDA API key: ")
+                   apikey <- if (interactive()) readline("Please enter OANDA API key: ") else ""
                  }
                  keystore <<- apikey
                }
@@ -102,10 +103,10 @@ do_ <- function() {
                  if (requireNamespace("keyring", quietly = TRUE)) {
                    apikey <- tryCatch(keyring::key_get(service = "OANDA_LIVE_KEY"), error = function(e) {
                      message("No API key found for 'live' account type\nPlease use oanda_set_key() to store your API key for automatic retrieval")
-                     if (interactive()) readline("Please enter OANDA API key: ")
+                     if (interactive()) readline("Please enter OANDA API key: ") else ""
                    })
                  } else {
-                   apikey <- if (interactive()) readline("Please enter OANDA API key: ")
+                   apikey <- if (interactive()) readline("Please enter OANDA API key: ") else ""
                  }
                  livestore <<- apikey
                }
@@ -115,12 +116,12 @@ do_ <- function() {
     getAccount = function(server, apikey) {
       if (is.null(account)) {
         server <- if (missing(server)) server_type else match.arg(server, c("practice", "live"))
-        if (missing(apikey)) apikey <- do_$getKey(server = server)
+        if (missing(apikey)) apikey <- do_[["getKey"]](server = server)
         url <- switch(server,
                       practice = "https://api-fxpractice.oanda.com/v3/accounts",
                       live = "https://api-fxtrade.oanda.com/v3/accounts")
         resp <- ncurl(url, convert = FALSE, follow = TRUE,
-                      headers = c("Authorization" = paste0("Bearer ", apikey),
+                      headers = c("Authorization" = strcat("Bearer ", apikey),
                                   "User-Agent" = .user_agent))
         resp[["status"]] == 200L ||
           stop("status code ", resp[["status"]], " - ", deserialize_json(resp[["data"]]), call. = FALSE)
@@ -133,12 +134,12 @@ do_ <- function() {
     getInstruments = function(server, apikey) {
       if (is.null(instruments)) {
         server <- if (missing(server)) server_type else match.arg(server, c("practice", "live"))
-        if (missing(apikey)) apikey <- do_$getKey(server = server)
-        url <- paste0("https://api-fx", switch(server, practice = "practice", live = "trade"),
-                      ".oanda.com/v3/accounts/", do_$getAccount(server = server, apikey = apikey),
-                      "/instruments")
+        if (missing(apikey)) apikey <- do_[["getKey"]](server = server)
+        url <- sprintf("https://api-fx%s.oanda.com/v3/accounts/%s/instruments",
+                       switch(server, practice = "practice", live = "trade"),
+                       do_$getAccount(server = server, apikey = apikey))
         resp <- ncurl(url, convert = FALSE, follow = TRUE,
-                      headers = c("Authorization" = paste0("Bearer ", apikey),
+                      headers = c("Authorization" = strcat("Bearer ", apikey),
                                   "User-Agent" = .user_agent))
         resp[["status"]] == 200L ||
           stop("status code ", resp[["status"]], " - ", deserialize_json(resp[["data"]]), call. = FALSE)
