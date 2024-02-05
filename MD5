@@ -1,9 +1,9 @@
-af9647c0bf6b4346cf6f0971c6d2fbd7 *DESCRIPTION
-4e26c55264a18f13707e57b615e62aae *NAMESPACE
-e2c8a9b00f5f00d7a4ed00b0dbc9552d *NEWS.md
-b9581177a9021db4825be557e85b2b6b *R/archive.R
+1e6a5c36527c87a2caba544e18726d81 *DESCRIPTION
+1e57913541be0af7fa13e1852f70609d *NAMESPACE
+b72ae92ba491a72ef386b1e927f330c6 *NEWS.md
+6e031f77ea566081ac86213cfcf3b093 *R/archive.R
 2f99650189b9467045616e031f31e2b6 *R/data.R
-595083d500e27ce549036dcedb2fbe3f *R/ichimoku-package.R
+dfa2e16976fa5194dac316bb39cfde51 *R/ichimoku-package.R
 3e8d239563c565b53f8e328591c6fd95 *R/ichimoku.R
 a936a6c69b249eab3bcd1ab0c56f5bb7 *R/iplot.R
 3c5a201f66e9fd6302a037c10540e882 *R/methods.R
@@ -13,13 +13,13 @@ e51caea21baf1d4b5cb699e66eca7979 *R/plot.R
 b3f249864bda89e1fde1a5f59b22a0f1 *R/strat.R
 dbf3762f6d37b625ce677a65ee81f557 *R/switch.R
 b19bfe27024c7873b6c89306f04fff60 *R/utils.R
-8684fc7b8af1ec7439bb8bae18407d60 *README.md
+e1fec3cf5b055ce0db361729c86e0380 *README.md
 e487c14512f117341e1e4b2ba2f15a37 *build/vignette.rds
 d2b5bfdf92bb317dfe96474a5bb23016 *data/sample_ohlc_data.rda
 c27aeab1442c7668ae3f1dc2147a4c74 *inst/CITATION
 f2b098a2ee1e15e0cb9b57920f5b880d *inst/doc/reference.R
-5f68f7b2aaf7e62f6c23e96dd4b86569 *inst/doc/reference.Rmd
-006bbf4ab5b2b627a7eb0ce832a50c3a *inst/doc/reference.html
+3ead57eb4ebac0ecc75afcd3c23f2b13 *inst/doc/reference.Rmd
+b457d4bb488a76c0943ad9897691fbd4 *inst/doc/reference.html
 dd7bd9b3ea09426d6c2f5a8311933379 *inst/doc/strategies.R
 e64f2006d1fabb747ec225a485adbd7b *inst/doc/strategies.Rmd
 25a4446c0fbb35b3a63c1641ea5bbdcb *inst/doc/strategies.html
@@ -29,7 +29,7 @@ e64f2006d1fabb747ec225a485adbd7b *inst/doc/strategies.Rmd
 126a2885491a79e5cdd9ee98188b3a89 *inst/doc/xoanda.R
 8237f127d2878bc7e97b533d7507419e *inst/doc/xoanda.Rmd
 59552d25552e21b038ec8807884e27bb *inst/doc/xoanda.html
-8ed4ad08bfa895d4406fd9c80e6ff2f1 *man/archive.Rd
+0fb6dba7a162186a66cb442d12da7741 *man/archive.Rd
 55d71c503de82faefddf518aa584d505 *man/as.data.frame.ichimoku.Rd
 1ce5299ca5fa613c2ea75734f5efd80f *man/autoplot.ichimoku.Rd
 f90b1af04edeed959973a5c1cf94955a *man/autostrat.Rd
@@ -41,7 +41,7 @@ e3044ca89555c97ae74de644a9bfea79 *man/df_append.Rd
 c51f1a13ee368aeb3add5f2bc050109a *man/figures/logo.png
 2a47804029860edbc31a7d364ca6360a *man/grid_dup.Rd
 79acf6ef03a955fa67b19b462f674921 *man/hasStrat.Rd
-724da29f6fc1eac9f408e3a07989891b *man/ichimoku-package.Rd
+1717f9b77cbd29f8031273dc15dcef4e *man/ichimoku-package.Rd
 ff2b9cbad93f1c5888c79050b46c7fba *man/ichimoku.Rd
 a03e3776b1fe3c3efad0cfeedad1f1d1 *man/index.ichimoku.Rd
 0a7fadb2b6b7d293bc3b14b5e962777a *man/iplot.Rd
@@ -74,7 +74,7 @@ fe9d2286d8b8598760d676a53b67387c *man/tradingDays.Rd
 d25d5af44b59cd40d3830b54f7a7cf7f *src/Makevars
 56fe2153080af7e2c3eb4e8659dae92f *src/shikokuchuo.c
 c487eadf1845492916dcf14866de1172 *tests/testthat.R
-a627401eaa78ef9a19b69dcbd9ea529b *tests/testthat/test-archive.R
+57049e01153106d4dd84e78730a86675 *tests/testthat/test-archive.R
 4d1feaa88c0131a278057e8d351fa2f2 *tests/testthat/test-ichimoku.R
 5e12c1c4c09c16fad2bdb31a6753ef9d *tests/testthat/test-iplot.R
 44e869e18c72922acaa8648dd372bb6d *tests/testthat/test-mltools.R
@@ -83,7 +83,7 @@ a58afbf13f27ab3ba499888e4d245002 *tests/testthat/test-plot.R
 d6975b5ace86248281805a67797d7259 *tests/testthat/test-strat.R
 e559e6a28212937dc13f533401f5b333 *tests/testthat/test-utils.R
 50a740b8c0437d1c6cabf719fd872180 *vignettes/oanda-studio.jpg
-5f68f7b2aaf7e62f6c23e96dd4b86569 *vignettes/reference.Rmd
+3ead57eb4ebac0ecc75afcd3c23f2b13 *vignettes/reference.Rmd
 e64f2006d1fabb747ec225a485adbd7b *vignettes/strategies.Rmd
 29fb31d25eebecbbc323754d0aa74ea2 *vignettes/utilities.Rmd
 8237f127d2878bc7e97b533d7507419e *vignettes/xoanda.Rmd
