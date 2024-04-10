@@ -1,6 +1,6 @@
-1e6a5c36527c87a2caba544e18726d81 *DESCRIPTION
+ce436ab0aed393dc05361797d10b5414 *DESCRIPTION
 1e57913541be0af7fa13e1852f70609d *NAMESPACE
-b72ae92ba491a72ef386b1e927f330c6 *NEWS.md
+7da8d23950080cae95ad2a9a0df0102b *NEWS.md
 6e031f77ea566081ac86213cfcf3b093 *R/archive.R
 2f99650189b9467045616e031f31e2b6 *R/data.R
 dfa2e16976fa5194dac316bb39cfde51 *R/ichimoku-package.R
@@ -8,13 +8,13 @@ dfa2e16976fa5194dac316bb39cfde51 *R/ichimoku-package.R
 a936a6c69b249eab3bcd1ab0c56f5bb7 *R/iplot.R
 3c5a201f66e9fd6302a037c10540e882 *R/methods.R
 09f88dc4ebf099a5c1bb8f0c590e197f *R/mltools.R
-16b8df06b53dcfda0ca15fce31d7b9d1 *R/oanda.R
+7b7f32c1ecd4edd4e2c773d87d2b3212 *R/oanda.R
 e51caea21baf1d4b5cb699e66eca7979 *R/plot.R
 b3f249864bda89e1fde1a5f59b22a0f1 *R/strat.R
 dbf3762f6d37b625ce677a65ee81f557 *R/switch.R
 b19bfe27024c7873b6c89306f04fff60 *R/utils.R
-e1fec3cf5b055ce0db361729c86e0380 *README.md
-e487c14512f117341e1e4b2ba2f15a37 *build/vignette.rds
+b4507ec84d2f776d360aa5c2e65fec76 *README.md
+6879d1c17b4185167f48168219179d3c *build/vignette.rds
 d2b5bfdf92bb317dfe96474a5bb23016 *data/sample_ohlc_data.rda
 c27aeab1442c7668ae3f1dc2147a4c74 *inst/CITATION
 f2b098a2ee1e15e0cb9b57920f5b880d *inst/doc/reference.R
