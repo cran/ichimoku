@@ -1,4 +1,12 @@
+# ichimoku 1.5.2
+
+#### Updates:
+
+* `archive()` reverts to using SHA256.
+
 # ichimoku 1.5.1
+
+#### Updates:
 
 * Fixes `oanda_studio()` so that the live chart no longer greys out when updating (with recent Shiny versions).
 
