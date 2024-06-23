@@ -1,8 +1,16 @@
+# ichimoku 1.5.3
+
+#### Updates:
+
+* Internal performance enhancements.
+* Requires secretbase >= 1.0.0.
+
 # ichimoku 1.5.2
 
 #### Updates:
 
 * `archive()` reverts to using SHA256.
+* Requires nanonext >= 1.0.0 and mirai >= 1.0.0.
 
 # ichimoku 1.5.1
 
