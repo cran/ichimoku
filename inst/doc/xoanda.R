@@ -75,7 +75,6 @@ oanda_switch()
 #  df <- oanda_positions("GBP_JPY")
 
 ## ----oandaposchart, echo=FALSE------------------------------------------------
-
 df <- structure(list(price = c(124.75, 124.85, 124.9, 124.95, 125.05, 
 125.2, 125.25, 125.3, 125.35, 125.4, 125.5, 125.6, 125.7, 125.85, 
 126, 126.2, 126.4, 126.5, 126.55, 126.65, 126.7, 126.75, 126.85, 
@@ -360,7 +359,6 @@ layers <- list(
   ggplot2::coord_flip(),
   ichimoku:::theme_ichimoku_light()
 )
-
 print(ggplot2::ggplot(data = df) + layers)
 
 
