@@ -82,10 +82,7 @@
 #'     PositionIdentity rel scale_color_manual scale_fill_manual
 #'     scale_x_continuous scale_y_continuous Stat StatIdentity theme theme_grey
 #'     %+replace%
-#' @importFrom mirai mirai
 #' @importFrom nanonext ncurl
-#' @importFrom secretbase sha256
-#' @importFrom RcppSimdJson is_valid_json
 #' @importFrom shiny checkboxInput column downloadButton downloadHandler HTML
 #'     fillPage fluidPage fluidRow hoverOpts invalidateLater isolate
 #'     numericInput observeEvent plotOutput reactive reactiveVal renderPlot
@@ -97,6 +94,9 @@
 #' @importFrom zoo coredata index
 #'
 "_PACKAGE"
+
+# nocov start
+# tested implicitly
 
 .onLoad <- function(libname, pkgname) {
   do_ <- do_()
@@ -116,5 +116,8 @@
     if (i %in% c(1:3, 11:13)) Sys.sleep(0.03) else Sys.sleep(0.08)
   }
   cat("\n")
+  RcppSimdJson::is_valid_json("")
   invisible(quote(expr=))
 }
+
+# nocov end

@@ -1,7 +1,7 @@
 Package: ichimoku
 Type: Package
 Title: Visualization and Tools for Ichimoku Kinko Hyo Strategies
-Version: 1.5.4
+Version: 1.5.5
 Description: An implementation of 'Ichimoku Kinko Hyo', also commonly known as
     'cloud charts'. Static and interactive visualizations with tools for
     creating, backtesting and development of quantitative 'ichimoku' strategies.
@@ -31,15 +31,15 @@ Depends: R (>= 3.5)
 Imports: ggplot2 (>= 3.4.0), mirai (>= 1.0.0), nanonext (>= 1.0.0),
         RcppSimdJson (>= 0.1.9), secretbase (>= 1.0.0), shiny (>=
         1.4.0), xts, zoo
-LinkingTo: RcppSimdJson, xts
 Suggests: keyring, knitr, rmarkdown, testthat (>= 3.0.0)
 VignetteBuilder: knitr
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3
+Config/build/compilation-database: true
 NeedsCompilation: yes
-Packaged: 2024-08-18 20:39:52 UTC; cg334
+Packaged: 2024-09-12 14:43:57 UTC; cg334
 Author: Charlie Gao [aut, cre] (<https://orcid.org/0000-0002-0750-061X>),
   Hibiki AI Limited [cph]
 Maintainer: Charlie Gao <charlie.gao@shikokuchuo.net>
 Repository: CRAN
-Date/Publication: 2024-08-18 21:00:02 UTC
+Date/Publication: 2024-09-12 17:30:05 UTC

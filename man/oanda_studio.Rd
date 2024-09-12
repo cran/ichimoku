@@ -16,6 +16,7 @@ oanda_studio(
   server,
   apikey,
   new.process = FALSE,
+  multi.session = FALSE,
   ...,
   launch.browser = TRUE,
   periods = c(9L, 26L, 52L)
@@ -37,8 +38,8 @@ of 1.}
 Note that fewer periods are actually shown on the chart to ensure a full
 cloud is always displayed.}
 
-\item{price}{[default "M"] pricing component, one of "M" (midpoint), "B" (bid)
-or "A" (ask).}
+\item{price}{[default "M"] pricing component, one of "M" (midpoint), "B"
+(bid) or "A" (ask).}
 
 \item{theme}{[default 'original'] with alternative choices of 'conceptual',
 'dark', 'fresh', 'mono', or 'solarized'.}
@@ -48,12 +49,12 @@ cloud chart, with a choice of 'none', 'r' or 's' for the corresponding
 oscillator type.}
 
 \item{server}{(optional) specify the "practice" or "live" server according to
-the account type held. If not specified, will default to "practice", unless
-this has been changed by \code{\link{oanda_switch}}.}
+the account type held. If not specified, will default to "practice",
+unless this has been changed by \code{\link{oanda_switch}}.}
 
-\item{apikey}{(optional) string containing the OANDA fxTrade API key (personal
-access token), or function that returns this string. Does not need to be
-specified if already stored as the environment variable
+\item{apikey}{(optional) string containing the OANDA fxTrade API key
+(personal access token), or function that returns this string. Does not
+need to be specified if already stored as the environment variable
 \code{OANDA_API_KEY} or by \code{\link{oanda_set_key}}. Can also be
 entered interactively if not specified.}
 
@@ -61,15 +62,20 @@ entered interactively if not specified.}
 new R process, unblocking the current process and allowing continued use
 of the R console.}
 
+\item{multi.session}{[default FALSE] if TRUE, does not automatically close
+the Shiny app when an individual session (web browser page) disconnects.
+Use with caution in conjunction with \sQuote{new.process} as the Shiny
+app continues to run in the background process.}
+
 \item{...}{additional arguments passed along to \code{\link{ichimoku}} for
 calculating the ichimoku cloud, \code{\link{autoplot}} to set chart
 parameters, or the 'options' argument of \code{shiny::shinyApp()}.}
 
-\item{launch.browser}{[default TRUE] If TRUE, the system's default web browser
-will be launched automatically after the app is started. The value of this
-argument can also be a function to call with the application's URL. To use
-the default Shiny viewer in RStudio, please specify
-\code{getOption("shiny.launch.browser")}.}
+\item{launch.browser}{[default TRUE] If TRUE, the system's default web
+browser will be launched automatically after the app is started. The
+value of this argument can also be a function to call with the
+application's URL. To use the default Shiny viewer in RStudio, please
+specify \code{getOption("shiny.launch.browser")}.}
 
 \item{periods}{[default c(9L, 26L, 52L)] a vector defining the length of
 periods used for the cloud. This parameter shoud not normally be modified

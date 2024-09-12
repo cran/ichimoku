@@ -20,37 +20,40 @@
 #'
 #' Plot Ichimoku Kinko Hyo cloud charts from ichimoku objects.
 #'
-#' @param x an object of class 'ichimoku'.
+#' @param x an object of class \sQuote{ichimoku}.
 #' @param window (optional) a date-time window to subset the plot, in ISO-8601
-#'     compatible range strings of the format used for 'xts' objects, for example
-#'     "2020-02-15/2020-08-15" or "2020-02-15/", "/2020-08" or "2020-07".
+#'     compatible range strings of the format used for \sQuote{xts} objects, for
+#'     example "2020-02-15/2020-08-15" or "2020-02-15/", "/2020-08" or "2020-07".
 #' @param ticker (optional) specify a ticker (or other text) to include in the
 #'     chart heading. If not set, the ticker saved within the ichimoku object
 #'     will be used.
-#' @param subtitle (optional) specify a subtitle to display under the chart title.
-#' @param theme [default 'classic'] with further choices of 'dark', 'mono',
-#'     'noguchi', 'okabe-ito' or 'solarized'. Alternatively, supply a vector
-#'     of 12 colour values (hex codes or names) as a user-defined theme.
+#' @param subtitle (optional) specify a subtitle to display under the chart
+#'     title.
+#' @param theme [default 'classic'] with further choices of \sQuote{dark},
+#'     \sQuote{mono}, \sQuote{noguchi}, \sQuote{okabe-ito} or \sQuote{solarized}.
+#'     Alternatively, supply a vector of 12 colour values (hex codes or names)
+#'     as a user-defined theme.
 #' @param strat [default TRUE] if the ichimoku object contains a strategy, the
 #'     periods for which the strategy results in a position will be shaded, and
 #'     the strategy printed as the chart subtitle (if not otherwise specified).
 #'     Set to FALSE to turn off this behaviour.
 #' @param type [default 'none'] type of sub-plot to display beneath the ichimoku
-#'     cloud chart, with a choice of 'none', 'r' or 's' for the corresponding
-#'     oscillator type, and 'bar' or 'line' for custom plots.
+#'     cloud chart, with a choice of \sQuote{none}, \sQuote{r} or \sQuote{s} for
+#'     the corresponding oscillator type, and \sQuote{bar} or \sQuote{line} for
+#'     custom plots.
 #' @param custom (optional) character string (containing a regular expression)
 #'     matching the column name of the variable to be displayed as sub-plot.
 #'     Specify \code{type = 'bar'} or \code{type = 'line'}, otherwise other type
 #'     settings will take precedence.
-#' @param ... additional arguments passed along to the print method for 'ggplot'
-#'     objects.
+#' @param ... additional arguments passed along to the print method for
+#'     \sQuote{ggplot} objects.
 #'
 #' @return The ichimoku object supplied (invisibly). The requested plot is output
 #'     to the graphical device.
 #'
 #' @details This function is an S3 method for the generic function plot() for
-#'     class 'ichimoku'. It can be invoked by calling plot(x) on an object 'x'
-#'     of class 'ichimoku'.
+#'     class \sQuote{ichimoku}. It can be invoked by calling plot(x) on an
+#'     object \sQuote{x} of class \sQuote{ichimoku}.
 #'
 #'     For further details please refer to the reference vignette by calling:
 #'     \code{vignette("reference", package = "ichimoku")}
@@ -95,14 +98,14 @@ NULL
 #' Plot Ichimoku Kinko Hyo cloud charts from ichimoku objects.
 #'
 #' @inheritParams plot.ichimoku
-#' @param object an object of class 'ichimoku'.
+#' @param object an object of class \sQuote{ichimoku}.
 #' @param ... other arguments not used by this method.
 #'
-#' @return A ggplot2 object with S3 classes 'gg' and 'ggplot'.
+#' @return A ggplot2 object with S3 classes \sQuote{gg} and \sQuote{ggplot}.
 #'
 #' @details This function is an S3 method for the generic function autoplot()
-#'     for class 'ichimoku'. It can be invoked by calling autoplot(x) on an
-#'     object 'x' of class 'ichimoku'.
+#'     for class \sQuote{ichimoku}. It can be invoked by calling autoplot(x) on
+#'     an object \sQuote{x} of class \sQuote{ichimoku}.
 #'
 #' @rdname autoplot.ichimoku
 #' @method autoplot ichimoku
@@ -172,7 +175,7 @@ create_data <- function(object, window, type) {
 #'
 #' @inheritParams plot.ichimoku
 #'
-#' @return A ggplot2 object with S3 classes 'gg' and 'ggplot'.
+#' @return A ggplot2 object with S3 classes \sQuote{gg} and \sQuote{ggplot}.
 #'
 #' @noRd
 #'
@@ -374,9 +377,10 @@ theme_ichimoku_light <- function() {
 
 #' Ichimoku Dark Theme for ggplot2
 #'
-#' Internal function used by ichimoku to create the default dark theme for ggplot2.
+#' Internal function used by ichimoku to create the default dark theme for
+#'     ggplot2.
 #'
-#' @return A list with classes 'theme' and 'gg'.
+#' @return A list with classes \sQuote{theme} and \sQuote{gg}.
 #'
 #' @noRd
 #'
@@ -396,7 +400,7 @@ theme_ichimoku_dark <- function() {
 #'
 #' A Stat for plotting indicators in ggplot2.
 #'
-#' @return A ggplot2 'Stat' (an environment).
+#' @return A ggplot2 \sQuote{Stat} (an environment).
 #'
 #' @noRd
 #'
@@ -414,7 +418,7 @@ StatIndicator <- ggproto(
 #'
 #' A Stat for plotting 'line' type subplots in ggplot2.
 #'
-#' @return A ggplot2 'Stat' (an environment).
+#' @return A ggplot2 \sQuote{Stat} (an environment).
 #'
 #' @noRd
 #'
@@ -434,7 +438,7 @@ StatLine <- ggproto(
 #'
 #' A Stat for plotting 'bar' type subplots in ggplot2.
 #'
-#' @return A ggplot2 'Stat' (an environment).
+#' @return A ggplot2 \sQuote{Stat} (an environment).
 #'
 #' @noRd
 #'

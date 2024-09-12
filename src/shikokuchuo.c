@@ -16,8 +16,12 @@
 
 // ichimoku - Functions Utilising R's C API ------------------------------------
 
+#ifndef R_NO_REMAP
 #define R_NO_REMAP
+#endif
+#ifndef STRICT_R_HEADERS
 #define STRICT_R_HEADERS
+#endif
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Visibility.h>
@@ -39,11 +43,8 @@ SEXP ichimoku_int_zero;
 SEXP ichimoku_int_three;
 SEXP ichimoku_false;
 
-typedef SEXP (*one_fun) (SEXP);
-typedef SEXP (*twelve_fun) (SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-
-one_fun naofun;
-twelve_fun jsofun;
+SEXP (*naofun)(SEXP);
+SEXP (*jsofun)(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 // rolling max over a window
 SEXP _wmax(SEXP x, SEXP window) {
@@ -125,20 +126,14 @@ SEXP _wmean(SEXP x, SEXP window) {
 // look - inspect informational attributes
 SEXP _look(SEXP x) {
 
-  SEXP ax, y;
-  PROTECT_INDEX pxi;
-  PROTECT_WITH_INDEX(y = R_NilValue, &pxi);
-
-  for (ax = ATTRIB(x); ax != R_NilValue; ax = CDR(ax)) {
-    if (TAG(ax) != R_NamesSymbol && TAG(ax) != R_RowNamesSymbol &&
-        TAG(ax) != R_DimSymbol && TAG(ax) != R_DimNamesSymbol &&
-        TAG(ax) != R_ClassSymbol && TAG(ax) != xts_IndexSymbol) {
-      REPROTECT(y = Rf_cons(CAR(ax), y), pxi);
-      SET_TAG(y, TAG(ax));
-    }
-  }
-
+  SEXP y;
+  PROTECT(y = Rf_ScalarInteger(0));
+  Rf_copyMostAttrib(x, y);
+  Rf_classgets(y, R_NilValue);
+  Rf_setAttrib(y, R_RowNamesSymbol, R_NilValue);
+  Rf_setAttrib(y, xts_IndexSymbol, R_NilValue);
   UNPROTECT(1);
+
   return y;
 
 }
@@ -172,6 +167,9 @@ SEXP _tbl(SEXP x, SEXP type) {
   SEXP tbl, index, dn2, names, rownames;
 
   PROTECT(tbl = Rf_allocVector(VECSXP, xwid + 1));
+
+  if (keepattrs)
+    Rf_copyMostAttrib(x, tbl);
 
   index = Rf_shallow_duplicate(Rf_getAttrib(x, xts_IndexSymbol));
   Rf_classgets(index, ichimoku_tclass);
@@ -209,16 +207,6 @@ SEXP _tbl(SEXP x, SEXP type) {
   }
   Rf_setAttrib(tbl, R_RowNamesSymbol, rownames);
 
-  if (keepattrs) {
-    SEXP ax;
-    for (ax = ATTRIB(x); ax != R_NilValue; ax = CDR(ax)) {
-      if (TAG(ax) != R_NamesSymbol && TAG(ax) != R_RowNamesSymbol &&
-          TAG(ax) != R_DimSymbol && TAG(ax) != R_DimNamesSymbol &&
-          TAG(ax) != R_ClassSymbol && TAG(ax) != xts_IndexSymbol)
-        Rf_setAttrib(tbl, TAG(ax), CAR(ax));
-    }
-  }
-
   UNPROTECT(1);
   return tbl;
 
@@ -227,6 +215,11 @@ SEXP _tbl(SEXP x, SEXP type) {
 // internal function used by ichimoku()
 SEXP _create(SEXP kumo, SEXP xtsindex, SEXP periods, SEXP periodicity,
              SEXP ticker, SEXP x) {
+
+  if (x != R_NilValue) {
+    Rf_copyMostAttrib(x, kumo);
+    Rf_setAttrib(kumo, R_RowNamesSymbol, R_NilValue);
+  }
 
   Rf_setAttrib(xtsindex, xts_IndexTzoneSymbol, R_BlankScalarString);
   Rf_setAttrib(xtsindex, xts_IndexTclassSymbol, ichimoku_tclass);
@@ -237,19 +230,6 @@ SEXP _create(SEXP kumo, SEXP xtsindex, SEXP periods, SEXP periodicity,
   Rf_setAttrib(kumo, ichimoku_PeriodsSymbol, periods);
   Rf_setAttrib(kumo, ichimoku_PeriodicitySymbol, periodicity);
   Rf_setAttrib(kumo, ichimoku_TickerSymbol, ticker);
-
-  if (x != R_NilValue) {
-    SEXP ax;
-    for (ax = ATTRIB(x); ax != R_NilValue; ax = CDR(ax)) {
-      if (TAG(ax) != R_NamesSymbol && TAG(ax) != R_RowNamesSymbol &&
-          TAG(ax) != R_DimSymbol && TAG(ax) != R_DimNamesSymbol &&
-          TAG(ax) != R_ClassSymbol && TAG(ax) != xts_IndexSymbol &&
-          TAG(ax) != ichimoku_PeriodsSymbol &&
-          TAG(ax) != ichimoku_PeriodicitySymbol &&
-          TAG(ax) != ichimoku_TickerSymbol)
-        Rf_setAttrib(kumo, TAG(ax), CAR(ax));
-    }
-  }
 
   return kumo;
 
@@ -360,6 +340,14 @@ SEXP _naomit(SEXP x) {
 
 // imports from the package 'RcppSimdJson'
 SEXP _deserialize_json(SEXP json, SEXP query) {
+  if (jsofun == NULL) {
+    SEXP str, call;
+    PROTECT(str = Rf_mkString("RcppSimdJson"));
+    PROTECT(call = Rf_lang2(Rf_install("loadNamespace"), str));
+    Rf_eval(call, R_BaseEnv);
+    UNPROTECT(2);
+    jsofun = (SEXP (*)(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP)) R_GetCCallable("RcppSimdJson", "_RcppSimdJson_.deserialize_json");
+  }
   return jsofun(json, query, R_NilValue, R_NilValue, R_NilValue, ichimoku_false, R_NilValue, ichimoku_false, R_NilValue, ichimoku_int_three, ichimoku_int_zero, ichimoku_int_zero);
 }
 
@@ -371,8 +359,8 @@ static void RegisterSymbols(void) {
   ichimoku_PeriodsSymbol = Rf_install("periods");
   ichimoku_PeriodicitySymbol = Rf_install("periodicity");
   ichimoku_TickerSymbol = Rf_install("ticker");
-  naofun = (one_fun) R_GetCCallable("xts", "na_omit_xts");
-  jsofun = (twelve_fun) R_GetCCallable("RcppSimdJson", "_RcppSimdJson_.deserialize_json");
+  naofun = (SEXP (*)(SEXP)) R_GetCCallable("xts", "na_omit_xts");
+  jsofun = NULL;
 }
 
 static void PreserveObjects(void) {
@@ -389,6 +377,7 @@ static void PreserveObjects(void) {
   R_PreserveObject(ichimoku_false = Rf_ScalarLogical(0));
 }
 
+// # nocov start
 static void ReleaseObjects(void) {
   R_ReleaseObject(ichimoku_false);
   R_ReleaseObject(ichimoku_int_three);
@@ -397,6 +386,7 @@ static void ReleaseObjects(void) {
   R_ReleaseObject(ichimoku_klass);
   R_ReleaseObject(ichimoku_dfclass);
 }
+// # nocov end
 
 static const R_CallMethodDef CallEntries[] = {
   {"_coredata", (DL_FUNC) &_coredata, 1},
@@ -423,6 +413,8 @@ void attribute_visible R_init_ichimoku(DllInfo* dll) {
   R_forceSymbols(dll, TRUE);
 }
 
+// # nocov start
 void attribute_visible R_unload_ichimoku(DllInfo *info) {
   ReleaseObjects();
 }
+// # nocov end
