@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -345,6 +345,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li><a href="#core-auxiliary-functions" id="toc-core-auxiliary-functions">Core Auxiliary Functions</a></li>
 <li><a href="#dataframe-constructors" id="toc-dataframe-constructors">Dataframe Constructors</a></li>
 <li><a href="#dataframe-utilities" id="toc-dataframe-utilities">Dataframe Utilities</a></li>
+<li><a href="#timestamp-utilities" id="toc-timestamp-utilities">Timestamp Utilities</a></li>
 </ul>
 </div>
 
@@ -657,6 +658,20 @@ dropped.</p>
 <span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt; 8  2020-01-13 125.2 125.3 125.1 125.2   2946</span></span>
 <span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt; 9  2020-01-14 125.2 125.2 124.3 124.4   2796</span></span>
 <span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; 10 2020-01-15 124.4 124.5 123.7 123.9   2879</span></span></code></pre></div>
+</div>
+</div>
+<div id="timestamp-utilities" class="section level2">
+<h2>Timestamp Utilities</h2>
+<div id="format_posixct" class="section level4">
+<h4>format_POSIXct()</h4>
+<p>Formats a double POSIXct timestamp in the same way as the default
+<code>fomat.POSIXct()</code>, without any additional customization
+options. This provides a much faster implementation.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>time <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">format</span>(time)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2025-03-14 12:53:22&quot;</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">format_POSIXct</span>(time)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2025-03-14 12:53:22&quot;</span></span></code></pre></div>
 <hr />
 </div>
 </div>

@@ -30,11 +30,11 @@ newstrat <- stratcombine(strat, strat2)
 summary(newstrat)
 
 ## ----perfana, eval=FALSE------------------------------------------------------
-#  library(PerformanceAnalytics)
-#  # To chart performance comparison of strategy vs benchmark, daily returns and drawdowns
-#  charts.PerformanceSummary(strat[, c("sret", "ret")])
-#  # For a table detailing drawdowns, including depth, length of recovery etc.
-#  table.Drawdowns(strat[, "sret"])
+# library(PerformanceAnalytics)
+# # To chart performance comparison of strategy vs benchmark, daily returns and drawdowns
+# charts.PerformanceSummary(strat[, c("sret", "ret")])
+# # For a table detailing drawdowns, including depth, length of recovery etc.
+# table.Drawdowns(strat[, "sret"])
 
 ## ----autostrat----------------------------------------------------------------
 autostrat(cloud, n = 3)

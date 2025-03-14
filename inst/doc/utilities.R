@@ -55,3 +55,8 @@ data2 <- sample_ohlc_data[7:10, ]
 data2
 df_append(data1, data2)
 
+## ----formatposixct------------------------------------------------------------
+time <- Sys.time()
+format(time)
+format_POSIXct(time)
+

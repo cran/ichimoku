@@ -12,67 +12,67 @@ library(ichimoku)
 oanda_switch()
 
 ## ----oanda, eval=FALSE--------------------------------------------------------
-#  oanda("USD_JPY", count = 3, from = "2010-11-01", price = "B")
-#  #>                  time   open   high    low  close volume complete
-#  #> 1 2010-11-01 21:00:00 80.275 81.504 80.225 80.501  22291     TRUE
-#  #> 2 2010-11-02 21:00:00 80.504 80.956 80.460 80.617  13795     TRUE
-#  #> 3 2010-11-03 21:00:00 80.632 81.585 80.594 81.069  22204     TRUE
+# oanda("USD_JPY", count = 3, from = "2010-11-01", price = "B")
+# #>                  time   open   high    low  close volume complete
+# #> 1 2010-11-01 21:00:00 80.275 81.504 80.225 80.501  22291     TRUE
+# #> 2 2010-11-02 21:00:00 80.504 80.956 80.460 80.617  13795     TRUE
+# #> 3 2010-11-03 21:00:00 80.632 81.585 80.594 81.069  22204     TRUE
 
 ## ----oandac, eval=FALSE-------------------------------------------------------
-#  # For a live Palladium price chart:
-#  oanda_chart("XPD_USD")
+# # For a live Palladium price chart:
+# oanda_chart("XPD_USD")
 
 ## ----oandacs, eval=FALSE------------------------------------------------------
-#  # To access the data, simply assign the return value to an object:
-#  cloud <- oanda_chart("XPD_USD")
+# # To access the data, simply assign the return value to an object:
+# cloud <- oanda_chart("XPD_USD")
 
 ## ----oandas, eval=FALSE-------------------------------------------------------
-#  oanda_studio()
+# oanda_studio()
 
 ## ----archive, eval=FALSE------------------------------------------------------
-#  # Supply the quoted file path / name, for example:
-#  cloud <- archive("~/Downloads/SUGAR_USD_D_A.rda")
-#  
-#  # Or alternatively, choose the saved file interactively using a system dialog:
-#  cloud <- archive()
+# # Supply the quoted file path / name, for example:
+# cloud <- archive("~/Downloads/SUGAR_USD_D_A.rda")
+# 
+# # Or alternatively, choose the saved file interactively using a system dialog:
+# cloud <- archive()
 
 ## ----oandastream, eval=FALSE--------------------------------------------------
-#  # Streaming session will end with data automatically returned after 600 secs (10 mins):
-#  data <- oanda_stream("UK10YB_GBP", limit = 600)
-#  #> Streaming data... Press 'Esc' to return
-#  #>                   time           bids           asks closeoutBid closeoutAsk    status tradeable instrument
-#  #> 1  2022-11-15 11:04:00 105.049, 10000 105.079, 10000     105.049     105.079 tradeable      TRUE UK10YB_GBP
-#  #> 2  2022-11-15 11:04:01 105.039, 10000 105.079, 10000     105.039     105.079 tradeable      TRUE UK10YB_GBP
-#  #> 3  2022-11-15 11:04:01 105.049, 10000 105.079, 10000     105.049     105.079 tradeable      TRUE UK10YB_GBP
-#  #> 4  2022-11-15 11:04:04 105.059, 10000 105.089, 10000     105.059     105.089 tradeable      TRUE UK10YB_GBP
-#  #> 5  2022-11-15 11:04:10 105.059, 10000 105.089, 10000     105.059     105.089 tradeable      TRUE UK10YB_GBP
-#  #> 6  2022-11-15 11:04:11 105.059, 10000 105.089, 10000     105.059     105.089 tradeable      TRUE UK10YB_GBP
-#  #> 7  2022-11-15 11:04:15 105.049, 10000 105.089, 10000     105.049     105.089 tradeable      TRUE UK10YB_GBP
-#  #> 8  2022-11-15 11:04:15 105.049, 10000 105.079, 10000     105.049     105.079 tradeable      TRUE UK10YB_GBP
+# # Streaming session will end with data automatically returned after 600 secs (10 mins):
+# data <- oanda_stream("UK10YB_GBP", limit = 600)
+# #> Streaming data... Press 'Esc' to return
+# #>                   time           bids           asks closeoutBid closeoutAsk    status tradeable instrument
+# #> 1  2022-11-15 11:04:00 105.049, 10000 105.079, 10000     105.049     105.079 tradeable      TRUE UK10YB_GBP
+# #> 2  2022-11-15 11:04:01 105.039, 10000 105.079, 10000     105.039     105.079 tradeable      TRUE UK10YB_GBP
+# #> 3  2022-11-15 11:04:01 105.049, 10000 105.079, 10000     105.049     105.079 tradeable      TRUE UK10YB_GBP
+# #> 4  2022-11-15 11:04:04 105.059, 10000 105.089, 10000     105.059     105.089 tradeable      TRUE UK10YB_GBP
+# #> 5  2022-11-15 11:04:10 105.059, 10000 105.089, 10000     105.059     105.089 tradeable      TRUE UK10YB_GBP
+# #> 6  2022-11-15 11:04:11 105.059, 10000 105.089, 10000     105.059     105.089 tradeable      TRUE UK10YB_GBP
+# #> 7  2022-11-15 11:04:15 105.049, 10000 105.089, 10000     105.049     105.089 tradeable      TRUE UK10YB_GBP
+# #> 8  2022-11-15 11:04:15 105.049, 10000 105.079, 10000     105.049     105.079 tradeable      TRUE UK10YB_GBP
 
 ## ----oandaq, eval = FALSE-----------------------------------------------------
-#  oanda_quote("USD_JPY")
-#  #> USD_JPY 2021-10-05 16:29:44 open: 110.931  high: 111.564  low: 110.871  last: 111.398  %chg: 0.421 M
+# oanda_quote("USD_JPY")
+# #> USD_JPY 2021-10-05 16:29:44 open: 110.931  high: 111.564  low: 110.871  last: 111.398  %chg: 0.421 M
 
 ## ----oandav, eval = FALSE-----------------------------------------------------
-#  oanda_view()
-#  Enter market [a]llfx [b]onds [c]ommodities [f]x [m]etals [s]tocks: c
-#  #> Retrieving commodities [..........]
-#  #> 2021-12-11 01:58:21 / M
-#  #>                  open      high        low       last    %chg
-#  #> NATGAS_USD    3.76200    3.9260    3.72400    3.85200  2.3923
-#  #> BCO_USD      74.52600   76.2310   74.32600   75.88000  1.8168
-#  #> WTICO_USD    70.91200   72.5540   70.55400   72.19000  1.8022
-#  #> WHEAT_USD     7.67200    7.7710    7.57100    7.72700  0.7169
-#  #> XPT_USD     930.20200  939.6000  924.29400  936.43800  0.6704
-#  #> SOYBN_USD    12.63500   12.7580   12.58800   12.67800  0.3403
-#  #> SUGAR_USD     0.19274    0.1948    0.19176    0.19334  0.3113
-#  #> CORN_USD      5.89800    5.9410    5.86800    5.90200  0.0678
-#  #> XCU_USD       4.30292    4.3479    4.26536    4.28361 -0.4488
-#  #> XPD_USD    1805.14800 1815.1260 1729.61100 1752.81200 -2.8993
+# oanda_view()
+# Enter market [a]llfx [b]onds [c]ommodities [f]x [m]etals [s]tocks: c
+# #> Retrieving commodities [..........]
+# #> 2021-12-11 01:58:21 / M
+# #>                  open      high        low       last    %chg
+# #> NATGAS_USD    3.76200    3.9260    3.72400    3.85200  2.3923
+# #> BCO_USD      74.52600   76.2310   74.32600   75.88000  1.8168
+# #> WTICO_USD    70.91200   72.5540   70.55400   72.19000  1.8022
+# #> WHEAT_USD     7.67200    7.7710    7.57100    7.72700  0.7169
+# #> XPT_USD     930.20200  939.6000  924.29400  936.43800  0.6704
+# #> SOYBN_USD    12.63500   12.7580   12.58800   12.67800  0.3403
+# #> SUGAR_USD     0.19274    0.1948    0.19176    0.19334  0.3113
+# #> CORN_USD      5.89800    5.9410    5.86800    5.90200  0.0678
+# #> XCU_USD       4.30292    4.3479    4.26536    4.28361 -0.4488
+# #> XPD_USD    1805.14800 1815.1260 1729.61100 1752.81200 -2.8993
 
 ## ----oandapos, eval=FALSE-----------------------------------------------------
-#  df <- oanda_positions("GBP_JPY")
+# df <- oanda_positions("GBP_JPY")
 
 ## ----oandaposchart, echo=FALSE------------------------------------------------
 df <- structure(list(price = c(124.75, 124.85, 124.9, 124.95, 125.05, 
@@ -355,7 +355,7 @@ layers <- list(
   ggplot2::scale_y_continuous(),
   ggplot2::labs(x = "Price", y = "% short / % long",
                 title = paste0("OANDA Position Book: ", instrument, " at ",
-                        format.POSIXct(timestamp), " / Current Price: ", currentprice)),
+                        format_POSIXct(timestamp), " / Current Price: ", currentprice)),
   ggplot2::coord_flip(),
   ichimoku:::theme_ichimoku_light()
 )
@@ -363,7 +363,7 @@ print(ggplot2::ggplot(data = df) + layers)
 
 
 ## ----oandai, eval=FALSE-------------------------------------------------------
-#  oanda_instruments()
+# oanda_instruments()
 
 ## ----ins, echo=FALSE----------------------------------------------------------
 print(ichimoku:::.oanda_instruments)
