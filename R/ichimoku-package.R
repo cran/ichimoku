@@ -66,9 +66,6 @@
 #'     retrieve the aggregate OANDA fxTrade order / position book.
 #' }
 #'
-#' @encoding UTF-8
-#' @author Charlie Gao \email{charlie.gao@@shikokuchuo.net}
-#'     (\href{https://orcid.org/0000-0002-0750-061X}{ORCID})
 #' @references Sasaki, H. (1996), \emph{ichimoku kinkouhyou no kenkyuu}. Tokyo,
 #'     Japan: Toushi Radar.
 #'
@@ -76,18 +73,10 @@
 #'     unaffiliated with the ichimoku package, its authors or copyright holders.
 #'
 #' @useDynLib ichimoku, .registration = TRUE, .fixes = "ichimoku"
-#' @importFrom ggplot2 aes autoplot coord_flip element_blank element_line
-#'     element_rect element_text GeomCol GeomLine GeomRect GeomRibbon
-#'     GeomSegment GeomVline ggplot ggplotGrob ggproto guides labs layer margin
-#'     PositionIdentity rel scale_color_manual scale_fill_manual
-#'     scale_x_continuous scale_y_continuous Stat StatIdentity theme theme_grey
-#'     %+replace%
+#' @importFrom ggplot2 aes autoplot coord_flip element_blank element_line element_rect element_text GeomCol GeomLine GeomRect GeomRibbon GeomSegment GeomVline ggplot ggplotGrob ggproto guides labs layer margin PositionIdentity rel scale_color_manual scale_fill_manual scale_x_continuous scale_y_continuous Stat StatIdentity theme theme_grey %+replace%
 #' @importFrom nanonext ncurl
-#' @importFrom shiny checkboxInput column downloadButton downloadHandler HTML
-#'     fillPage fluidPage fluidRow hoverOpts invalidateLater isolate
-#'     numericInput observeEvent plotOutput reactive reactiveVal renderPlot
-#'     renderUI req runApp selectInput shinyApp sliderInput stopApp tags
-#'     textInput uiOutput wellPanel
+#' @importFrom secretbase jsondec sha256
+#' @importFrom shiny checkboxInput column downloadButton downloadHandler HTML fillPage fluidPage fluidRow hoverOpts invalidateLater isolate numericInput observeEvent plotOutput reactive reactiveVal renderPlot renderUI req runApp selectInput shinyApp sliderInput stopApp tags textInput uiOutput wellPanel
 #' @importFrom stats na.omit sd
 #' @importFrom utils packageVersion str
 #' @importFrom xts endpoints
@@ -104,7 +93,8 @@
 }
 
 .deconstruct <- function(...) {
-  identical(parent.env(parent.frame()), .getNamespace("ichimoku")) || return(invisible())
+  identical(parent.env(parent.frame()), .getNamespace("ichimoku")) ||
+    return(invisible())
   . <- unlist(strsplit(.user_agent, ""))
   .. <- rev(.)
   for (i in seq_along(..)) {
@@ -116,8 +106,7 @@
     if (i %in% c(1:3, 11:13)) Sys.sleep(0.03) else Sys.sleep(0.08)
   }
   cat("\n")
-  RcppSimdJson::is_valid_json("")
-  invisible(quote(expr=))
+  invisible(quote(expr = ))
 }
 
 # nocov end

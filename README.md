@@ -5,12 +5,13 @@
 
 <!-- badges: start -->
 
-[![CRAN
-Status](https://www.r-pkg.org/badges/version/ichimoku?color=00008b)](https://CRAN.R-project.org/package=ichimoku)
 [![ichimoku status
 badge](https://shikokuchuo.r-universe.dev/badges/ichimoku)](https://shikokuchuo.r-universe.dev/ichimoku)
+[![CRAN
+Status](https://www.r-pkg.org/badges/version/ichimoku)](https://CRAN.R-project.org/package=ichimoku)
 [![R-CMD-check](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/ichimoku/actions/workflows/R-CMD-check.yaml)
-[![codecov](https://codecov.io/gh/shikokuchuo/ichimoku/graph/badge.svg)](https://app.codecov.io/gh/shikokuchuo/ichimoku)
+[![Codecov test
+coverage](https://codecov.io/gh/shikokuchuo/ichimoku/graph/badge.svg)](https://app.codecov.io/gh/shikokuchuo/ichimoku)
 [![DOI](https://zenodo.org/badge/367928545.svg)](https://zenodo.org/badge/latestdoi/367928545)
 <!-- badges: end -->
 
@@ -31,10 +32,10 @@ government bonds and stock indices.
 
 ## Installation
 
-Install ichimoku from CRAN:
+Install ichimoku from R-universe:
 
 ``` r
-install.packages("ichimoku")
+install.packages('ichimoku', repos = c('https://shikokuchuo.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 ## Quick Start
